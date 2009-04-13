@@ -2,7 +2,7 @@ package edu.uwm.cs.gll
 
 import scala.collection.mutable
 
-class Trampoline { outer =>
+class Trampoline {
   private type Potential = (Parser[R], Stream[Char], (R, Stream[Char])=>Unit) forSome { type R }
   
   private val queue = new mutable.Queue[Potential]
@@ -12,7 +12,7 @@ class Trampoline { outer =>
   def run() {
     while (queue.length > 0) {
       val (p, s, f) = pop()
-      p.queue(this, s)(f)
+      p.queue(this, s)(f.asInstanceOf[(Any, Stream[Char])=>Unit])   // pesky limitation in type system
     }
   }
   
@@ -26,8 +26,8 @@ class Trampoline { outer =>
   
   private def pop() = {
     val back @ (p, s, _) = queue.dequeue()
-    set -= (p, s)
-    popped += (p, s)
+    set -= ((p, s))
+    popped += ((p, s))
     
     back
   }

@@ -2,7 +2,7 @@ package edu.uwm.cs.gll
 
 import StreamUtils._
 
-case class LiteralParser[+R](str: String) extends TerminalParser[R] {
+case class LiteralParser[+R](str: String) extends TerminalParser[String] {
   def computeFirst(s: Set[Parser[Any]]) = {
     if (str.length > 0) Set(str(0))
     else Set()
@@ -12,8 +12,8 @@ case class LiteralParser[+R](str: String) extends TerminalParser[R] {
     val trunc = in take str.length
     lazy val errorMessage = "Expected '%s' got '%s'".format(str, trunc.mkString)
     
-    Set(if (trunc lengthCompare str.length != 0) {
-      Failure(errorMessage)
+    Set(if (trunc.lengthCompare(str.length) != 0) {
+      Failure(errorMessage, in)
     } else {
       val succ = trunc.zipWithIndex forall {
         case (c, i) => c == str(i)
@@ -22,7 +22,7 @@ case class LiteralParser[+R](str: String) extends TerminalParser[R] {
       if (succ) 
         Success(str, in drop str.length)
       else 
-        Failure(errorMessage)
+        Failure(errorMessage, in)
     })
   }
 }

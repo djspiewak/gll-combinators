@@ -26,26 +26,30 @@ trait TerminalParser[+R] extends Parser[R] { self =>
    * For terminal parsing, this just delegates back to apply()
    */
   def queue(t: Trampoline, in: Stream[Char])(f: (R, Stream[Char])=>Unit) {
-    apply(in) match {
-      case Set(Success(v, tail)) => f(v, tail)      // terminals are always unambiguous
+    apply(in) foreach {
+      case Success(v, tail) => f(v, tail)
       case _ => ()
     }
   }
   
   def ~[R2](other: Parser[R2]) = if (other.terminal) {
     new TerminalParser[~[R, R2]] {
-      def computeFirst(s: Set[Parser[Any]]) = self.computeFirst(s) match {
-        case Set() => other.computeFirst(s)
-        case s => s
+      def computeFirst(s: Set[Parser[Any]]) = {
+        val sub = self.computeFirst(s)
+        
+        if (sub.size == 0)
+          other.computeFirst(s)
+        else
+          sub
       }
       
-      def apply(in: Stream[Char]) = self(in) match {
-        case Set(Success(res1, tail)) => other(in) match {
-          case Set(Success(res2, tail)) => Set(Success(new ~(res1, res2), tail))
-          case f @ Set(_: Failure) => f
+      def apply(in: Stream[Char]) = self(in) flatMap {
+        case Success(res1, tail) => other(in) map {
+          case  Success(res2, tail) => Success(new ~(res1, res2), tail)
+          case f: Failure => f
         }
         
-        case f @ Set(_: Failure) => f
+        case f: Failure => Set(f)
       }
     }
   } else super.~(other)
