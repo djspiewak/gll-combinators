@@ -41,14 +41,14 @@ trait TerminalParser[+R] extends Parser[R] { self =>
       
       def apply(in: Stream[Char]) = self(in) match {
         case Set(Success(res1, tail)) => other(in) match {
-          case Set(Success(res2, tail)) => Set(Success(~(res1, res2), tail))
-          case f => f
+          case Set(Success(res2, tail)) => Set(Success(new ~(res1, res2), tail))
+          case f @ Set(_: Failure) => f
         }
         
-        case f => f
+        case f @ Set(_: Failure) => f
       }
     }
-  } else super ~ other
+  } else super.~(other)
 }
 
 trait NonTerminalParser[+R] extends Parser[R] {
@@ -67,7 +67,7 @@ trait NonTerminalParser[+R] extends Parser[R] {
     queue(t, in) { (res, tail) => back += Success(res, tail) }
     t.run()
     
-    if (back.length == 0) back += Failure("No valid derivations")
+    if (back.size == 0) back += Failure("No valid derivations", in)
     
     back
   }
