@@ -1,5 +1,7 @@
 package edu.uwm.cs.gll
 
+import scala.actors.Actor
+
 sealed trait Parser[+R] extends (Stream[Char]=>Result[R]) {
   val terminal: Boolean
   
@@ -11,6 +13,8 @@ sealed trait Parser[+R] extends (Stream[Char]=>Result[R]) {
    */
   def computeFirst(s: Set[Parser[Any]]): Set[Char]
   
+  def queue(in: Stream[Char])(target: Actor)(implicit t: Trampoline)
+  
   // syntax
   
   def ~[R2](other: Parser[R2]): Parser[~[R, R2]] = new SequentialParser(this, other)
@@ -18,6 +22,13 @@ sealed trait Parser[+R] extends (Stream[Char]=>Result[R]) {
 
 trait TerminalParser[+R] extends Parser[R] { self =>
   final val terminal = true
+  
+  /**
+   * For non-terminal parsing, this just delegates back to apply()
+   */
+  def queue(in: Stream[Char])(target: Actor)(implicit t: Trampoline) {
+    target ! apply(in)
+  }
   
   def ~[R2](other: Parser[R2]) = if (other.terminal) {
     new TerminalParser[~[R, R2]] {
@@ -39,5 +50,25 @@ trait TerminalParser[+R] extends Parser[R] { self =>
 }
 
 trait NonTerminalParser[+R] extends Parser[R] {
+  import Actor._
+  
   final val terminal = false
+  
+  /**
+   * This method takes care of kicking off a <i>new</i>
+   * parse process.  We will never call this method to
+   * handle a sub-parse.  In such situations, we will use
+   * the trampoline to queue results.
+   */
+  def apply(in: Stream[Char]) = {
+    val t = new Trampoline(self)
+    t ! Push(this, in) { _ => () }
+    
+    receive { 
+      case r: Result[R] => {
+        t ! Dispose
+        r
+      }
+    }
+  }
 }
