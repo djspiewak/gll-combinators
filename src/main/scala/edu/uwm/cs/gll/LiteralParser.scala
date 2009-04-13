@@ -8,7 +8,7 @@ case class LiteralParser[+R](str: String) extends TerminalParser[R] {
     else Set()
   }
   
-  def parse(in: Stream[Char]) = {
+  def apply(in: Stream[Char]) = {
     val trunc = in take str.length
     lazy val errorMessage = "Expected '%s' got '%s'".format(str, trunc.mkString)
     

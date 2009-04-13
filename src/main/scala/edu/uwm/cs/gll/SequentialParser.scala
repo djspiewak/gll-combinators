@@ -11,29 +11,11 @@ class SequentialParser[+A, +B](left: Parser[A], right: Parser[B]) extends Parser
     }
   }
   
-  def queue(in: Stream[Char])(target: Actor)(implicit t: Trampoline) {
-    def continue(res1: A, in: Stream[Char]) {
-      def finish(res2: B, tail: Stream[Char]) {
-        target ! Success(~(res1, res2), tail)
+  def queue(t: Trampoline, in: Stream[Char])(f: (~[A, B], Stream[Char])=>Unit) {
+    left.queue(t, in) { (res1, tail) =>
+      right.queue(t, tail) { (res2, tail) =>
+        f(~(res1, res2), tail)
       }
-      
-      if (right.terminal) {
-        right(in) match {
-          case Success(res2, tail) => finish(res2, tail)
-          case f => target ! f
-        }
-      } else {
-        t ! Push(right, in)(finish)
-      }
-    }
-    
-    if (left.terminal) {
-      left(in) match {
-        case Success(res, tail) => continue(res, tail)
-        case f => target ! f
-      }
-    } else {
-      t ! Push(left, in)(continue)
     }
   }
 }

@@ -1,7 +1,5 @@
 package edu.uwm.cs.gll
 
-import scala.actors.Actor
-
 sealed trait Parser[+R] extends (Stream[Char]=>Result[R]) {
   val terminal: Boolean
   
@@ -13,7 +11,8 @@ sealed trait Parser[+R] extends (Stream[Char]=>Result[R]) {
    */
   def computeFirst(s: Set[Parser[Any]]): Set[Char]
   
-  def queue(in: Stream[Char])(target: Actor)(implicit t: Trampoline)
+  // TODO handle failure somehow
+  def queue(t: Trampoline, in: Stream[Char])(f: (R, Stream[Char])=>Unit)
   
   // syntax
   
@@ -24,10 +23,13 @@ trait TerminalParser[+R] extends Parser[R] { self =>
   final val terminal = true
   
   /**
-   * For non-terminal parsing, this just delegates back to apply()
+   * For terminal parsing, this just delegates back to apply()
    */
-  def queue(in: Stream[Char])(target: Actor)(implicit t: Trampoline) {
-    target ! apply(in)
+  def queue(t: Trampoline, in: Stream[Char])(f: (R, Stream[Char])=>Unit) {
+    apply(in) match {
+      case Success(v, tail) => f(v, tail)
+      case _ => ()
+    }
   }
   
   def ~[R2](other: Parser[R2]) = if (other.terminal) {
@@ -50,8 +52,6 @@ trait TerminalParser[+R] extends Parser[R] { self =>
 }
 
 trait NonTerminalParser[+R] extends Parser[R] {
-  import Actor._
-  
   final val terminal = false
   
   /**
@@ -61,14 +61,15 @@ trait NonTerminalParser[+R] extends Parser[R] {
    * the trampoline to queue results.
    */
   def apply(in: Stream[Char]) = {
-    val t = new Trampoline(self)
-    t ! Push(this, in) { _ => () }
+    val t = new Trampoline
     
-    receive { 
-      case r: Result[R] => {
-        t ! Dispose
-        r
-      }
+    var back = null:R
+    queue(t, in) {        // ugly but it works
+      case (null, _) => back = Failure("No valid derivation")
+      case (res, tail) => back = Success(res, tail)
     }
+    t.run()
+    
+    back
   }
 }
