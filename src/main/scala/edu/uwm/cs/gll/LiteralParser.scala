@@ -12,15 +12,17 @@ case class LiteralParser[+R](str: String) extends TerminalParser[R] {
     val trunc = in take str.length
     lazy val errorMessage = "Expected '%s' got '%s'".format(str, trunc.mkString)
     
-    if (trunc lengthCompare str.length != 0)
+    Set(if (trunc lengthCompare str.length != 0) {
       Failure(errorMessage)
-    else {
+    } else {
       val succ = trunc.zipWithIndex forall {
         case (c, i) => c == str(i)
       }
       
-      if (succ) Success(str, in drop str.length)
-      else Failure(errorMessage)
-    }
+      if (succ) 
+        Success(str, in drop str.length)
+      else 
+        Failure(errorMessage)
+    })
   }
 }

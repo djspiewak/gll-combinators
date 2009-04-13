@@ -1,7 +1,6 @@
 package edu.uwm.cs.gll
 
 import scala.collection.mutable.{Queue, Set}
-import scala.actors.Actor
 
 class Trampoline { outer =>
   private type Potential = (Parser[R], Stream[Char], (R, Stream[Char])=>Unit) forSome { type R }
@@ -19,7 +18,7 @@ class Trampoline { outer =>
   
   def push[R](p: Parser[R], s: Stream[Char])(f: (R, Stream[Char])=Unit) {
     val setTuple = (p, s)
-    if (!set.contains(setTuple) && !popped.contains(setTuple)) {
+    if (!set.contains(setTuple) && !popped.contains(setTuple)) {    // TODO is this right?
       queue += (p, s, f)
       set += setTuple
     }

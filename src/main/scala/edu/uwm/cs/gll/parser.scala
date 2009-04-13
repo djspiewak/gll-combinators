@@ -1,6 +1,6 @@
 package edu.uwm.cs.gll
 
-sealed trait Parser[+R] extends (Stream[Char]=>Result[R]) {
+sealed trait Parser[+R] extends (Stream[Char]=>Set[Result[R]]) {
   val terminal: Boolean
   
   lazy val first = computeFirst(Set())
@@ -27,7 +27,7 @@ trait TerminalParser[+R] extends Parser[R] { self =>
    */
   def queue(t: Trampoline, in: Stream[Char])(f: (R, Stream[Char])=>Unit) {
     apply(in) match {
-      case Success(v, tail) => f(v, tail)
+      case Set(Success(v, tail)) => f(v, tail)      // terminals are always unambiguous
       case _ => ()
     }
   }
@@ -40,8 +40,8 @@ trait TerminalParser[+R] extends Parser[R] { self =>
       }
       
       def apply(in: Stream[Char]) = self(in) match {
-        case Success(res1, tail) => other(in) match {
-          case Success(res2, tail) => Success(~(res1, res2), tail)
+        case Set(Success(res1, tail)) => other(in) match {
+          case Set(Success(res2, tail)) => Set(Success(~(res1, res2), tail))
           case f => f
         }
         
@@ -63,12 +63,11 @@ trait NonTerminalParser[+R] extends Parser[R] {
   def apply(in: Stream[Char]) = {
     val t = new Trampoline
     
-    var back = null:R
-    queue(t, in) {        // ugly but it works
-      case (null, _) => back = Failure("No valid derivation")
-      case (res, tail) => back = Success(res, tail)
-    }
+    var back = Set[Result[R]]()
+    queue(t, in) { (res, tail) => back += Success(res, tail) }
     t.run()
+    
+    if (back.length == 0) back += Failure("No valid derivations")
     
     back
   }
