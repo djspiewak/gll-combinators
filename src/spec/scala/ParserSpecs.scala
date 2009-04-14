@@ -1,7 +1,7 @@
 import edu.uwm.cs.gll._
 import org.specs._
 
-object TerminalSpecs extends Specification with ImplicitConversions {
+object ParserSpecs extends Specification with ImplicitConversions {
   "terminal parsers" should {
     "parse single tokens" in {
       val p = literal("test")
