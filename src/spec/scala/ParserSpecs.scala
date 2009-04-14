@@ -1,7 +1,11 @@
 import edu.uwm.cs.gll._
-import org.specs._
 
-object ParserSpecs extends Specification with ImplicitConversions {
+import org.specs._
+import org.scalacheck._
+
+object ParserSpecs extends Specification with ScalaCheck with ImplicitConversions {
+  import Prop._
+  
   "terminal parsers" should {
     "parse single tokens" in {
       val p = literal("test")
@@ -19,6 +23,14 @@ object ParserSpecs extends Specification with ImplicitConversions {
         case Success("te" ~ "st", Stream()) :: Nil => true
         case _ => false
       }
+    }
+    
+    "compute FIRST set" in {
+      val prop = forAll { s: String =>
+        literal(s).first == Set(s charAt 0)
+      }
+      
+      prop must pass
     }
   }
 }
