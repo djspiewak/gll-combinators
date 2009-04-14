@@ -119,5 +119,20 @@ object ParserSpecs extends Specification with ScalaCheck with ImplicitConversion
         }
       }
     }
+    
+    "compute FIRST for nary alternatives" in {
+      val prop = forAll { strs: List[String] =>
+        strs.length > 1 ==> {
+          val p = strs.map(literal).reduceLeft[Parser[Any]] { _ | _ }
+          val first = strs.foldLeft(Set[Char]()) { (set, str) =>
+            if (str.length == 0) set else set + str.charAt(0)
+          }
+          
+          p.first == first
+        }
+      }
+      
+      prop must pass
+    }
   }
 }
