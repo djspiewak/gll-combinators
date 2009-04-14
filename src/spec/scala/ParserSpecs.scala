@@ -171,5 +171,44 @@ object ParserSpecs extends Specification with ScalaCheck with ImplicitConversion
       check("renee", "bethany", "grace")
       check("daniel", "chris", "joseph", "renee")
     }
+    
+    "handle binary shift/reduce ambiguity" in {
+      val prop = forAll { (head: String, suffix: String) =>
+        val p = head | (head + suffix)
+        val result = p((head + suffix) toStream)
+        
+        val a = {
+          result exists {
+            case Success(`head`, rem) => {
+              val zipped = suffix.toStream zip rem
+              val lenB = zipped.length == suffix.length && zipped.length == rem.length
+              
+              lenB && (zipped forall { case (a, b) => a == b })
+            }
+            
+            case _ => false
+          }
+        }
+        
+        val b = {
+          val v = head + suffix
+          
+          result exists {
+            case Success(`v`, Stream()) => true
+            case x => false
+          }
+        }
+        
+        a && b
+      }
+      
+      val p = "" | ""
+      p("" toStream) mustHave {
+        case Success("", Stream()) => true
+        case _ => false
+      }
+      
+      prop must pass
+    }
   }
 }
