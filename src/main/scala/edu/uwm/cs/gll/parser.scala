@@ -17,6 +17,10 @@ sealed trait Parser[+R] extends (Stream[Char]=>List[Result[R]]) {
   // syntax
   
   def ~[R2](other: Parser[R2]): Parser[~[R, R2]] = new SequentialParser(this, other)
+  
+  def ^^[R2](f: R=>R2): Parser[R2]
+  
+  def ^^^[R2](v: =>R2) = ^^ { _ => v }
 }
 
 trait TerminalParser[+R] extends Parser[R] { self =>
@@ -55,9 +59,18 @@ trait TerminalParser[+R] extends Parser[R] { self =>
       }
     }
   } else super.~(other)
+  
+  def ^^[R2](f: R=>R2) = new TerminalParser[R2] {
+    def computeFirst(s: Set[Parser[Any]]) = self.computeFirst(s + this)
+    
+    def apply(in: Stream[Char]) = self(in) map {
+      case Success(res, tail) => Success(f(res), tail)
+      case x: Failure => x
+    }
+  }
 }
 
-trait NonTerminalParser[+R] extends Parser[R] {
+trait NonTerminalParser[+R] extends Parser[R] { self =>
   final val terminal = false
   
   /**
@@ -85,4 +98,13 @@ trait NonTerminalParser[+R] extends Parser[R] {
     
     back.toList
   }
+  
+  def ^^[R2](f1: R=>R2) = new NonTerminalParser[R2] {
+    def computeFirst(s: Set[Parser[Any]]) = self.computeFirst(s + this)
+    
+    def queue(t: Trampoline, in: Stream[Char])(f2: (R2, Stream[Char])=>Unit) {
+      self.queue(t, in) { (res, tail) => f2(f1(res), tail) }
+    }
+  }
 }
+
