@@ -63,10 +63,15 @@ object ParserSpecs extends Specification with ScalaCheck with ImplicitConversion
     }
   }
   
-  /*
-   * TODO use ScalaCheck for more of this stuff (non-trivial due to ambiguity)
-   */
   "disjunctive parser" should {
+    "gather binary alternatives" in {
+      val prop = forAll { (left: String, right: String) =>
+        (left | right).asInstanceOf[DisjunctiveParser[String]].gather == Set(literal(left), literal(right))
+      }
+      
+      prop must pass
+    }
+    
     "compute FIRST for binary alternatives" in {
       val prop = forAll { (left: String, right: String) =>
         val leftFirst = if (left.length == 0) Set[Char]() else Set(left charAt 0)
@@ -118,6 +123,20 @@ object ParserSpecs extends Specification with ScalaCheck with ImplicitConversion
           case _ => false
         }
       }
+    }
+    
+    "gather nary alternatives" in {
+      val prop = forAll { strs: List[String] =>
+        strs.length > 1 ==> {
+          val parsers = strs.map(literal)
+          val p = parsers.reduceLeft[Parser[Any]] { _ | _ }
+          val potentials = Set(parsers:_*)
+          
+          p.asInstanceOf[DisjunctiveParser[Any]].gather == potentials
+        }
+      }
+      
+      prop must pass
     }
     
     "compute FIRST for nary alternatives" in {
