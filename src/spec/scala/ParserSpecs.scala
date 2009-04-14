@@ -27,7 +27,10 @@ object ParserSpecs extends Specification with ScalaCheck with ImplicitConversion
     
     "compute FIRST set" in {
       val prop = forAll { s: String =>
-        literal(s).first == Set(s charAt 0)
+        if (s.length == 0)
+          literal(s).first == Set()
+        else
+          literal(s).first == Set(s charAt 0)
       }
       
       prop must pass
