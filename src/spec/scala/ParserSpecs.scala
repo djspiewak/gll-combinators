@@ -25,12 +25,27 @@ object ParserSpecs extends Specification with ScalaCheck with ImplicitConversion
       }
     }
     
-    "compute FIRST set" in {
+    "compute FIRST set for singles" in {
       val prop = forAll { s: String =>
         if (s.length == 0)
           literal(s).first == Set()
         else
           literal(s).first == Set(s charAt 0)
+      }
+      
+      prop must pass
+    }
+    
+    "compute FIRST set for composites" in {
+      val prop = forAll { strs: List[String] =>
+        strs.length > 0 ==> {
+          val p = strs.map(literal).reduceLeft[Parser[Any]] { _ ~ _ }
+          val first = strs.foldLeft(Set[Char]()) { (set, str) =>
+            if (set.size == 0 && str.length > 0) Set(str charAt 0) else set
+          }
+          
+          p.first mustEqual first
+        }
       }
       
       prop must pass
