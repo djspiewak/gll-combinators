@@ -153,5 +153,23 @@ object ParserSpecs extends Specification with ScalaCheck with ImplicitConversion
       
       prop must pass
     }
+    
+    "parse nary alternatives" in {
+      // assumes unambiguous data
+      def check(data: String*) = {
+        val p = data.map(literal).reduceLeft[Parser[Any]] { _ | _ }
+        
+        for (str <- data) {
+          p(str toStream) must beLike {
+            case Success(str, Stream()) :: Nil => true
+            case _ => false
+          }
+        }
+      }
+      
+      check("daniel", "chris", "joseph", "renee", "bethany", "grace")
+      check("renee", "bethany", "grace")
+      check("daniel", "chris", "joseph", "renee")
+    }
   }
 }
