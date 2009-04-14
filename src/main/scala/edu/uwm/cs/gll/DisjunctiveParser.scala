@@ -1,13 +1,18 @@
 package edu.uwm.cs.gll
 
-class DisjunctiveParser[A](left: Parser[A], right: Parser[A]) extends NonTerminalParser[A] {
+class DisjunctiveParser[A](l: =>Parser[A], r: =>Parser[A]) extends NonTerminalParser[A] {
+  private lazy val left = l
+  private lazy val right = r
+  
   lazy val gather = gatherImpl(Set())
   
   def computeFirst(seen: Set[Parser[Any]]) = {
+    lazy val newSeen = seen + this
+    
     if (seen contains this)
       Set()
     else
-      left.computeFirst(seen + this) ++ right.computeFirst(seen + this)
+      left.computeFirst(newSeen) ++ right.computeFirst(newSeen)
   }
   
   def queue(t: Trampoline, in: Stream[Char])(f: (A, Stream[Char])=>Unit) {

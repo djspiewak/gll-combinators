@@ -4,9 +4,10 @@ class SequentialParser[+A, +B](left: Parser[A], right: Parser[B]) extends NonTer
   def computeFirst(seen: Set[Parser[Any]]) = {
     if (seen contains this) Set()
     else {
-      val lFirst = left.computeFirst(seen + this)
+      val newSeen = seen + this
+      val lFirst = left.computeFirst(newSeen)
       
-      if (lFirst == Set()) right.computeFirst(seen + this)
+      if (lFirst == Set()) right.computeFirst(newSeen)
       else lFirst
     }
   }
