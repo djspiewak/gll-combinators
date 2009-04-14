@@ -211,4 +211,52 @@ object ParserSpecs extends Specification with ScalaCheck with ImplicitConversion
       prop must pass
     }
   }
+  
+  "compound non-terminal parsers" should {
+    "parse an unambiguous right-recursive grammar" in {
+      def p: Parser[Any] = (
+          "a" ~ p
+        | "a"
+      )
+      
+      // assumes data =~ /a+/
+      def check(data: String) {
+        p(data toStream) must beLike {
+          case Success(`data`, Stream()) :: Nil => true
+          case _ => false
+        }
+      }
+      
+      p mustNot throwA[Throwable]
+      
+      check("a")
+      check("aaaaaaaa")
+      check("aaaaa")
+      check((0 to 100000).foldLeft("a") { (s, _) => s + "a" })      // *really* long input
+      check("aa")
+    }
+    
+    /* "parse an unambiguous left-recursive grammar" in {
+      def p: Parser[Any] = (
+          p ~ "a"
+        | "a"
+      )
+      
+      // assumes data =~ /a+/
+      def check(data: String) {
+        p(data toStream) must beLike {
+          case Success(`data`, Stream()) => true
+          case _ => false
+        }
+      }
+      
+      p mustNot throwA[Throwable]
+      
+      check("a")
+      check("aaaaaaaa")
+      check("aaaaa")
+      check((0 to 100000).foldLeft("a") { (s, _) => s + "a" })      // *really* long input
+      check("aa")
+    } */
+  }
 }
