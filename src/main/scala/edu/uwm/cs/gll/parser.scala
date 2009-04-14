@@ -1,6 +1,6 @@
 package edu.uwm.cs.gll
 
-sealed trait Parser[+R] extends (Stream[Char]=>Set[Result[R]]) {
+sealed trait Parser[+R] extends (Stream[Char]=>List[Result[R]]) {
   val terminal: Boolean
   
   lazy val first = computeFirst(Set())
@@ -26,13 +26,13 @@ trait TerminalParser[+R] extends Parser[R] { self =>
    * For terminal parsing, this just delegates back to apply()
    */
   def queue(t: Trampoline, in: Stream[Char])(f: (R, Stream[Char])=>Unit) {
-    apply(in) foreach {
-      case Success(v, tail) => f(v, tail)
+    apply(in) match {
+      case Success(v, tail) :: Nil => f(v, tail)
       case _ => ()
     }
   }
   
-  def ~[R2](other: Parser[R2]) = if (other.terminal) {
+  override def ~[R2](other: Parser[R2]) = if (other.terminal) {
     new TerminalParser[~[R, R2]] {
       def computeFirst(s: Set[Parser[Any]]) = {
         val sub = self.computeFirst(s)
@@ -43,13 +43,15 @@ trait TerminalParser[+R] extends Parser[R] { self =>
           sub
       }
       
-      def apply(in: Stream[Char]) = self(in) flatMap {
-        case Success(res1, tail) => other(in) map {
-          case  Success(res2, tail) => Success(new ~(res1, res2), tail)
-          case f: Failure => f
+      def apply(in: Stream[Char]) = self(in) match {
+        case Success(res1, tail) :: Nil => other(in) match {
+          case Success(res2, tail) :: Nil => Success(new ~(res1, res2), tail) :: Nil
+          case (f @ Failure(_, _)) :: Nil => f :: Nil
+          case _ => throw new AssertionError    // basically, this should never happen
         }
         
-        case f: Failure => Set(f)
+        case (f @ Failure(_, _)) :: Nil => f :: Nil
+        case _ => throw new AssertionError    // basically, this should never happen
       }
     }
   } else super.~(other)
@@ -73,6 +75,6 @@ trait NonTerminalParser[+R] extends Parser[R] {
     
     if (back.size == 0) back += Failure("No valid derivations", in)
     
-    back
+    back.toList
   }
 }

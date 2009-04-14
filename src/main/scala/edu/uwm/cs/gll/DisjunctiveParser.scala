@@ -1,6 +1,6 @@
 package edu.uwm.cs.gll
 
-class DisjunctiveParser[+A](left: Parser[A], right: Parser[A]) extends NonTerminalParser[A] {
+class DisjunctiveParser[A](left: Parser[A], right: Parser[A]) extends NonTerminalParser[A] {
   lazy val gather = gatherImpl(Set())
   
   def computeFirst(seen: Set[Parser[Any]]) = {
@@ -13,9 +13,10 @@ class DisjunctiveParser[+A](left: Parser[A], right: Parser[A]) extends NonTermin
   def queue(t: Trampoline, in: Stream[Char])(f: (A, Stream[Char])=>Unit) {
     var results = Set[(A, Stream[Char])]()    // merge results
     
-    for (p <- gather; if p.first.contains(in.head) || p.first.size == 0) {     // lookahead
-      p.queue(t, in) { (v, tail) => results += ((v, tail)) }
-    }
+    for {
+      p <- gather
+      if p.first.contains(in.head) || p.first.size == 0     // lookahead
+    } p.asInstanceOf[Parser[A]].queue(t, in) { (v, tail) => results += ((v, tail)) }
     
     for ((v, tail) <- results) {
       f(v, tail)
@@ -25,7 +26,7 @@ class DisjunctiveParser[+A](left: Parser[A], right: Parser[A]) extends NonTermin
   private def gatherImpl(seen: Set[DisjunctiveParser[A]]): Set[Parser[A]] = {
     lazy val newSeen = seen + this
     
-    def process(p: Parser[A]) = p match {
+    def process(p: Parser[A]): Set[Parser[A]] = p match {
       case d: DisjunctiveParser[A] => {
         if (!seen.contains(d))
           d.gatherImpl(newSeen)
