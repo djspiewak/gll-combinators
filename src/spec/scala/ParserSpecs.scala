@@ -6,7 +6,7 @@ import org.scalacheck._
 object ParserSpecs extends Specification with ScalaCheck with ImplicitConversions {
   import Prop._
   
-  "terminal parsers" should {
+  "literal parser" should {
     "parse single tokens" in {
       val p = literal("test")
       
@@ -16,16 +16,16 @@ object ParserSpecs extends Specification with ScalaCheck with ImplicitConversion
       }
     }
     
-    "parse multiple tokens" in {
-      val p = "te" ~ "st"
+    "parse the empty string" in {
+      val p = literal("")
       
       p("test" toStream) must beLike {
-        case Success("te" ~ "st", Stream()) :: Nil => true
+        case Success("", Stream('t', 'e', 's', 't')) :: Nil => true
         case _ => false
       }
     }
     
-    "compute FIRST set for singles" in {
+    "compute FIRST set" in {
       val prop = forAll { s: String =>
         if (s.length == 0)
           literal(s).first == Set()
@@ -35,8 +35,19 @@ object ParserSpecs extends Specification with ScalaCheck with ImplicitConversion
       
       prop must pass
     }
+  }
+  
+  "terminal sequential parser" should {
+    "parse multiple tokens" in {
+      val p = "te" ~ "st"
+      
+      p("test" toStream) must beLike {
+        case Success("te" ~ "st", Stream()) :: Nil => true
+        case _ => false
+      }
+    }
     
-    "compute FIRST set for composites" in {
+    "compute FIRST set" in {
       val prop = forAll { strs: List[String] =>
         strs.length > 0 ==> {
           val p = strs.map(literal).reduceLeft[Parser[Any]] { _ ~ _ }
@@ -49,6 +60,48 @@ object ParserSpecs extends Specification with ScalaCheck with ImplicitConversion
       }
       
       prop must pass
+    }
+  }
+  
+  "disjunctive parser" should {
+    "parse binary alternatives" in {
+      {
+        val p = "daniel" | "chris"
+        
+        p("daniel" toStream) must beLike {
+          case Success("daniel", Stream()) :: Nil => true
+          case _ => false
+        }
+        
+        p("chris" toStream) must beLike {
+          case Success("chris", Stream()) :: Nil => true
+          case _ => false
+        }
+        
+        p("dan" toStream) must beLike {
+          case Success("dan", Stream('i', 'e', 'l')) :: Nil => true
+          case _ => false
+        }
+      }
+      
+      {
+        val p = "" | ""
+        
+        p("" toStream) must beLike {
+          case Success("", Stream()) :: Nil => true
+          case _ => false
+        }
+        
+        p("" toStream) must beLike {
+          case Success("", Stream()) :: Nil => true
+          case _ => false
+        }
+        
+        p("abc" toStream) must beLike {
+          case Success("", Stream('a', 'b', 'c')) :: Nil => true
+          case _ => false
+        }
+      }
     }
   }
 }

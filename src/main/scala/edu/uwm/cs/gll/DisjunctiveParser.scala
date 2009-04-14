@@ -12,10 +12,11 @@ class DisjunctiveParser[A](left: Parser[A], right: Parser[A]) extends NonTermina
   
   def queue(t: Trampoline, in: Stream[Char])(f: (A, Stream[Char])=>Unit) {
     var results = Set[(A, Stream[Char])]()    // merge results
+    val emptyStream = in.lengthCompare(0) == 0
     
     for {
       p <- gather
-      if p.first.contains(in.head) || p.first.size == 0     // lookahead
+      if (emptyStream || p.first.contains(in.head)) || p.first.size == 0     // lookahead
     } p.asInstanceOf[Parser[A]].queue(t, in) { (v, tail) => results += ((v, tail)) }
     
     for ((v, tail) <- results) {
