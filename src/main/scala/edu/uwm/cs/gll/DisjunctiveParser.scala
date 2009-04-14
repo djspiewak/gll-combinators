@@ -15,9 +15,11 @@ class DisjunctiveParser[A](left: Parser[A], right: Parser[A]) extends NonTermina
     val emptyStream = in.lengthCompare(0) == 0
     
     for {
-      p <- gather
+      pre <- gather
+      val p = pre.asInstanceOf[Parser[A]]
+      
       if (emptyStream || p.first.contains(in.head)) || p.first.size == 0     // lookahead
-    } p.asInstanceOf[Parser[A]].queue(t, in) { (v, tail) => results += ((v, tail)) }
+    } p.queue(t, in) { (v, tail) => results += ((v, tail)) }
     
     for ((v, tail) <- results) {
       f(v, tail)
