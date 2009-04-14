@@ -78,8 +78,8 @@ object ParserSpecs extends Specification with ScalaCheck with ImplicitConversion
           case _ => false
         }
         
-        p("dan" toStream) must beLike {
-          case Success("dan", Stream('i', 'e', 'l')) :: Nil => true
+        p("danieliel" toStream) must beLike {
+          case Success("daniel", Stream('i', 'e', 'l')) :: Nil => true
           case _ => false
         }
       }
