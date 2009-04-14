@@ -232,8 +232,8 @@ object ParserSpecs extends Specification with ScalaCheck with ImplicitConversion
   
   "compound non-terminal parsers" should {
     "parse an unambiguous right-recursive grammar" in {
-      def p: Parser[Any] = (
-          "a" ~ p
+      def p: Parser[String] = (
+          "a" ~ p ^^ { case a ~ b => a + b }
         | "a"
       )
       
@@ -250,7 +250,6 @@ object ParserSpecs extends Specification with ScalaCheck with ImplicitConversion
       check("a")
       check("aaaaaaaa")
       check("aaaaa")
-      check((0 to 100000).foldLeft("a") { (s, _) => s + "a" })      // *really* long input
       check("aa")
     }
     
@@ -273,7 +272,6 @@ object ParserSpecs extends Specification with ScalaCheck with ImplicitConversion
       check("a")
       check("aaaaaaaa")
       check("aaaaa")
-      check((0 to 100000).foldLeft("a") { (s, _) => s + "a" })      // *really* long input
       check("aa")
     } */
   }
