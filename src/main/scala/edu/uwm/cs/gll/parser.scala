@@ -65,12 +65,20 @@ trait NonTerminalParser[+R] extends Parser[R] {
    * parse process.  We will never call this method to
    * handle a sub-parse.  In such situations, we will use
    * the trampoline to queue results.
+   * 
+   * Note: to ensure greedy matching (for PEG compatibility)
+   * we define any Success with a non-empty tail to be a
+   * Failure
    */
   def apply(in: Stream[Char]) = {
     val t = new Trampoline
     
     var back = Set[Result[R]]()
-    queue(t, in) { (res, tail) => back += Success(res, tail) }
+    queue(t, in) { (res, tail) => 
+      if (tail.lengthCompare(0) == 0) {
+        back += Success(res, tail)
+      }
+    }
     t.run()
     
     if (back.size == 0) back += Failure("No valid derivations", in)

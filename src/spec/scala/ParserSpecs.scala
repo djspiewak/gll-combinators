@@ -98,11 +98,6 @@ object ParserSpecs extends Specification with ScalaCheck with ImplicitConversion
           case Success("chris", Stream()) :: Nil => true
           case _ => false
         }
-        
-        p("danieliel" toStream) must beLike {
-          case Success("daniel", Stream('i', 'e', 'l')) :: Nil => true
-          case _ => false
-        }
       }
       
       {
@@ -110,16 +105,6 @@ object ParserSpecs extends Specification with ScalaCheck with ImplicitConversion
         
         p("" toStream) must beLike {
           case Success("", Stream()) :: Nil => true
-          case _ => false
-        }
-        
-        p("" toStream) must beLike {
-          case Success("", Stream()) :: Nil => true
-          case _ => false
-        }
-        
-        p("abc" toStream) must beLike {
-          case Success("", Stream('a', 'b', 'c')) :: Nil => true
           case _ => false
         }
       }
@@ -174,18 +159,12 @@ object ParserSpecs extends Specification with ScalaCheck with ImplicitConversion
     
     "handle binary shift/reduce ambiguity" in {
       val prop = forAll { (head: String, suffix: String) =>
-        val p = head | (head + suffix)
+        val p = head ~ suffix | (head + suffix)
         val result = p((head + suffix) toStream)
         
         val a = {
           result exists {
-            case Success(`head`, rem) => {
-              val zipped = suffix.toStream zip rem
-              val lenB = zipped.length == suffix.length && zipped.length == rem.length
-              
-              lenB && (zipped forall { case (a, b) => a == b })
-            }
-            
+            case Success(`head` ~ `suffix`, Stream()) => true
             case _ => false
           }
         }
@@ -222,7 +201,7 @@ object ParserSpecs extends Specification with ScalaCheck with ImplicitConversion
       // assumes data =~ /a+/
       def check(data: String) {
         p(data toStream) must beLike {
-          case Success(`data`, Stream()) :: Nil => true
+          case Success(`data`, Stream()) :: Nil => true   // TODO
           case _ => false
         }
       }
