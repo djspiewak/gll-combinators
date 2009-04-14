@@ -33,3 +33,5 @@ This grammar is actually quite ambiguous.  The input string "``aaa``" may parse
 as ``Success("", Stream('a', 'a', 'a'))``, ``Success("a", Stream('a', 'a'))``,
 ``Success("aa", Stream('a'))`` or ``Success("aaa", Stream())``.  Obviously, this
 is a problem.  Or rather, this is a problem if we want to maintain PEG semantics.
+In order to solve this problem, we need to define ``apply(...)`` for ``NonTerminalParser``
+so that any ``Success`` with a ``tail != Stream()`` becomes a ``Failure("Expected end of stream", tail)``.
