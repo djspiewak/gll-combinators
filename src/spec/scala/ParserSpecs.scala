@@ -63,7 +63,23 @@ object ParserSpecs extends Specification with ScalaCheck with ImplicitConversion
     }
   }
   
+  /*
+   * TODO use ScalaCheck for more of this stuff (non-trivial due to ambiguity)
+   */
   "disjunctive parser" should {
+    "compute FIRST for binary alternatives" in {
+      val prop = forAll { (left: String, right: String) =>
+        val leftFirst = if (left.length == 0) Set[Char]() else Set(left charAt 0)
+        val rightFirst = if (right.length == 0) Set[Char]() else Set(right charAt 0)
+        
+        (left | right).first == leftFirst ++ rightFirst
+      }
+      
+      ("" | "").first mustEqual Set()
+      
+      prop must pass
+    }
+    
     "parse binary alternatives" in {
       {
         val p = "daniel" | "chris"
