@@ -20,7 +20,7 @@ object ParserSpecs extends Specification with ScalaCheck with ImplicitConversion
       val p = literal("")
       
       p("test" toStream) must beLike {
-        case Success("", Stream('t', 'e', 's', 't')) :: Nil => true
+        case Success("", Stream('t', 'e', 's', 't')) :: Nil => true     // should I keep this??
         case _ => false
       }
     }
@@ -34,6 +34,24 @@ object ParserSpecs extends Specification with ScalaCheck with ImplicitConversion
       }
       
       prop must pass
+    }
+    
+    "map results according to a function" in {
+      val p = "test" ^^ { _.length }
+      
+      p("test" toStream) match {
+        case Success(4, Stream()) :: Nil => true
+        case _ => false
+      }
+    }
+    
+    "map results according to a value" in {
+      val p = "test" ^^^ 42
+      
+      p("test" toStream) match {
+        case Success(42, Stream()) :: Nil => true
+        case _ => false
+      }
     }
   }
   
@@ -155,6 +173,27 @@ object ParserSpecs extends Specification with ScalaCheck with ImplicitConversion
       check("daniel", "chris", "joseph", "renee", "bethany", "grace")
       check("renee", "bethany", "grace")
       check("daniel", "chris", "joseph", "renee")
+    }
+    
+    "map results" in {
+      val prop = forAll { (left: String, right: String, f: String=>Int) =>
+        left != right ==> {
+          val p = (
+              left
+            | right
+          ) ^^ f
+          
+          (p(left toStream) match {
+            case Success(v, Stream()) :: Nil => v == f(left)
+            case _ => false
+          }) && (p(right toStream) match {
+            case Success(v, Stream()) :: Nil => v == f(right)
+            case _ => false
+          })
+        }
+      }
+      
+      prop must pass
     }
     
     "handle binary shift/reduce ambiguity" in {
