@@ -44,7 +44,7 @@ trait TerminalParser[+R] extends Parser[R] { self =>
       }
       
       def apply(in: Stream[Char]) = self(in) match {
-        case Success(res1, tail) :: Nil => other(in) match {
+        case Success(res1, tail) :: Nil => other(tail) match {
           case Success(res2, tail) :: Nil => Success(new ~(res1, res2), tail) :: Nil
           case (f @ Failure(_, _)) :: Nil => f :: Nil
           case _ => throw new AssertionError    // basically, this should never happen
