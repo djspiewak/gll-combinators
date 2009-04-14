@@ -13,9 +13,5 @@ trait ImplicitConversions {
     def |[A](right: =>Parser[A]) = new DisjunctiveParser(literal(left), right)
     
     def |(right: String): Parser[String] = new DisjunctiveParser(literal(left), literal(right))
-    
-    def ^^[A](f: String=>A): Parser[A] = literal(left) ^^ f
-    
-    def ^^^[A](f: =>A): Parser[A] = literal(left) ^^^ f
   }
 }
