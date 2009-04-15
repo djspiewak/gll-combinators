@@ -35,3 +35,19 @@ as ``Success("", Stream('a', 'a', 'a'))``, ``Success("a", Stream('a', 'a'))``,
 is a problem.  Or rather, this is a problem if we want to maintain PEG semantics.
 In order to solve this problem, we need to define ``apply(...)`` for ``NonTerminalParser``
 so that any ``Success`` with a ``tail != Stream()`` becomes a ``Failure("Expected end of stream", tail)``.
+
+Parser equality is a very serious issue.  Consider the following parser
+declaration::
+    
+    def p: Parser[Any] = p | "a"
+    
+While it would be nice to say that ``p == p'``, where ``p'`` is the "inner ``p``",
+the recursive case.  Unfortunately, these are actually two distinct instance of
+``DisjunctiveParser``.  This means that we cannot simply check equality to avoid
+infinite recursion.
+
+To solve this, we need to get direct access to the ``p`` thunk and check its
+*class* rather than its *instance*.  To do this, we will use Java reflection to
+access the field value without allowing the Scala compiler to transparently
+invoke the thunk.  Once we have this value, we can invoke ``getClass`` and quickly
+perform the comparison.
