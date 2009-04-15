@@ -50,4 +50,16 @@ To solve this, we need to get direct access to the ``p`` thunk and check its
 *class* rather than its *instance*.  To do this, we will use Java reflection to
 access the field value without allowing the Scala compiler to transparently
 invoke the thunk.  Once we have this value, we can invoke ``getClass`` and quickly
-perform the comparison.
+perform the comparison.  The only problem with this solution is it forces all of
+the thunk-uses to be logical constants.  Thus, we cannot define a parser in the
+following way::
+    
+    def p = make() | make()
+    
+    def make() = literal(Math.random.toString)
+    
+The ``DisjunctiveParser`` contained by ``p`` will consider both the left ``make()``
+and the right ``make()`` to be exactly identical.  Fortunately, we can safely
+assume that grammars are constructed in a declarative fashion.  The downside is
+when people *do* try something like this, the result will be fairly bizzare from
+a user's standpoint.

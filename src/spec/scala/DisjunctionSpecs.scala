@@ -54,39 +54,55 @@ object DisjunctionSpecs extends Specification with ImplicitConversions with Scal
     }
     
     "gather nary alternatives" in {
-      val prop = forAll { strs: List[String] =>
-        strs.length > 1 ==> {
-          val parsers = strs.map(literal)
-          val p = parsers.reduceLeft[Parser[Any]] { _ | _ }
-          val potentials = Set(parsers:_*)
-          
-          p.asInstanceOf[DisjunctiveParser[Any]].gather == potentials
-        }
+      def check(p: Parser[Any], expected: Parser[String]*) {
+        p.asInstanceOf[DisjunctiveParser[String]].gather mustEqual Set(expected:_*)
       }
       
-      prop must pass
+      {
+        val p = "daniel" | "chris" | "joseph"
+        check(p, "daniel", "chris", "joseph")
+      }
+      
+      {
+        val p = "daniel" | "daniel" | "chris" | "joseph"
+        check(p, "daniel", "chris", "joseph")
+      }
+      
+      {
+        val p = "" | "chris" | "" | "daniel" | "daniel"
+        check(p, "", "daniel", "chris")
+      }
     }
     
     "compute FIRST for nary alternatives" in {
-      val prop = forAll { strs: List[String] =>
-        strs.length > 1 ==> {
-          val p = strs.map(literal).reduceLeft[Parser[Any]] { _ | _ }
-          val first = strs.foldLeft(Set[Char]()) { (set, str) =>
-            if (str.length == 0) set else set + str.charAt(0)
-          }
-          
-          p.first == first
+      def check(p: Parser[Any], expected: String*) {
+        val set = expected.foldLeft(Set[Char]()) { (set, str) =>
+          if (str.length == 0) set
+          else set + str.charAt(0)
         }
+        
+        p.first == set
       }
       
-      prop must pass
+      {
+        val p = "daniel" | "chris" | "joseph"
+        check(p, "daniel", "chris", "joseph")
+      }
+      
+      {
+        val p = "daniel" | "daniel" | "chris" | "joseph"
+        check(p, "daniel", "chris", "joseph")
+      }
+      
+      {
+        val p = "" | "chris" | "" | "daniel" | "daniel"
+        check(p, "", "daniel", "chris")
+      }
     }
     
     "parse nary alternatives" in {
       // assumes unambiguous data
-      def check(data: String*) = {
-        val p = data.map(literal).reduceLeft[Parser[Any]] { _ | _ }
-        
+      def check(p: Parser[Any], data: String*) = {
         for (str <- data) {
           p(str toStream) must beLike {
             case Success(str, Stream()) :: Nil => true
@@ -95,9 +111,20 @@ object DisjunctionSpecs extends Specification with ImplicitConversions with Scal
         }
       }
       
-      check("daniel", "chris", "joseph", "renee", "bethany", "grace")
-      check("renee", "bethany", "grace")
-      check("daniel", "chris", "joseph", "renee")
+      {
+        val p = "daniel" | "chris" | "joseph" | "renee" | "bethany" | "grace"
+        check(p, "daniel", "chris", "joseph", "renee", "bethany", "grace")
+      }
+      
+      {
+        val p = "renee" | "bethany" | "grace"
+        check(p, "renee", "bethany", "grace")
+      }
+      
+      {
+        val p = "daniel" | "chris" | "joseph" | "renee"
+        check(p, "daniel", "chris", "joseph", "renee")
+      }
     }
     
     "map results" in {
