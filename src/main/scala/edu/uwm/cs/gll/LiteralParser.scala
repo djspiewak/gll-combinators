@@ -25,4 +25,11 @@ case class LiteralParser[+R](str: String) extends TerminalParser[String] {
         Failure(errorMessage, in)
     })
   }
+  
+  override def equals(other: Any) = other match {
+    case that: LiteralParser[R] => this.str == that.str
+    case _ => false
+  }
+  
+  override def hashCode = str.hashCode
 }

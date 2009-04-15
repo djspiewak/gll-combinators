@@ -1,8 +1,11 @@
 package edu.uwm.cs.gll
 
-class DisjunctiveParser[A](l: =>Parser[A], r: =>Parser[A]) extends NonTerminalParser[A] {
+class DisjunctiveParser[A](l: =>Parser[A], r: =>Parser[A]) extends NonTerminalParser[A] with Thunkable {
   private lazy val left = l
   private lazy val right = r
+  
+  private lazy val leftClass = thunk[Parser[A]]('l).getClass
+  private lazy val rightClass = thunk[Parser[A]]('r).getClass
   
   lazy val gather = gatherImpl(Set())
   
@@ -47,4 +50,14 @@ class DisjunctiveParser[A](l: =>Parser[A], r: =>Parser[A]) extends NonTerminalPa
     
     process(left) ++ process(right)
   }
+  
+  override def equals(other: Any) = other match {
+    case that: DisjunctiveParser[A] => {
+      this.leftClass == that.leftClass && this.rightClass == that.rightClass
+    }
+    
+    case _ => false
+  }
+  
+  override def hashCode = leftClass.hashCode + rightClass.hashCode
 }
