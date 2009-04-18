@@ -88,9 +88,7 @@ trait NonTerminalParser[+R] extends Parser[R] { self =>
     
     var back = Set[Result[R]]()
     queue(t, in) { (res, tail) => 
-      if (tail.lengthCompare(0) == 0) {
-        back += Success(res, tail)
-      }
+      if (tail.isEmpty) back += Success(res, tail)
     }
     t.run()
     
