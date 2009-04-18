@@ -150,32 +150,81 @@ object DisjunctionSpecs extends Specification with ImplicitConversions with Scal
     
     "handle binary shift/reduce ambiguity" in {
       val prop = forAll { (head: String, suffix: String) =>
-        val p = head ~ suffix | (head + suffix)
+        // %%
+        
+        val p1 = (
+            head ~ suffix     ^^ { case h ~ s => h + s }
+          | head              ^^ { x => x }
+        )
+        
+        val p2 = "" | suffix  ^^ { " " + _ }
+        
+        val p = p1 ~ p2       ^^ { case h ~ t => h + t }
+        
+        // %%
+        
         val result = p((head + suffix) toStream)
         
         val a = {
+          val v = head + suffix
+          
           result exists {
-            case Success(`head` ~ `suffix`, Stream()) => true
+            case Success(`v`, Stream()) => true
             case _ => false
           }
         }
         
         val b = {
-          val v = head + suffix
+          val v = head + " " + suffix
           
           result exists {
             case Success(`v`, Stream()) => true
-            case x => false
+            case _ => false
           }
         }
         
-        a && b
+        a && b && result.length == 2
       }
       
-      val p = "" | ""
-      p("" toStream) mustHave {
-        case Success("", Stream()) => true
-        case _ => false
+      {
+        val head = "?"
+        val suffix = ""
+        
+        // %%
+        
+        val p1 = (
+            head ~ suffix     ^^ { case h ~ s => h + s }
+          | head              ^^ { x => x }
+        )
+        
+        val p2 = "" | suffix  ^^ { " " + _ }
+        
+        val p = p1 ~ p2       ^^ { case h ~ t => h + t }
+        
+        // %%
+        
+        val result = p((head + suffix) toStream)
+        
+        {
+          val v = head + suffix
+          
+          result mustHave {
+            case Success(`v`, Stream()) => true
+            case _ => false
+          }
+        }
+        
+        {
+          val v = head + " " + suffix
+          
+          result mustHave {
+            case Success(`v`, Stream()) => true
+            case _ => false
+          }
+        }
+        
+        println(result)
+        result.length mustEqual 2
       }
       
       prop must pass

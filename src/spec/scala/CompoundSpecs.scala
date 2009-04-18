@@ -38,7 +38,7 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
       // assumes data =~ /a+/
       def check(data: String) {
         p(data toStream) must beLike {
-          case Success(`data`, Stream()) => true
+          case Success(`data`, Stream()) :: Nil => true
           case _ => false
         }
       }
