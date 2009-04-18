@@ -19,16 +19,19 @@ class DisjunctiveParser[A](l: =>Parser[A], r: =>Parser[A]) extends NonTerminalPa
   }
   
   def queue(t: Trampoline, in: Stream[Char])(f: (A, Stream[Char])=>Unit) {
-    var results = Set[(A, Stream[Char])]()    // merge results
+    var results = Set[(Any, Stream[Char])]()    // merge results
+    
     for {
       pre <- gather
       val p = pre.asInstanceOf[Parser[A]]
       
       if (in.isEmpty || p.first.contains(in.head)) || p.first.size == 0     // lookahead
-    } p.queue(t, in) { (v, tail) => results += ((v, tail)) }
-    
-    for ((v, tail) <- results) {
-      f(v, tail)
+    } t.push(p, in) { (v, tail) =>
+      val tuple = (v, tail)
+      if (!results.contains(tuple)) {
+        f(v.asInstanceOf[A], tail)
+        results += tuple
+      }
     }
   }
   

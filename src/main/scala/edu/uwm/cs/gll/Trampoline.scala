@@ -16,7 +16,7 @@ class Trampoline {
     }
   }
   
-  def push(p: Parser[Any], s: Stream[Char])(f: (Any, Stream[Char])=>Unit) {
+  def push[A](p: Parser[Any], s: Stream[Char])(f: (Any, Stream[Char])=>Unit) {
     val tuple = (p, s)
     
     if (!set.contains(tuple)) {    // TODO possibly optimize so popped nodes converge (generalized packrat)
