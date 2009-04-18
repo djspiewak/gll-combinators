@@ -3,33 +3,44 @@ package edu.uwm.cs.gll
 import scala.collection.mutable
 
 class Trampoline {
-  private type Potential = (Parser[R], Stream[Char], (R, Stream[Char])=>Unit) forSome { type R }
+  private type Potential = (Parser[Any], Stream[Char])
   
   private val queue = new mutable.Queue[Potential]
-  private val set = mutable.Set[(Parser[Any], Stream[Char])]()
-  private val popped = mutable.Set[(Parser[Any], Stream[Char])]()   // prevents later convergence
+  private val backlinks = mutable.Map[Potential, mutable.Set[(Any, Stream[Char])=>Unit]]()
+  private val set = mutable.Set[Potential]()
   
   def run() {
     while (queue.length > 0) {
       val (p, s, f) = pop()
-      p.queue(this, s)(f.asInstanceOf[(Any, Stream[Char])=>Unit])   // pesky limitation in type system
+      p.queue(this, s)(f)
     }
   }
   
-  def push[R](p: Parser[R], s: Stream[Char])(f: (R, Stream[Char])=>Unit) {
-    val setTuple = (p, s)
-    if (!set.contains(setTuple) && !popped.contains(setTuple)) {    // TODO is this right?
-      queue += (p, s, f)
-      set += setTuple
+  def push(p: Parser[Any], s: Stream[Char])(f: (Any, Stream[Char])=>Unit) {
+    val tuple = (p, s)
+    
+    if (!set.contains(tuple)) {    // TODO possibly optimize so popped nodes converge (generalized packrat)
+      queue += tuple
+      backlinks += (tuple -> mutable.Set(f))
+      set += tuple
+    } else {
+      backlinks(tuple) += f
     }
   }
   
   private def pop() = {
-    val back @ (p, s, _) = queue.dequeue()
-    set -= ((p, s))
-    popped += ((p, s))
+    val tuple @ (p, s) = queue.dequeue()
+    val f = {
+      val links = backlinks(tuple)
+      if (links.size == 1)
+        links.toList.head
+      else
+        { (v: Any, tail: Stream[Char]) => links foreach { _(v, tail) } }
+    }
     
-    back
+    set -= tuple
+    
+    (p, s, f)
   }
 }
 
