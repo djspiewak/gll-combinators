@@ -5,12 +5,13 @@ import org.scalacheck._
 
 object TerminalSpecs extends Specification with ScalaCheck with ImplicitConversions {
   import Prop._
+  import StreamUtils._
   
   "terminal parser" should {
     "parse single tokens" in {
       val p = literal("test")
       
-      p("test" toStream) must beLike {
+      p("test" toProperStream) must beLike {
         case Success("test", Stream()) :: Nil => true
         case _ => false
       }
@@ -19,7 +20,7 @@ object TerminalSpecs extends Specification with ScalaCheck with ImplicitConversi
     "parse the empty string" in {
       val p = literal("")
       
-      p("test" toStream) must beLike {
+      p("test" toProperStream) must beLike {
         case Success("", Stream('t', 'e', 's', 't')) :: Nil => true     // should I keep this??
         case _ => false
       }
@@ -39,7 +40,7 @@ object TerminalSpecs extends Specification with ScalaCheck with ImplicitConversi
     "map results according to a function" in {
       val p = "test" ^^ { _.length }
       
-      p("test" toStream) match {
+      p("test" toProperStream) match {
         case Success(4, Stream()) :: Nil => true
         case _ => false
       }
@@ -48,7 +49,7 @@ object TerminalSpecs extends Specification with ScalaCheck with ImplicitConversi
     "map results according to a value" in {
       val p = "test" ^^^ 42
       
-      p("test" toStream) match {
+      p("test" toProperStream) match {
         case Success(42, Stream()) :: Nil => true
         case _ => false
       }
@@ -59,7 +60,7 @@ object TerminalSpecs extends Specification with ScalaCheck with ImplicitConversi
     "parse multiple tokens" in {
       val p = "te" ~ "st"
       
-      p("test" toStream) must beLike {
+      p("test" toProperStream) must beLike {
         case Success("te" ~ "st", Stream()) :: Nil => true
         case _ => false
       }

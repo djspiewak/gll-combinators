@@ -1,14 +1,29 @@
 package edu.uwm.cs.gll
 
-private[gll] object StreamUtils {
+object StreamUtils {
+  import Stream._
+  
   object #:: {
     def unapply[A](str: Stream[A]) = str match {
-      case Stream.cons(hd, tail) => Some((hd, tail))
-      case Stream.empty => None
+      case cons(hd, tail) => Some((hd, tail))
+      case empty => None
     }
   }
   
   implicit def streamSyntax[A](str: =>Stream[A]) = new {
-    def #::[B](v: B) = Stream.cons(v, str)
+    def #::[B](v: B) = cons(v, str)
+  }
+  
+  implicit def str2stream(str: String) = new {
+    def toProperStream = {
+      def gen(i: Int): Stream[Char] = {
+        if (i < str.length) 
+          cons(str.charAt(i), gen(i + 1))
+        else
+          empty
+      }
+      
+      gen(0)
+    }
   }
 }

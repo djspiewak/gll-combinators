@@ -5,6 +5,7 @@ import org.scalacheck._
 
 object DisjunctionSpecs extends Specification with ImplicitConversions with ScalaCheck {
   import Prop._
+  import StreamUtils._
   
   "disjunctive parser" should {
     "gather binary alternatives" in {
@@ -32,12 +33,12 @@ object DisjunctionSpecs extends Specification with ImplicitConversions with Scal
       {
         val p = "daniel" | "chris"
         
-        p("daniel" toStream) must beLike {
+        p("daniel" toProperStream) must beLike {
           case Success("daniel", Stream()) :: Nil => true
           case _ => false
         }
         
-        p("chris" toStream) must beLike {
+        p("chris" toProperStream) must beLike {
           case Success("chris", Stream()) :: Nil => true
           case _ => false
         }
@@ -46,7 +47,7 @@ object DisjunctionSpecs extends Specification with ImplicitConversions with Scal
       {
         val p = "" | ""
         
-        p("" toStream) must beLike {
+        p("" toProperStream) must beLike {
           case Success("", Stream()) :: Nil => true
           case _ => false
         }
@@ -104,7 +105,7 @@ object DisjunctionSpecs extends Specification with ImplicitConversions with Scal
       // assumes unambiguous data
       def check(p: Parser[Any], data: String*) = {
         for (str <- data) {
-          p(str toStream) must beLike {
+          p(str toProperStream) must beLike {
             case Success(str, Stream()) :: Nil => true
             case _ => false
           }
@@ -135,10 +136,10 @@ object DisjunctionSpecs extends Specification with ImplicitConversions with Scal
             | right
           ) ^^ f
           
-          (p(left toStream) match {
+          (p(left toProperStream) match {
             case Success(v, Stream()) :: Nil => v == f(left)
             case _ => false
-          }) && (p(right toStream) match {
+          }) && (p(right toProperStream) match {
             case Success(v, Stream()) :: Nil => v == f(right)
             case _ => false
           })
@@ -163,7 +164,7 @@ object DisjunctionSpecs extends Specification with ImplicitConversions with Scal
         
         // %%
         
-        val result = p((head + suffix) toStream)
+        val result = p((head + suffix) toProperStream)
         
         val a = {
           val v = head + suffix
@@ -184,47 +185,6 @@ object DisjunctionSpecs extends Specification with ImplicitConversions with Scal
         }
         
         a && b && result.length == 2
-      }
-      
-      {
-        val head = "?"
-        val suffix = ""
-        
-        // %%
-        
-        val p1 = (
-            head ~ suffix     ^^ { case h ~ s => h + s }
-          | head              ^^ { x => x }
-        )
-        
-        val p2 = "" | suffix  ^^ { " " + _ }
-        
-        val p = p1 ~ p2       ^^ { case h ~ t => h + t }
-        
-        // %%
-        
-        val result = p((head + suffix) toStream)
-        
-        {
-          val v = head + suffix
-          
-          result mustHave {
-            case Success(`v`, Stream()) => true
-            case _ => false
-          }
-        }
-        
-        {
-          val v = head + " " + suffix
-          
-          result mustHave {
-            case Success(`v`, Stream()) => true
-            case _ => false
-          }
-        }
-        
-        println(result)
-        result.length mustEqual 2
       }
       
       prop must pass

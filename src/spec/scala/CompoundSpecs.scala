@@ -5,6 +5,7 @@ import org.scalacheck._
 
 object CompoundSpecs extends Specification with ImplicitConversions with ScalaCheck {
   import Prop._
+  import StreamUtils._
   
   "compound non-terminal parsers" should {
     "parse an unambiguous right-recursive grammar" in {
@@ -15,7 +16,7 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
       
       // assumes data =~ /a+/
       def check(data: String) {
-        p(data toStream) must beLike {
+        p(data toProperStream) must beLike {
           case Success(`data`, Stream()) :: Nil => true   // TODO
           case _ => false
         }
@@ -37,7 +38,7 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
       
       // assumes data =~ /a+/
       def check(data: String) {
-        p(data toStream) must beLike {
+        p(data toProperStream) must beLike {
           case Success(`data`, Stream()) :: Nil => true
           case _ => false
         }
