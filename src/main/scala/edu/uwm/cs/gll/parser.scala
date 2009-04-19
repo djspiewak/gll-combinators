@@ -67,6 +67,8 @@ trait TerminalParser[+R] extends Parser[R] { self =>
       case Success(res, tail) => Success(f(res), tail)
       case x: Failure => x
     }
+    
+    override def toString = self.toString
   }
 }
 
@@ -103,6 +105,8 @@ trait NonTerminalParser[+R] extends Parser[R] { self =>
     def queue(t: Trampoline, in: Stream[Char])(f2: (R2, Stream[Char])=>Unit) {
       self.queue(t, in) { (res, tail) => f2(f1(res), tail) }
     }
+    
+    override def toString = self.toString
   }
 }
 

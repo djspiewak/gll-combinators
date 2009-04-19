@@ -8,6 +8,7 @@ class Trampoline {
   private val queue = new mutable.Queue[Potential]
   private val backlinks = mutable.Map[Potential, mutable.Set[(Any, Stream[Char])=>Unit]]()
   private val set = mutable.Set[Potential]()
+  private val popped = mutable.Set[Potential]()
   
   def run() {
     while (queue.length > 0) {
@@ -19,12 +20,17 @@ class Trampoline {
   def push[A](p: Parser[Any], s: Stream[Char])(f: (Any, Stream[Char])=>Unit) {
     val tuple = (p, s)
     
-    if (!set.contains(tuple)) {    // TODO possibly optimize so popped nodes converge (generalized packrat)
-      queue += tuple
-      backlinks += (tuple -> mutable.Set(f))
-      set += tuple
-    } else {
-      backlinks(tuple) += f
+    if (!popped.contains(tuple)) {      // TODO possibly need to cache result
+      // println("Pushing " + tuple)
+      // println(popped)
+      
+      if (!set.contains(tuple)) {
+        queue += tuple
+        backlinks += (tuple -> mutable.Set(f))
+        set += tuple
+      } else {
+        backlinks(tuple) += f
+      }
     }
   }
   
@@ -38,7 +44,10 @@ class Trampoline {
         { (v: Any, tail: Stream[Char]) => links foreach { _(v, tail) } }
     }
     
+    // println("Popped " + tuple)
+    
     set -= tuple
+    popped += tuple
     
     (p, s, f)
   }

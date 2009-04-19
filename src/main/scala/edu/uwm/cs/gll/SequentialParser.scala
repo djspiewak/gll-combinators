@@ -19,4 +19,6 @@ class SequentialParser[+A, +B](left: Parser[A], right: Parser[B]) extends NonTer
       }
     }
   }
+  
+  override def toString = "(%s ~ %s)".format(left, right)
 }

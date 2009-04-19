@@ -19,9 +19,9 @@ case class LiteralParser[+R](str: String) extends TerminalParser[String] {
         case (c, i) => c == str(i)
       }
       
-      if (succ) 
+      if (succ)
         Success(str, in drop str.length)
-      else 
+      else
         Failure(errorMessage, in)
     })
   }
@@ -32,4 +32,6 @@ case class LiteralParser[+R](str: String) extends TerminalParser[String] {
   }
   
   override def hashCode = str.hashCode
+  
+  override def toString = "'%s'".format(str)
 }
