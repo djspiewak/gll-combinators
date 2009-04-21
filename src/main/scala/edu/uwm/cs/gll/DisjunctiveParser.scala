@@ -10,6 +10,29 @@ class DisjunctiveParser[A](l: =>Parser[A], r: =>Parser[A]) extends NonTerminalPa
   lazy val gather = gatherImpl(Set())
 
   /**
+   * The PREDICT table for this disjunction.  Please note that
+   * this is a very different concept from the standard LL(k)
+   * PREDICT set.  Specifically, the PREDICT table allows for
+   * ambiguity in the prediction while still retaining <i>O(1)</i>
+   * dispatch on disjunctions which are LL(1) and <i>near-O(1)</i>
+   * for disjunctions which are not.
+   *
+   * Note that this is not actually sufficient to handle all
+   * CFGs allowed by GLL.  Specifically, parsers with an empty
+   * FIRST set must be handled specially.
+   */
+  lazy val predict = {
+    gather.foldLeft(Map[Char, Set[Parser[A]]]()) { (map, p) =>
+      p.first.foldLeft(map) { (map, c) =>
+	if (map contains c)
+	  map(c) += p
+	else
+	  map + (c -> Set(p))
+      }
+    }
+  }
+
+  /**
    * Checks if all FIRST sets are disjoint and none
    * are empty.  This is convergent even for
    * left-recursive parsers.
@@ -33,10 +56,8 @@ class DisjunctiveParser[A](l: =>Parser[A], r: =>Parser[A]) extends NonTerminalPa
   def queue(t: Trampoline, in: Stream[Char])(f: (A, Stream[Char])=>Unit) {
     if (isLL1) {        // graceful degrade to LL(1)
       for {
-	pre <- gather
-	val p = pre.asInstanceOf[Parser[A]]
-	
-	if p.first.contains(in.head)     // lookahead
+	set <- predict get in.head
+	p <- set
       } p.queue(t, in)(f)
     } else {
       var results = Set[(Any, Stream[Char])]()    // merge results
