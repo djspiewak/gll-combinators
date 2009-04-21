@@ -8,7 +8,7 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
   import StreamUtils._
   
   "compound non-terminal parsers" should {
-    /* "parse an unambiguous right-recursive grammar" in {
+    "parse an unambiguous right-recursive grammar" in {
       def p: Parser[String] = (
           "a" ~ p ^^ { case a ~ b => a + b }
         | "a"
@@ -17,18 +17,18 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
       // assumes data =~ /a+/
       def check(data: String) {
         p(data toProperStream) must beLike {
-          case Success(`data`, Stream()) :: Nil => true   // TODO
+          case Success(`data`, Stream()) :: Nil => true
           case _ => false
         }
       }
-      
+
       p mustNot throwA[Throwable]
       
       check("a")
+      check("aa")
       check("aaaaaaaa")
       check("aaaaa")
-      check("aa")
-    } */
+    }
     
     "parse an unambiguous left-recursive grammar" in {
       def p: Parser[String] = (
@@ -44,10 +44,12 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
         }
       }
       
+      p mustNot throwA[Throwable]
+      
       check("a")
+      check("aa")
       check("aaaaaaaa")
       check("aaaaa")
-      check("aa")
     }
   }
 }

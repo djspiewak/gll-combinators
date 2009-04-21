@@ -20,10 +20,9 @@ class Trampoline {
   def push[A](p: Parser[Any], s: Stream[Char])(f: (Any, Stream[Char])=>Unit) {
     val tuple = (p, s)
     
-    if (!popped.contains(tuple)) {      // TODO possibly need to cache result
-      // println("Pushing " + tuple)
-      // println(popped)
-      
+    if (popped.contains(tuple)) {
+      // TODO need to cache result for late-comers
+    } else {
       if (!set.contains(tuple)) {
         queue += tuple
         backlinks += (tuple -> mutable.Set(f))
@@ -43,9 +42,7 @@ class Trampoline {
       else
         { (v: Any, tail: Stream[Char]) => links foreach { _(v, tail) } }
     }
-    
-    // println("Popped " + tuple)
-    
+        
     set -= tuple
     popped += tuple
     

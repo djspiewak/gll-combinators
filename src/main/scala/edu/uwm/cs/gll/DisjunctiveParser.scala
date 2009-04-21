@@ -76,8 +76,7 @@ class DisjunctiveParser[A](l: =>Parser[A], r: =>Parser[A]) extends NonTerminalPa
   
   override def equals(other: Any) = other match {
     case that: DisjunctiveParser[A] => {
-      this.leftClass == that.leftClass &&
-        this.rightClass == that.rightClass
+      this.leftClass == that.leftClass && this.rightClass == that.rightClass
     }
     
     case _ => false

@@ -60,15 +60,11 @@ trait TerminalParser[+R] extends Parser[R] { self =>
     }
   } else super.~(other)
   
-  def ^^[R2](f: R=>R2) = new TerminalParser[R2] {
-    def computeFirst(s: Set[Parser[Any]]) = self.computeFirst(s + this)
-    
+  def ^^[R2](f: R=>R2): Parser[R2] = new MappedParser[R, R2](self, f) with TerminalParser[R2] {
     def apply(in: Stream[Char]) = self(in) map {
       case Success(res, tail) => Success(f(res), tail)
       case x: Failure => x
     }
-    
-    override def toString = self.toString
   }
 }
 
@@ -99,14 +95,26 @@ trait NonTerminalParser[+R] extends Parser[R] { self =>
     back.toList
   }
   
-  def ^^[R2](f1: R=>R2) = new NonTerminalParser[R2] {
-    def computeFirst(s: Set[Parser[Any]]) = self.computeFirst(s + this)
-    
+  def ^^[R2](f1: R=>R2): Parser[R2] = new MappedParser[R, R2](self, f1) with NonTerminalParser[R2] {
     def queue(t: Trampoline, in: Stream[Char])(f2: (R2, Stream[Char])=>Unit) {
       self.queue(t, in) { (res, tail) => f2(f1(res), tail) }
     }
-    
-    override def toString = self.toString
   }
+}
+
+abstract class MappedParser[A, +B](private val p: Parser[A], private val f1: A=>B) extends Parser[B] {
+  def computeFirst(s: Set[Parser[Any]]) = p.computeFirst(s + this)
+
+  override def toString = "(" + p.toString + "^^)"
+
+  override def equals(other: Any) = other match {
+    case that: MappedParser[A, B] => {
+      this.p == that.p && this.f1.getClass == that.f1.getClass
+    }
+
+    case _ => false
+  }
+
+  override def hashCode = p.hashCode + f1.getClass.hashCode
 }
 

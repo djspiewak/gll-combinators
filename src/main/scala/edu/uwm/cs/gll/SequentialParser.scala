@@ -1,6 +1,6 @@
 package edu.uwm.cs.gll
 
-class SequentialParser[+A, +B](left: Parser[A], right: Parser[B]) extends NonTerminalParser[~[A, B]] {
+class SequentialParser[+A, +B](private val left: Parser[A], private val right: Parser[B]) extends NonTerminalParser[~[A, B]] {
   def computeFirst(seen: Set[Parser[Any]]) = {
     if (seen contains this) Set()
     else {
@@ -20,5 +20,15 @@ class SequentialParser[+A, +B](left: Parser[A], right: Parser[B]) extends NonTer
     }
   }
   
+  override def equals(other: Any) = other match {
+    case that: SequentialParser[A, B] => {
+      this.left == that.left && this.right == that.right
+    }
+    
+    case _ => false
+  }
+  
+  override def hashCode = left.hashCode + right.hashCode
+
   override def toString = "(%s ~ %s)".format(left, right)
 }
