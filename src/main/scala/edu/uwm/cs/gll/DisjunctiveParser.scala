@@ -8,6 +8,18 @@ class DisjunctiveParser[A](l: =>Parser[A], r: =>Parser[A]) extends NonTerminalPa
   private lazy val rightClass = thunk[Parser[A]]('r).getClass
   
   lazy val gather = gatherImpl(Set())
+
+  /**
+   * Checks if all FIRST sets are disjoint and none
+   * are empty.  This is convergent even for
+   * left-recursive parsers.
+   */ 
+  lazy val isLL1 = {
+    val sets = gather map { _.first }
+    val totalSize = sets.foldLeft(0) { _ + _.size }
+    val intersect = sets.foldLeft(Set[Char]()) { _ ** _ }
+    (totalSize == intersect.size) && (sets forall { _.size > 0 })
+  }
   
   def computeFirst(seen: Set[Parser[Any]]) = {
     lazy val newSeen = seen + this
@@ -19,19 +31,28 @@ class DisjunctiveParser[A](l: =>Parser[A], r: =>Parser[A]) extends NonTerminalPa
   }
   
   def queue(t: Trampoline, in: Stream[Char])(f: (A, Stream[Char])=>Unit) {
-    var results = Set[(Any, Stream[Char])]()    // merge results
-    
-    for {
-      pre <- gather
-      val p = pre.asInstanceOf[Parser[A]]
+    if (isLL1) {        // graceful degrade to LL(1)
+      for {
+	pre <- gather
+	val p = pre.asInstanceOf[Parser[A]]
+	
+	if p.first.contains(in.head)     // lookahead
+      } p.queue(t, in)(f)
+    } else {
+      var results = Set[(Any, Stream[Char])]()    // merge results
       
-      if (p.first.size == 0 && in.isEmpty) || 
-        (p.first.size == 0 || (!in.isEmpty && p.first.contains(in.head)))     // lookahead
-    } t.push(p, in) { (v, tail) =>
-      val tuple = (v, tail)
-      if (!results.contains(tuple)) {
-        f(v.asInstanceOf[A], tail)
-        results += tuple
+      for {
+	pre <- gather
+	val p = pre.asInstanceOf[Parser[A]]
+	
+	if (p.first.size == 0 && in.isEmpty) || 
+          (p.first.size == 0 || (!in.isEmpty && p.first.contains(in.head)))     // lookahead
+      } t.push(p, in) { (v, tail) =>
+	val tuple = (v, tail)
+	if (!results.contains(tuple)) {
+          f(v.asInstanceOf[A], tail)
+          results += tuple
+        }
       }
     }
   }
