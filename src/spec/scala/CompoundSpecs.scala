@@ -29,6 +29,28 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
       check("aaaaaaaa")
       check("aaaaa")
     }
+
+    "parse an LL(1) right-recursive grammar" in {
+      def p: Parser[String] = (
+          "a" ~ p ^^ { case a ~ b => a + b }
+        | "b"
+      )
+      
+      // assumes data =~ /a+/
+      def check(data: String) {
+        p(data toProperStream) must beLike {
+          case Success(`data`, Stream()) :: Nil => true
+          case _ => false
+        }
+      }
+
+      p mustNot throwA[Throwable]
+      
+      check("b")
+      check("ab")
+      check("aaaaaaab")
+      check("aaaab")
+    }
     
     "parse an unambiguous left-recursive grammar" in {
       def p: Parser[String] = (
