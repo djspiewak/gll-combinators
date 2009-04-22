@@ -63,3 +63,29 @@ and the right ``make()`` to be exactly identical.  Fortunately, we can safely
 assume that grammars are constructed in a declarative fashion.  The downside is
 when people *do* try something like this, the result will be fairly bizzare from
 a user's standpoint.
+
+Another interesting issue is one which arises in conjunction with left-recursion.
+Consider the following grammar::
+    
+    def p: Parser[Any] = p ~ "a" | "a"
+
+This grammar is quite unambiguous (so long as the parse is greedy), but it will
+still lead to non-terminating execution for an input of ``Stream('a')``.  This is
+because the parser will handle the single character using the second production
+while simultaneously queueing up the first production rule against the untouched
+stream (``Stream('a')``).  This rule will in turn queue up two more parsers: the
+first and second rules again.  The second rule will immediately match, produce a
+duplicate result and be discarded.  However, the *first* rule will behave exactly
+as it did before, queueing up two more parsers without consuming any of the stream.
+Needless to say, this is a slight issue.
+
+The solution here is that the second queueing of the first rule must lead to a
+memoization of the relevant parse.  The second pass over the second rule should
+return that result through the second queueing, saving that result in ``popped``
+and avoiding the divergence.  Thus, left-recursive rules will go *one* extra
+queueing, but this extra step will be pruned as the successful parse will avoid
+any additional repetition.  Unfortunately, this solution is made more difficult
+to implement due to the fact that disjunctive parsers are never themselves pushed
+onto the dispatch queue.  ``Trampoline`` does not know of any connection between
+the first and second productions of a disjunction.  It only knows that the two
+separate productions have been pushed.
