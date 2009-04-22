@@ -89,3 +89,10 @@ to implement due to the fact that disjunctive parsers are never themselves pushe
 onto the dispatch queue.  ``Trampoline`` does not know of any connection between
 the first and second productions of a disjunction.  It only knows that the two
 separate productions have been pushed.
+
+To solve this problem in a practical way, we need to introduce another ``Parser``
+subtype: ``ThunkParser``.  This parser just delegates everything to its wrapper
+parser with the exception of ``queue``, which it leaves abstract.  This parser
+is instantiated using an anonymous inner-class within ``DisjunctiveParser`` to
+handle the details of queueing up the separate productions without "losing" the
+disjunction itself.
