@@ -8,12 +8,16 @@ class Trampoline {
   private val queue = new mutable.Queue[Potential]
   private val backlinks = mutable.Map[Potential, mutable.Set[(Any, Stream[Char])=>Unit]]()
   private val set = mutable.Set[Potential]()
-  private val popped = mutable.Set[Potential]()
+  private val popped = mutable.Map[Potential, mutable.Set[(Any, Stream[Char])]]()
   
   def run() {
     while (queue.length > 0) {
       val (p, s, f) = pop()
-      p.queue(this, s)(f)
+
+      p.queue(this, s) { (v, s2) =>
+	popped((p, s)) += ((v, s2))             // store the result for late-comers (exponential!!)
+	f(v, s2)
+      }
     }
   }
   
@@ -21,7 +25,9 @@ class Trampoline {
     val tuple = (p, s)
     
     if (popped.contains(tuple)) {
-      // TODO need to cache result for late-comers
+      for ((v, s) <- popped(tuple)) {           // if we've already done that, use the result
+	f(v, s)
+      }
     } else {
       if (!set.contains(tuple)) {
         queue += tuple
@@ -44,7 +50,7 @@ class Trampoline {
     }
         
     set -= tuple
-    popped += tuple
+    popped += (tuple -> mutable.Set[(Any, Stream[Char])]())
     
     (p, s, f)
   }
