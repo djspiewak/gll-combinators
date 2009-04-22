@@ -50,6 +50,7 @@ class Trampoline {
     }
         
     set -= tuple
+    backlinks -= tuple
     popped += (tuple -> mutable.Set[(Any, Stream[Char])]())
     
     (p, s, f)
