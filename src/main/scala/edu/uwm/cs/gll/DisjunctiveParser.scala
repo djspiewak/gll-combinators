@@ -66,8 +66,9 @@ class DisjunctiveParser[A](l: =>Parser[A], r: =>Parser[A]) extends NonTerminalPa
 	pre <- gather
 	val p = pre.asInstanceOf[Parser[A]]
 	
-	if (p.first.size == 0 && in.isEmpty) || 
-          (p.first.size == 0 || (!in.isEmpty && p.first.contains(in.head)))     // lookahead
+	// [E -> (FIRST = {})] /\ [¬E -> (hd \in FIRST \/ FIRST = {})]
+	if (!in.isEmpty || p.first.size == 0) &&
+          (in.isEmpty || (p.first.contains(in.head) || p.first.size == 0))      // lookahead
       } t.push(p, in) { (v, tail) =>
 	val tuple = (v, tail)
 	if (!results.contains(tuple)) {
