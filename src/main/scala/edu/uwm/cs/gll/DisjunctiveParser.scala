@@ -24,10 +24,10 @@ class DisjunctiveParser[A](l: =>Parser[A], r: =>Parser[A]) extends NonTerminalPa
   lazy val predict = {
     gather.foldLeft(Map[Char, Set[Parser[A]]]()) { (map, p) =>
       p.first.foldLeft(map) { (map, c) =>
-	if (map contains c)
-	  map(c) += p
-	else
-	  map + (c -> Set(p))
+        if (map contains c)
+          map(c) += p
+        else
+          map + (c -> Set(p))
       }
     }
   }
@@ -56,26 +56,35 @@ class DisjunctiveParser[A](l: =>Parser[A], r: =>Parser[A]) extends NonTerminalPa
   def queue(t: Trampoline, in: Stream[Char])(f: (A, Stream[Char])=>Unit) {
     if (isLL1) {        // graceful degrade to LL(1)
       for {
-	set <- predict get in.head
-	p <- set
+        set <- predict get in.head
+        p <- set
       } p.queue(t, in)(f)
     } else {
-      var results = Set[(Any, Stream[Char])]()    // merge results
-      
-      for {
-	pre <- gather
-	val p = pre.asInstanceOf[Parser[A]]
-	
-	// [E -> (FIRST = {})] /\ [¬E -> (hd \in FIRST \/ FIRST = {})]
-	if (!in.isEmpty || p.first.size == 0) &&
-          (in.isEmpty || (p.first.contains(in.head) || p.first.size == 0))      // lookahead
-      } t.push(p, in) { (v, tail) =>
-	val tuple = (v, tail)
-	if (!results.contains(tuple)) {
-          f(v.asInstanceOf[A], tail)
-          results += tuple
+      val thunk = new ThunkParser(this) {
+        def queue(t: Trampoline, in: Stream[Char])(f: (A, Stream[Char])=>Unit) {
+          var results = Set[(Any, Stream[Char])]()    // merge results
+          
+          for {
+            pre <- gather
+            val p = pre.asInstanceOf[Parser[A]]
+            
+            // [(S = {}) -> (FIRST = {})] /\ [~(S = {}) -> (S[0] \in FIRST \/ FIRST = {})]
+            if (!in.isEmpty || p.first.size == 0) &&
+              (in.isEmpty || (p.first.contains(in.head) || p.first.size == 0))      // lookahead
+          } t.push(p, in) { (v, tail) =>
+            val tuple = (v, tail)
+
+            if (!results.contains(tuple)) {
+              println("Disjunctive reduce: " + tuple)
+
+              f(v.asInstanceOf[A], tail)
+              results += tuple
+            }
+          }
         }
       }
+
+      t.push(thunk, in)(f.asInstanceOf[(Any, Stream[Char])=>Unit])
     }
   }
   
@@ -106,5 +115,9 @@ class DisjunctiveParser[A](l: =>Parser[A], r: =>Parser[A]) extends NonTerminalPa
   
   override def hashCode = leftClass.hashCode + rightClass.hashCode
   
-  override def toString = "(%s | %s)".format(leftClass.getName, rightClass.getName)
+  override def toString = {
+    val left = leftClass.getName
+    val right = rightClass.getName
+    "(%s | %s)".format(left.substring(left.length - 3), right.substring(right.length - 3))
+  }
 }

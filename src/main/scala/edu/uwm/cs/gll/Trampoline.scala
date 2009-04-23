@@ -15,18 +15,21 @@ class Trampoline {
       val (p, s, f) = pop()
 
       p.queue(this, s) { (v, s2) =>
-	popped((p, s)) += ((v, s2))             // store the result for late-comers (exponential!!)
-	f(v, s2)
+        popped((p, s)) += ((v, s2))             // store the result for late-comers (exponential!!)
+        f(v, s2)
+
+        println("Saved: " + (p, s))
       }
     }
   }
-  
+
   def push[A](p: Parser[Any], s: Stream[Char])(f: (Any, Stream[Char])=>Unit) {
     val tuple = (p, s)
     
-    if (popped.contains(tuple)) {
+    if (popped.contains(tuple) && popped(tuple).size > 0) {
       for ((v, s) <- popped(tuple)) {           // if we've already done that, use the result
-	f(v, s)
+        printf("Revisited: %s *=> %s%n", tuple, (v, s))
+        f(v, s)
       }
     } else {
       if (!set.contains(tuple)) {
@@ -36,6 +39,8 @@ class Trampoline {
       } else {
         backlinks(tuple) += f
       }
+      
+      println("Pushed: " + tuple)
     }
   }
   
@@ -43,15 +48,18 @@ class Trampoline {
     val tuple @ (p, s) = queue.dequeue()
     val f = {
       val links = backlinks(tuple)
+      
       if (links.size == 1)
         links.toList.head
       else
         { (v: Any, tail: Stream[Char]) => links foreach { _(v, tail) } }
     }
-        
+    
     set -= tuple
     backlinks -= tuple
     popped += (tuple -> mutable.Set[(Any, Stream[Char])]())
+
+    println("Popped: " + tuple)
     
     (p, s, f)
   }
