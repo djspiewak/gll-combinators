@@ -124,3 +124,19 @@ parser with the exception of ``queue``, which it leaves abstract.  This parser
 is instantiated using an anonymous inner-class within ``DisjunctiveParser`` to
 handle the details of queueing up the separate productions without "losing" the
 disjunction itself.
+
+Another problem encountered while attempting to implement the trampoline is that
+Scala's ``Stream`` implementation isn't quite what one would expect.  In particular,
+equality is defined on a reference basis, rather than logical value.  Thus,
+two streams which have the same contents may not necessarily be equivalent according
+to ``equals(...)``.  This isn't normally an issue, but it does cause problems
+with the ``Seq#toStream`` method::
+    
+    "".toStream == "".toStream        // => false!!
+    
+For non-left-recursive grammars, this will lead to duplicate results from the
+parse.  However, for left-recursive grammars, this could actually lead to
+divergence.  This isn't really a problem with GLL or the combinator implementation.
+Rather, it is an issue with the Scala ``Stream`` implementation.  To avoid this,
+we must ensure that all input streams are created using ``Stream()``, ``Stream.cons``
+and ``Stream.empty``.
