@@ -8,6 +8,6 @@ trait ImplicitConversions {
   implicit def disjunctiveLiterals(left: String) = new RichParser(literal(left))
 
   class RichParser[A](left: =>Parser[A]) {
-    def |(right: =>Parser[A]): Parser[A] = new DisjunctiveParser(left, right)
+    def |[B >: A](right: =>Parser[B]): Parser[B] = new DisjunctiveParser(left, right)
   }
 }
