@@ -26,7 +26,7 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
       
       check("a")
       check("aa")
-      check("aaaaaaaa")
+      check((0 to 256).foldLeft("") { (s, _) => s + "a" })
       check("aaaaa")
     }
 
@@ -48,7 +48,7 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
       
       check("b")
       check("ab")
-      check("aaaaaaab")
+      check((0 to 256).foldLeft("") { (s, _) => s + "a" } + "b")
       check("aaaab")
     }
     
@@ -68,12 +68,90 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
       
       p mustNot throwA[Throwable]
       
-      for (_ <- 0 to 5) {       // hopefully test for non-determinism in algorithm
-        check("a")
-        check("aa")
-        check("aaaaaaaa")
-        check("aaaaa")
+      check("a")
+      check("aa")
+      check((0 to 256).foldLeft("") { (s, _) => s + "a" })
+      check("aaaaa")
+    }
+    
+    "parse Gamma_1" in {
+      def b = "" | "a"
+      
+      def c: Parser[String] = (
+          "b"
+        | b ~ c ~ "b" ^^ { case a ~ b ~ c => a + b + c }
+        | "b" ~ "b"   ^^^ "bb"
+      )
+      
+      def s = (
+          c ~ "a" ^^ { case a ~ b => a + b }
+        | "d"
+      )
+      
+      // assumes data =~ /a+/
+      def check(data: String) {
+        s(data toProperStream) must beLike {
+          case Success(`data`, Stream()) :: _ => true     // we don't care how many derivations, just that it works
+          case _ => false
+        }
       }
+      
+      s mustNot throwA[Throwable]
+      
+      check("abba")
+      check("d")
+      check("aaaaaaaabbbbbbbbba")
+      
+      val prefix = (0 to 20).foldLeft("") { (str, _) => str + "a" }
+      val suffix = (0 to 50).foldLeft("") { (str, _) => str + "b" }
+      check(prefix + suffix + "a")
+      
+      check("bba")
+    }
+    
+    "parse Gamma_2" in {
+      def s: Parser[String] = (
+          "b"
+        | s ~ s     ^^ { case a ~ b => a + b }
+        | s ~ s ~ s ^^ { case a ~ b ~ c => a + b + c }
+      )
+      
+      // assumes data =~ /a+/
+      def check(data: String) {
+        s(data toProperStream) must beLike {
+          case Success(`data`, Stream()) :: _ => true     // we don't care how many derivations, just that it works
+          case _ => false
+        }
+      }
+      
+      s mustNot throwA[Throwable]
+      
+      check("b")
+      check("bb")
+      check((0 to 50).foldLeft("") { (str, _) => str + "b" })
+      check("bbbbb")
+    }
+    
+    "parse Gamma_2*" in {
+      def s: Parser[String] = (
+          "b"
+        | s ~ s ~ (s | "") ^^ { case a ~ b ~ c => a + b + c }
+      )
+      
+      // assumes data =~ /a+/
+      def check(data: String) {
+        s(data toProperStream) must beLike {
+          case Success(`data`, Stream()) :: _ => true     // we don't care how many derivations, just that it works
+          case _ => false
+        }
+      }
+      
+      s mustNot throwA[Throwable]
+      
+      check("b")
+      check("bb")
+      check((0 to 50).foldLeft("") { (str, _) => str + "b" })
+      check("bbbbb")
     }
   }
 }

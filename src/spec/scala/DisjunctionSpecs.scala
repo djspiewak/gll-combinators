@@ -191,7 +191,7 @@ object DisjunctionSpecs extends Specification with ImplicitConversions with Scal
     }
     
     "compute FIRST for left-recursive grammar" in {
-      def p: Parser[Any] = p ~ "a" | "a"
+      def p: Parser[String] = p ~ "a" ^^^ "" | "a"      // ^^^ needed because disjunction doesn't unify right
       
       p.first mustEqual Set('a')
     }
