@@ -1,5 +1,7 @@
 package edu.uwm.cs.gll
 
+import Global._
+
 class DisjunctiveParser[A](l: =>Parser[A], r: =>Parser[A]) extends NonTerminalParser[A] with Thunkable {
   private lazy val left = l
   private lazy val right = r
@@ -75,7 +77,7 @@ class DisjunctiveParser[A](l: =>Parser[A], r: =>Parser[A]) extends NonTerminalPa
             val tuple = (v, tail)
 
             if (!results.contains(tuple)) {
-              println("Disjunctive reduce: " + tuple)
+              trace("Disjunctive reduce: " + tuple)
 
               f(v.asInstanceOf[A], tail)
               results += tuple

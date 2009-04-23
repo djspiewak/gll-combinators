@@ -1,24 +1,26 @@
 package edu.uwm.cs.gll
 
 import scala.collection.mutable
+import mutable.ListBuffer
+
+import Global._
 
 class Trampoline {
   private type Potential = (Parser[Any], Stream[Char])
   
   private val queue = new mutable.Queue[Potential]
-  private val backlinks = mutable.Map[Potential, mutable.Set[(Any, Stream[Char])=>Unit]]()
-  private val set = mutable.Set[Potential]()
-  private val popped = mutable.Map[Potential, mutable.Set[(Any, Stream[Char])]]()
+  private val backlinks = mutable.Map[Potential, mutable.ListBuffer[(Any, Stream[Char])=>Unit]]()
+  private val popped = mutable.Map[Potential, mutable.ListBuffer[(Any, Stream[Char])]]()
   
   def run() {
     while (queue.length > 0) {
       val (p, s, f) = pop()
 
       p.queue(this, s) { (v, s2) =>
-        popped((p, s)) += ((v, s2))             // store the result for late-comers (exponential!!)
+        popped((p, s)) += ((v, s2))             // store the result for late-comers
         f(v, s2)
 
-        println("Saved: " + (p, s))
+        trace("Saved: " + (p, s))
       }
     }
   }
@@ -28,19 +30,17 @@ class Trampoline {
     
     if (popped.contains(tuple) && popped(tuple).size > 0) {
       for ((v, s) <- popped(tuple)) {           // if we've already done that, use the result
-        printf("Revisited: %s *=> %s%n", tuple, (v, s))
+        tracef("Revisited: %s *=> %s%n", tuple, (v, s))
         f(v, s)
       }
     } else {
-      if (!set.contains(tuple)) {
+      if (!backlinks.contains(tuple)) {
         queue += tuple
-        backlinks += (tuple -> mutable.Set(f))
-        set += tuple
-      } else {
-        backlinks(tuple) += f
+        backlinks += (tuple -> new ListBuffer[(Any, Stream[Char])=>Unit])
       }
-      
-      println("Pushed: " + tuple)
+      backlinks(tuple) += f
+
+      trace("Pushed: " + tuple)
     }
   }
   
@@ -55,11 +55,10 @@ class Trampoline {
         { (v: Any, tail: Stream[Char]) => links foreach { _(v, tail) } }
     }
     
-    set -= tuple
     backlinks -= tuple
-    popped += (tuple -> mutable.Set[(Any, Stream[Char])]())
+    popped += (tuple -> new ListBuffer[(Any, Stream[Char])])
 
-    println("Popped: " + tuple)
+    trace("Popped: " + tuple)
     
     (p, s, f)
   }

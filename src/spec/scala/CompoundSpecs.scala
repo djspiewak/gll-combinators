@@ -8,49 +8,49 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
   import StreamUtils._
   
   "compound non-terminal parsers" should {
-//     "parse an unambiguous right-recursive grammar" in {
-//       def p: Parser[String] = (
-//           "a" ~ p ^^ { case a ~ b => a + b }
-//         | "a"
-//       )
-      
-//       // assumes data =~ /a+/
-//       def check(data: String) {
-//         p(data toProperStream) must beLike {
-//           case Success(`data`, Stream()) :: Nil => true
-//           case _ => false
-//         }
-//       }
+    "parse an unambiguous right-recursive grammar" in {
+      def p: Parser[String] = (
+          "a" ~ p ^^ { case a ~ b => a + b }
+        | "a"
+      )
+   
+      // assumes data =~ /a+/
+      def check(data: String) {
+        p(data toProperStream) must beLike {
+          case Success(`data`, Stream()) :: Nil => true
+          case _ => false
+        }
+      }
 
-//       p mustNot throwA[Throwable]
+      p mustNot throwA[Throwable]
       
-//       check("a")
-//       check("aa")
-//       check("aaaaaaaa")
-//       check("aaaaa")
-//     }
+      check("a")
+      check("aa")
+      check("aaaaaaaa")
+      check("aaaaa")
+    }
 
-//     "parse an LL(1) right-recursive grammar" in {
-//       def p: Parser[String] = (
-//           "a" ~ p ^^ { case a ~ b => a + b }
-//         | "b"
-//       )
+    "parse an LL(1) right-recursive grammar" in {
+      def p: Parser[String] = (
+          "a" ~ p ^^ { case a ~ b => a + b }
+        | "b"
+      )
       
-//       // assumes data =~ /a+/
-//       def check(data: String) {
-//         p(data toProperStream) must beLike {
-//           case Success(`data`, Stream()) :: Nil => true
-//           case _ => false
-//         }
-//       }
+      // assumes data =~ /a+/
+      def check(data: String) {
+        p(data toProperStream) must beLike {
+          case Success(`data`, Stream()) :: Nil => true
+          case _ => false
+        }
+      }
 
-//       p mustNot throwA[Throwable]
+      p mustNot throwA[Throwable]
       
-//       check("b")
-//       check("ab")
-//       check("aaaaaaab")
-//       check("aaaab")
-//     }
+      check("b")
+      check("ab")
+      check("aaaaaaab")
+      check("aaaab")
+    }
     
     "parse an unambiguous left-recursive grammar" in {
       def p: Parser[String] = (
@@ -68,10 +68,12 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
       
       p mustNot throwA[Throwable]
       
-      check("a")
-      check("aa")
-      check("aaaaaaaa")
-      check("aaaaa")
+      for (_ <- 0 to 5) {       // hopefully test for non-determinism in algorithm
+        check("a")
+        check("aa")
+        check("aaaaaaaa")
+        check("aaaaa")
+      }
     }
   }
 }
