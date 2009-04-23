@@ -2,6 +2,34 @@
 Implementation Notes and Experiences
 ====================================
 
+The original GLL algorithm is quite dependent upon an unrestricted ``goto``
+statement.  In fact, the form of ``goto`` required by GLL is even unavailable in
+C, forcing the original authors to implement a workaround of their own by using
+a "big ``switch``" within the ``L0`` branch.  Obviously, this algorithm is not
+immediately ammenable to implementation in a functional language, much less a
+cleanly-separated implementation using combinators.
+
+The critical observation which allows ``goto``-less implementation of the algorithm
+is in regards to the nature of the ``L0`` branch.  Upon close examination of the
+algorithm, it becomes apparent that ``L0`` can be viewed as a *trampoline*, a
+concept which is quite common in functional programming as a way of implementing
+stackless mutual tail-recursion.  In the case of GLL, this trampoline function
+must not only dispatch the various alternate productions (also represented as
+functions) but also have some knowledge of the GSS and the dispatch queue itself.
+In short, ``L0`` is a trampoline function with some additional smarts to deal
+with divergent and convergent branches.
+
+Once this observation is made, the rest of the implementation just falls into
+place.  Continuations (wrapped up in anonymous functions) can be used to satisfy
+the functionality of an unrestricted ``goto``, assuming a trampoline function
+as described above.  Surprisingly, this scheme divides itself quite cleanly into
+combinator-like constructs, further reinforcing the claim that GLL is just another
+incarnation of recursive-descent.
+
+
+Bumps in the Road
+=================
+
 Computation of true PREDICT sets is impossible because no ``Parser`` instance
 actually knows what its successor is.  Thus, we cannot compute FOLLOW sets
 without "stepping out" into the parent parser.  To avoid this, we say that
