@@ -1,6 +1,6 @@
 require 'buildr/scala'
 
-define 'gll_combinators' do
+define 'gll-combinators' do
   project.group = 'edu.uwm.cs'
   project.version = '0.1.0'
 
