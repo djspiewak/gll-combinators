@@ -57,6 +57,8 @@ class DisjunctiveParser[A](l: =>Parser[A], r: =>Parser[A]) extends NonTerminalPa
   
   def queue(t: Trampoline, in: Stream[Char])(f: (A, Stream[Char])=>Unit) {
     if (isLL1) {        // graceful degrade to LL(1)
+      trace("Detected LL(1): " + this)
+      
       for {
         set <- predict get in.head
         p <- set
