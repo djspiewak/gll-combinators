@@ -2,7 +2,7 @@ package edu.uwm.cs.gll
 
 import StreamUtils._
 
-case class LiteralParser[+R](str: String) extends TerminalParser[String] {
+case class LiteralParser(str: String) extends TerminalParser[String] {
   def computeFirst(s: Set[Parser[Any]]) = {
     if (str.length > 0) Set(str(0))
     else Set()
@@ -27,7 +27,7 @@ case class LiteralParser[+R](str: String) extends TerminalParser[String] {
   }
   
   override def equals(other: Any) = other match {
-    case that: LiteralParser[R] => this.str == that.str
+    case that: LiteralParser => this.str == that.str
     case _ => false
   }
   
