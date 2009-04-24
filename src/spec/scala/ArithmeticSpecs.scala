@@ -145,10 +145,10 @@ object ArithmeticSpecs extends Specification with ScalaCheck with ImplicitConver
   // %%
   
   lazy val expr: Parser[Expr] = (
-      expr ~ "+" ~ expr   ^^ { (e1, _, e2) => Add(e1, e2)}
-    | expr ~ "-" ~ expr   ^^ { (e1, _, e2) => Sub(e1, e2)}
-    | expr ~ "*" ~ expr   ^^ { (e1, _, e2) => Mul(e1, e2)}
-    | expr ~ "/" ~ expr   ^^ { (e1, _, e2) => Div(e1, e2)}
+      expr ~ ("+" ~> expr)   ^^ { (e1, e2) => Add(e1, e2)}
+    | expr ~ ("-" ~> expr)   ^^ { (e1, e2) => Sub(e1, e2)}
+    | expr ~ ("*" ~> expr)   ^^ { (e1, e2) => Mul(e1, e2)}
+    | expr ~ ("/" ~> expr)   ^^ { (e1, e2) => Div(e1, e2)}
     | "-" ~> expr         ^^ Neg
     | num                 ^^ IntLit
   )

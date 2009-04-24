@@ -9,7 +9,8 @@ trait ImplicitConversions {
   implicit def funSyntax1[A](p: Parser[A]) = new RichSyntax1(p)
   implicit def funLitSyntax(p: String) = new RichSyntax1(literal(p))
   implicit def funSyntax2[A, B](p: Parser[~[A, B]]) = new RichSyntax2(p)
-  implicit def funSyntax3[A, B, C](p: Parser[~[~[A, B], C]]) = new RichSyntax3(p)
+  implicit def funSyntax3l[A, B, C](p: Parser[~[~[A, B], C]]) = new RichSyntax3l(p)
+  implicit def funSyntax3r[A, B, C](p: Parser[~[A, ~[B, C]]]) = new RichSyntax3r(p)
   implicit def funSyntax4[A, B, C, D](p: Parser[~[~[~[A, B], C], D]]) = new RichSyntax4(p)
   implicit def funSyntax5[A, B, C, D, E](p: Parser[~[~[~[~[A, B], C], D], E]]) = new RichSyntax5(p)
   implicit def funSyntax6[A, B, C, D, E, F](p: Parser[~[~[~[~[~[A, B], C], D], E], F]]) = new RichSyntax6(p)
@@ -29,8 +30,12 @@ trait ImplicitConversions {
     def ^^[R](fun: (A, B)=>R) = p map { case a ~ b => fun(a, b) }
   }
   
-  class RichSyntax3[A, B, C](p: Parser[~[~[A, B], C]]) {
+  class RichSyntax3l[A, B, C](p: Parser[~[~[A, B], C]]) {
     def ^^[R](fun: (A, B, C)=>R) = p map { case a ~ b ~ c => fun(a, b, c) }
+  }
+  
+  class RichSyntax3r[A, B, C](p: Parser[~[A, ~[B, C]]]) {
+    def ^^[R](fun: (A, B, C)=>R) = p map { case a ~ (b ~ c) => fun(a, b, c) }
   }
   
   class RichSyntax4[A, B, C, D](p: Parser[~[~[~[A, B], C], D]]) {
