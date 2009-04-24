@@ -109,6 +109,7 @@ object ArithmeticSpecs extends Specification with ScalaCheck with ImplicitConver
       prop must pass
     }
     
+    // non-deterministic bugs here??
     "produce both associativity configurations" in {
       val res = expr("42+13+12" toProperStream) map { 
         case Success(e, Stream()) => e
