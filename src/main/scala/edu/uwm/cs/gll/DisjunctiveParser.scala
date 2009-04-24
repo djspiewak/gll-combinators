@@ -118,8 +118,11 @@ class DisjunctiveParser[A](l: =>Parser[A], r: =>Parser[A]) extends NonTerminalPa
   override def hashCode = leftClass.hashCode + rightClass.hashCode
   
   override def toString = {
-    val left = leftClass.getName
-    val right = rightClass.getName
-    "(%s | %s)".format(left.substring(left.length - 3), right.substring(right.length - 3))
+    val tail = """.*\$([^\$]+\$\d+)$"""r
+    
+    val tail(left) = leftClass.getName
+    val tail(right) = rightClass.getName
+    
+    "(%s | %s)".format(left, right)
   }
 }
