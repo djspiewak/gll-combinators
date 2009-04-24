@@ -154,13 +154,13 @@ object DisjunctionSpecs extends Specification with ImplicitConversions with Scal
         // %%
         
         val p1 = (
-            head ~ suffix     ^^ { case h ~ s => h + s }
-          | head              ^^ { x => x }
+            head ~ suffix     ^^ { _ + _ }
+          | head
         )
         
         val p2 = "" | suffix  ^^ { " " + _ }
         
-        val p = p1 ~ p2       ^^ { case h ~ t => h + t }
+        val p = p1 ~ p2       ^^ { _ + _ }
         
         // %%
         
@@ -191,7 +191,7 @@ object DisjunctionSpecs extends Specification with ImplicitConversions with Scal
     }
     
     "compute FIRST for left-recursive grammar" in {
-      def p: Parser[Any] = p ~ "a"| "a"
+      def p: Parser[Any] = p ~ "a" | "a"
       
       p.first mustEqual Set('a')
     }

@@ -141,16 +141,16 @@ object ArithmeticSpecs extends Specification with ScalaCheck with ImplicitConver
   // %%
   
   lazy val expr: Parser[Expr] = (
-      expr ~ "+" ~ expr   ^^ { case e1 ~ _ ~ e2 => Add(e1, e2) }
-    | expr ~ "-" ~ expr   ^^ { case e1 ~ _ ~ e2 => Sub(e1, e2) }
-    | expr ~ "*" ~ expr   ^^ { case e1 ~ _ ~ e2 => Mul(e1, e2) }
-    | expr ~ "/" ~ expr   ^^ { case e1 ~ _ ~ e2 => Div(e1, e2) }
+      expr ~ "+" ~ expr   ^^ { (e1, _, e2) => Add(e1, e2)}
+    | expr ~ "-" ~ expr   ^^ { (e1, _, e2) => Sub(e1, e2)}
+    | expr ~ "*" ~ expr   ^^ { (e1, _, e2) => Mul(e1, e2)}
+    | expr ~ "/" ~ expr   ^^ { (e1, _, e2) => Div(e1, e2)}
     | "-" ~> expr         ^^ Neg
     | num                 ^^ IntLit
   )
   
   lazy val num: Parser[Int] = (
-      num ~ digit ^^ { case n ~ d => (n * 10) + d }
+      num ~ digit ^^ { (n, d) => (n * 10) + d }
     | digit
   )
   

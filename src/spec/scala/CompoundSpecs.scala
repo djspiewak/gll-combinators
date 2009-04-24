@@ -10,7 +10,7 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
   "compound non-terminal parsers" should {
     "parse an unambiguous right-recursive grammar" in {
       def p: Parser[String] = (
-          "a" ~ p ^^ { case a ~ b => a + b }
+          "a" ~ p ^^ { _ + _ }
         | "a"
       )
    
@@ -32,7 +32,7 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
 
     "parse an LL(1) right-recursive grammar" in {
       def p: Parser[String] = (
-          "a" ~ p ^^ { case a ~ b => a + b }
+          "a" ~ p ^^ { _ + _ }
         | "b"
       )
       
@@ -54,7 +54,7 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
     
     "parse an unambiguous left-recursive grammar" in {
       def p: Parser[String] = (
-          p ~ "a" ^^ { case a ~ b => a + b }
+          p ~ "a" ^^ { _ + _ }
         | "a"
       )
       
@@ -79,12 +79,12 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
       
       def c: Parser[String] = (
           "b"
-        | b ~ c ~ "b" ^^ { case a ~ b ~ c => a + b + c }
+        | b ~ c ~ "b" ^^ { _ + _ + _ }
         | "b" ~ "b"   ^^^ "bb"
       )
       
       def s = (
-          c ~ "a" ^^ { case a ~ b => a + b }
+          c ~ "a" ^^ { _ + _ }
         | "d"
       )
       
@@ -112,8 +112,8 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
     "parse Gamma_2" in {
       def s: Parser[String] = (
           "b"
-        | s ~ s     ^^ { case a ~ b => a + b }
-        | s ~ s ~ s ^^ { case a ~ b ~ c => a + b + c }
+        | s ~ s     ^^ { _ + _ }
+        | s ~ s ~ s ^^ { _ + _ + _ }
       )
       
       // assumes data =~ /a+/
@@ -135,7 +135,7 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
     "parse Gamma_2*" in {
       def s: Parser[String] = (
           "b"
-        | s ~ s ~ (s | "") ^^ { case a ~ b ~ c => a + b + c }
+        | s ~ s ~ (s | "") ^^ { _ + _ + _ }
       )
       
       // assumes data =~ /a+/

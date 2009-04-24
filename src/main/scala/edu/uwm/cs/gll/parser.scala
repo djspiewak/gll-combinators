@@ -16,15 +16,17 @@ sealed trait Parser[+R] extends (Stream[Char]=>List[Result[R]]) {
   
   // syntax
   
+  def map[R2](f: R=>R2): Parser[R2]
+  
+  // operators
+  
   def ~[R2](that: Parser[R2]): Parser[~[R, R2]] = new SequentialParser(this, that)
   
-  def <~[R2](that: Parser[R2]) = this ~ that ^^ { case a ~ _ => a }
+  def <~[R2](that: Parser[R2]) = this ~ that map { case a ~ _ => a }
   
-  def ~>[R2](that: Parser[R2]) = this ~ that ^^ { case _ ~ b => b }
+  def ~>[R2](that: Parser[R2]) = this ~ that map { case _ ~ b => b }
   
-  def ^^[R2](f: R=>R2): Parser[R2]
-  
-  def ^^^[R2](v: =>R2) = ^^ { _ => v }
+  def ^^^[R2](v: =>R2) = map { _ => v }
 }
 
 trait TerminalParser[+R] extends Parser[R] { self =>
@@ -64,7 +66,7 @@ trait TerminalParser[+R] extends Parser[R] { self =>
     }
   } else super.~(other)
   
-  def ^^[R2](f: R=>R2): Parser[R2] = new MappedParser[R, R2](self, f) with TerminalParser[R2] {
+  def map[R2](f: R=>R2): Parser[R2] = new MappedParser[R, R2](self, f) with TerminalParser[R2] {
     def apply(in: Stream[Char]) = self(in) map {
       case Success(res, tail) => Success(f(res), tail)
       case x: Failure => x
@@ -99,7 +101,7 @@ trait NonTerminalParser[+R] extends Parser[R] { self =>
     back.toList
   }
   
-  def ^^[R2](f1: R=>R2): Parser[R2] = new MappedParser[R, R2](self, f1) with NonTerminalParser[R2] {
+  def map[R2](f1: R=>R2): Parser[R2] = new MappedParser[R, R2](self, f1) with NonTerminalParser[R2] {
     def queue(t: Trampoline, in: Stream[Char])(f2: (R2, Stream[Char])=>Unit) {
       self.queue(t, in) { (res, tail) => f2(f1(res), tail) }
     }
