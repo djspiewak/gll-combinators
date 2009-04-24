@@ -16,7 +16,11 @@ sealed trait Parser[+R] extends (Stream[Char]=>List[Result[R]]) {
   
   // syntax
   
-  def ~[R2](other: Parser[R2]): Parser[~[R, R2]] = new SequentialParser(this, other)
+  def ~[R2](that: Parser[R2]): Parser[~[R, R2]] = new SequentialParser(this, that)
+  
+  def <~[R2](that: Parser[R2]) = this ~ that ^^ { case a ~ _ => a }
+  
+  def ~>[R2](that: Parser[R2]) = this ~ that ^^ { case _ ~ b => b }
   
   def ^^[R2](f: R=>R2): Parser[R2]
   

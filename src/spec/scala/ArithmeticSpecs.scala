@@ -113,7 +113,7 @@ object ArithmeticSpecs extends Specification with ScalaCheck with ImplicitConver
     | expr ~ "-" ~ expr   ^^ { case e1 ~ _ ~ e2 => Sub(e1, e2) }
     | expr ~ "*" ~ expr   ^^ { case e1 ~ _ ~ e2 => Mul(e1, e2) }
     | expr ~ "/" ~ expr   ^^ { case e1 ~ _ ~ e2 => Div(e1, e2) }
-    | "-" ~ expr          ^^ { case _ ~ e => Neg(e) }
+    | "-" ~> expr         ^^ Neg
     | num                 ^^ IntLit
   )
   
