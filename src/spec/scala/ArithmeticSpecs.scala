@@ -8,6 +8,10 @@ object ArithmeticSpecs extends Specification with ScalaCheck with ImplicitConver
   import StreamUtils._
   
   "arithmetic grammar" should {
+    "compute FIRST set" in {
+      expr.first must containAll(Set('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-'))
+    }
+    
     "parse numbers" in {
       val prop = forAll { x: Int =>
         expr(x.toString.toProperStream) match {
