@@ -104,6 +104,38 @@ object ArithmeticSpecs extends Specification with ScalaCheck with ImplicitConver
       
       prop must pass
     }
+    
+    "produce both associativity configurations" in {
+      val res = expr("42+13+12" toProperStream) map { 
+        case Success(e, Stream()) => e
+        case r => fail("%s does not match the expected pattern".format(r))
+      }
+      
+      val target = Set(Add(IntLit(42), Add(IntLit(13), IntLit(12))),
+                       Add(Add(IntLit(42), IntLit(13)), IntLit(12)))
+      
+      Set(res:_*) mustEqual target
+    }
+    
+    "produce both binary precedence configurations" in {
+      val res = expr("42+13-12" toProperStream) map { 
+        case Success(e, Stream()) => e
+        case r => fail("%s does not match the expected pattern".format(r))
+      }
+      val target = Set(Add(IntLit(42), Sub(IntLit(13), IntLit(12))),
+                       Sub(Add(IntLit(42), IntLit(13)), IntLit(12)))
+      
+      Set(res:_*) mustEqual target
+    }
+    
+    "produce both unary precedence configurations" in {
+      val res = expr("-42+13" toProperStream) map {
+        case Success(e, Stream()) => e.solve
+        case r => fail("%s does not match the expected pattern".format(r))
+      }
+      
+      res.sort { _ < _ } mustEqual List(-55, -29)
+    }
   }
   
   // %%
