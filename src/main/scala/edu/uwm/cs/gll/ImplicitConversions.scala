@@ -52,3 +52,5 @@ trait ImplicitConversions extends Parsers {
     def ^^[R](fun: (A, B, C, D, E, F, G)=>R) = p map { case a ~ b ~ c ~ d ~ e ~ f ~ g => fun(a, b, c, d, e, f, g) }
   }
 }
+
+object ImplicitConversions extends ImplicitConversions

@@ -500,3 +500,6 @@ trait Parsers {
     }
   }
 }
+
+// trivial companion object
+object Parsers extends Parsers

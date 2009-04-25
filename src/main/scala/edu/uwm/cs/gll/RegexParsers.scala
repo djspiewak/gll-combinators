@@ -43,3 +43,5 @@ trait RegexParsers extends Parsers with ImplicitConversions with CharSequenceCon
     override def toString = "/%s/".format(regex)
   }
 }
+
+object RegexParsers extends RegexParsers
