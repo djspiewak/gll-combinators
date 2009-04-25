@@ -378,8 +378,12 @@ trait Parsers {
           p <- set
         } p.queue(t, in)(f)
         
-        if (!predict.contains(in.head))
-          f(Failure(UNEXPECTED_PATTERN.format(in.head), in))
+        if (in.isEmpty)
+          f(Failure("Unexpected end of stream", in))
+        else {
+          if (!predict.contains(in.head))
+            f(Failure(UNEXPECTED_PATTERN.format(in.head), in))
+        }
       } else {
         val thunk = new ThunkParser(this) {
           def queue(t: Trampoline, in: Stream[Char])(f: Result[A]=>Unit) {
@@ -404,10 +408,12 @@ trait Parsers {
               }
             }
             
-            if (!predicted && !in.isEmpty)
-              f(Failure(UNEXPECTED_PATTERN.format(in.head), in))
-            else if (!predicted)
-              f(Failure("Unexpected end of stream", in))
+            if (!predicted) {
+              if (in.isEmpty)
+                f(Failure("Unexpected end of stream", in))
+              else
+                f(Failure(UNEXPECTED_PATTERN.format(in.head), in))
+            }
           }
         }
   
