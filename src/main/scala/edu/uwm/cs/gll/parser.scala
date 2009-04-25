@@ -1,6 +1,6 @@
 package edu.uwm.cs.gll
 
-sealed trait Parser[+R] extends (Stream[Char]=>List[Result[R]]) {
+sealed trait Parser[+R] extends (Stream[Char]=>List[Result[R]]) { self =>
   val terminal: Boolean
   
   lazy val first = computeFirst(Set()) getOrElse Set()
@@ -25,6 +25,48 @@ sealed trait Parser[+R] extends (Stream[Char]=>List[Result[R]]) {
   def <~[R2](that: Parser[R2]) = this ~ that map { case a ~ _ => a }
   
   def ~>[R2](that: Parser[R2]) = this ~ that map { case _ ~ b => b }
+  
+  def * = (this+?) map { _ getOrElse Nil }
+  
+  def +(): Parser[List[R]] = new NonTerminalParser[List[R]] {
+    def computeFirst(seen: Set[Parser[Any]]) = self.computeFirst(seen + this)
+    
+    def queue(t: Trampoline, in: Stream[Char])(f: Result[List[R]]=>Unit) {
+      t.push(self, in) {
+        case Success(res1, tail) => {
+          f(Success(res1 :: Nil, tail))
+          
+          if ((!tail.isEmpty || first.size == 0) && (tail.isEmpty || (first.contains(in.head) || first.size == 0))) {      // lookahead}
+            t.push(this, tail) {
+              case Success(res2, tail) => f(Success(res1 :: res2, tail))
+              case res: Failure => f(res)
+            }
+          }
+        }
+        
+        case res: Failure => f(res)
+      }
+    }
+    
+    override def toString = self.toString + "+"
+  }
+  
+  def ?(): Parser[Option[R]] = new NonTerminalParser[Option[R]] {
+    def computeFirst(seen: Set[Parser[Any]]) = None
+    
+    def queue(t: Trampoline, in: Stream[Char])(f: Result[Option[R]]=>Unit) {
+      f(Success(None, in))
+      
+      t.push(self, in) {
+        case Success(res, tail) => f(Success(Some(res), tail))
+        case res: Failure => f(res)
+      }
+    }
+    
+    override def toString = self.toString + "?"
+  }
+  
+  def +? = (this+)?
   
   def ^^^[R2](v: =>R2) = map { _ => v }
 }
