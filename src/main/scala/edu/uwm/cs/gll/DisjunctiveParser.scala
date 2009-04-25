@@ -47,12 +47,19 @@ class DisjunctiveParser[A](l: =>Parser[A], r: =>Parser[A]) extends NonTerminalPa
   }
   
   def computeFirst(seen: Set[Parser[Any]]) = {
-    lazy val newSeen = seen + this
-    
     if (seen contains this)
-      Set()
-    else
-      left.computeFirst(newSeen) ++ right.computeFirst(newSeen)
+      None          // left-recursion detected!
+    else {
+      val newSeen = seen + this
+      
+      val leftFirst = left.computeFirst(newSeen) getOrElse Set()
+      val rightFirst = right.computeFirst(newSeen) getOrElse Set()
+      
+      if (leftFirst == UniversalCharSet || rightFirst == UniversalCharSet)
+        Some(UniversalCharSet)
+      else
+        Some(leftFirst ++ rightFirst)
+    }
   }
   
   def queue(t: Trampoline, in: Stream[Char])(f: (A, Stream[Char])=>Unit) {

@@ -20,7 +20,7 @@ class Trampoline {
         popped((p, s)) += ((v, s2))             // store the result for late-comers
         f(v, s2)
 
-        trace("Saved: " + (p, s))
+        tracef("Saved: %s *=> %s%n", (p, s), (v, s2))
       }
     }
   }

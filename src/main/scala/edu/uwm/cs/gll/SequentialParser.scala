@@ -2,13 +2,17 @@ package edu.uwm.cs.gll
 
 class SequentialParser[+A, +B](private val left: Parser[A], private val right: Parser[B]) extends NonTerminalParser[~[A, B]] {
   def computeFirst(seen: Set[Parser[Any]]) = {
-    if (seen contains this) Set()
+    if (seen contains this) None    // left-recursion detected!
     else {
       val newSeen = seen + this
-      val lFirst = left.computeFirst(newSeen)
+      val sub = left.computeFirst(newSeen)
       
-      if (lFirst == Set()) right.computeFirst(newSeen)
-      else lFirst
+      sub flatMap { set =>
+        if (set.size == 0)
+          right.computeFirst(newSeen)
+        else
+          sub
+      }
     }
   }
   

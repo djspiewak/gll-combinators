@@ -1,0 +1,71 @@
+import edu.uwm.cs.gll._
+
+import org.specs._
+import org.scalacheck._
+
+import StreamUtils._
+
+object RegexSpecs extends Specification with ScalaCheck with RegexParsers {
+  import Prop._
+  
+  "regex parsers" should {
+    "match, consume and return from a regex match" in {
+      {
+        val p: Parser[String] = """(\d{1,3}\.){3}\d{1,3}"""r
+        
+        p("192.168.101.2" toProperStream) must beLike {
+          case Success("192.168.101.2", Stream()) :: Nil => true
+          case _ => false
+        }
+      }
+      
+      {
+        val p: Parser[String] = """\d+"""r
+        
+        var passed = false
+        p.queue(null, "1234daniel" toProperStream) { (res, tail) =>
+          if (passed) {
+            fail("Produced more than one result")
+          } else {
+            passed = true
+            
+            res mustEqual "1234"
+            tail zip "daniel".toProperStream forall { case (a, b) => a == b } mustBe true
+          }
+        }
+        
+        passed mustBe true
+      }
+    }
+    
+    "eat leading whitespace" in {
+      val p = literal("daniel")
+      
+      p("daniel" toProperStream) must beLike {
+        case Success("daniel", Stream()) :: Nil => true
+        case _ => false
+      }
+      
+      p("  daniel" toProperStream) must beLike {
+        case Success("daniel", Stream()) :: Nil => true
+        case _ => false
+      }
+      
+      p("\tdaniel" toProperStream) must beLike {
+        case Success("daniel", Stream()) :: Nil => true
+        case _ => false
+      }
+      
+      p("""
+      daniel""" toProperStream) must beLike {
+        case Success("daniel", Stream()) :: Nil => true
+        case _ => false
+      }
+      
+      p("daniel    " toProperStream) must beLike {
+        case Success("daniel", Stream(' ', ' ', ' ', ' ')) :: Nil => true
+        case _ => false
+      }
+    }
+  }
+}

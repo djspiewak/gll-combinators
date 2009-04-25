@@ -3,13 +3,13 @@ package edu.uwm.cs.gll
 sealed trait Parser[+R] extends (Stream[Char]=>List[Result[R]]) {
   val terminal: Boolean
   
-  lazy val first = computeFirst(Set())
+  lazy val first = computeFirst(Set()) getOrElse Set()
   
   /**
    * @return The FIRST set for this parser, or the empty set
    *         if the production goes to \epsilon.
    */
-  def computeFirst(s: Set[Parser[Any]]): Set[Char]
+  def computeFirst(seen: Set[Parser[Any]]): Option[Set[Char]]
   
   // TODO handle failure somehow
   def queue(t: Trampoline, in: Stream[Char])(f: (R, Stream[Char])=>Unit)
@@ -46,11 +46,12 @@ trait TerminalParser[+R] extends Parser[R] { self =>
     new TerminalParser[~[R, R2]] {
       def computeFirst(s: Set[Parser[Any]]) = {
         val sub = self.computeFirst(s)
-        
-        if (sub.size == 0)
-          other.computeFirst(s)
-        else
-          sub
+        sub flatMap { set =>
+          if (set.size == 0)
+            other.computeFirst(s)
+          else
+            sub
+        }
       }
       
       def apply(in: Stream[Char]) = self(in) match {

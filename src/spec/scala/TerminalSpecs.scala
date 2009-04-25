@@ -70,11 +70,14 @@ object TerminalSpecs extends Specification with ScalaCheck with ImplicitConversi
       val prop = forAll { strs: List[String] =>
         strs.length > 0 ==> {
           val p = strs.map(literal).reduceLeft[Parser[Any]] { _ ~ _ }
-          val first = strs.foldLeft(Set[Char]()) { (set, str) =>
-            if (set.size == 0 && str.length > 0) Set(str charAt 0) else set
-          }
           
-          p.first mustEqual first
+          val composite = strs.mkString
+          val first = if (composite.length == 0) Set() else Set(composite charAt 0)
+          
+          if (p.first.size == 0 && first.size == 0)
+            p.first.size mustBe first.size      // tautology
+          else
+            p.first must haveTheSameElementsAs(first)
         }
       }
       

@@ -3,7 +3,7 @@ import edu.uwm.cs.gll._
 import org.specs._
 import org.scalacheck._
 
-object ArithmeticSpecs extends Specification with ScalaCheck with ImplicitConversions {
+object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
   import Prop._
   import StreamUtils._
   
@@ -39,6 +39,11 @@ object ArithmeticSpecs extends Specification with ScalaCheck with ImplicitConver
             case _ => false
           }
         }
+      }
+      
+      expr("0+0" toProperStream) must beLike {
+        case Success(Add(IntLit(0), IntLit(0)), Stream()) :: Nil => true
+        case _ => false
       }
       
       prop must pass
@@ -111,7 +116,7 @@ object ArithmeticSpecs extends Specification with ScalaCheck with ImplicitConver
     
     // non-deterministic bugs here??
     "produce both associativity configurations" in {
-      val res = expr("42+13+12" toProperStream) map { 
+      val res = expr("42 + 13 + 12" toProperStream) map { 
         case Success(e, Stream()) => e
         case r => fail("%s does not match the expected pattern".format(r))
       }
@@ -123,7 +128,7 @@ object ArithmeticSpecs extends Specification with ScalaCheck with ImplicitConver
     }
     
     "produce both binary precedence configurations" in {
-      val res = expr("42+13-12" toProperStream) map { 
+      val res = expr("42 + 13 - 12" toProperStream) map { 
         case Success(e, Stream()) => e
         case r => fail("%s does not match the expected pattern".format(r))
       }
@@ -134,7 +139,7 @@ object ArithmeticSpecs extends Specification with ScalaCheck with ImplicitConver
     }
     
     "produce both unary precedence configurations" in {
-      val res = expr("-42+13" toProperStream) map {
+      val res = expr("-42 + 13" toProperStream) map {
         case Success(e, Stream()) => e.solve
         case r => fail("%s does not match the expected pattern".format(r))
       }
@@ -146,20 +151,15 @@ object ArithmeticSpecs extends Specification with ScalaCheck with ImplicitConver
   // %%
   
   lazy val expr: Parser[Expr] = (
-      expr ~ ("+" ~> expr)   ^^ { (e1, e2) => Add(e1, e2)}
-    | expr ~ ("-" ~> expr)   ^^ { (e1, e2) => Sub(e1, e2)}
-    | expr ~ ("*" ~> expr)   ^^ { (e1, e2) => Mul(e1, e2)}
-    | expr ~ ("/" ~> expr)   ^^ { (e1, e2) => Div(e1, e2)}
-    | "-" ~> expr         ^^ Neg
-    | num                 ^^ IntLit
+      expr ~ ("+" ~> expr)  ^^ Add
+    | expr ~ ("-" ~> expr)  ^^ Sub
+    | expr ~ ("*" ~> expr)  ^^ Mul
+    | expr ~ ("/" ~> expr)  ^^ Div
+    | "-" ~> expr           ^^ Neg
+    | num                   ^^ IntLit
   )
   
-  lazy val num: Parser[Int] = (
-      num ~ digit ^^ { (n, d) => (n * 10) + d }
-    | digit
-  )
-  
-  val digit = ("0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9") ^^ { _.toInt }
+  val num = """\d+""".r     ^^ { _.toInt }
   
   // %%
   

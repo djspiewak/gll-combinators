@@ -4,8 +4,7 @@ import StreamUtils._
 
 case class LiteralParser(str: String) extends TerminalParser[String] {
   def computeFirst(s: Set[Parser[Any]]) = {
-    if (str.length > 0) Set(str(0))
-    else Set()
+    Some(if (str.length > 0) Set(str(0)) else Set())
   }
   
   def apply(in: Stream[Char]) = {
