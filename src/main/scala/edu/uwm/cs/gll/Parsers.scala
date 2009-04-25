@@ -385,8 +385,8 @@ trait Parsers {
               val p = pre.asInstanceOf[Parser[A]]
               
               // [(S = {}) -> (FIRST = {})] /\ [~(S = {}) -> (S[0] \in FIRST \/ FIRST = {})]
-              if (!in.isEmpty || p.first.size == 0) &&
-                (in.isEmpty || (p.first.contains(in.head) || p.first.size == 0))      // lookahead
+              if !in.isEmpty || p.first.size == 0
+              if in.isEmpty || p.first.contains(in.head) || p.first.size == 0      // lookahead
             } t.push(p, in) { res =>
               if (!results.contains(res)) {
                 tracef("Reduced: %s *=> %s%n".format(this, res))
