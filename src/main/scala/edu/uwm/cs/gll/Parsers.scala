@@ -368,6 +368,8 @@ trait Parsers {
     }
     
     def queue(t: Trampoline, in: Stream[Char])(f: Result[A]=>Unit) {
+      val UNEXPECTED_PATTERN = "Unexpected value in stream: '%s'"
+      
       if (isLL1) {        // graceful degrade to LL(1)
         trace("Detected LL(1): " + this)
         
@@ -375,9 +377,13 @@ trait Parsers {
           set <- predict get in.head
           p <- set
         } p.queue(t, in)(f)
+        
+        if (!predict.contains(in.head))
+          f(Failure(UNEXPECTED_PATTERN.format(in.head), in))
       } else {
         val thunk = new ThunkParser(this) {
           def queue(t: Trampoline, in: Stream[Char])(f: Result[A]=>Unit) {
+            var predicted = false
             var results = Set[Result[A]]()    // merge results
             
             for {
@@ -386,14 +392,22 @@ trait Parsers {
               // [(S = {}) -> (FIRST = {})] /\ [~(S = {}) -> (S[0] \in FIRST \/ FIRST = {})]
               if !in.isEmpty || p.first.size == 0
               if in.isEmpty || p.first.contains(in.head) || p.first.size == 0      // lookahead
-            } t.push(p, in) { res =>
-              if (!results.contains(res)) {
-                tracef("Reduced: %s *=> %s%n".format(this, res))
-  
-                f(res)
-                results += res
+            } {
+              predicted = true
+              t.push(p, in) { res =>
+                if (!results.contains(res)) {
+                  tracef("Reduced: %s *=> %s%n".format(this, res))
+    
+                  f(res)
+                  results += res
+                }
               }
             }
+            
+            if (!predicted && !in.isEmpty)
+              f(Failure(UNEXPECTED_PATTERN.format(in.head), in))
+            else if (!predicted)
+              f(Failure("Unexpected end of stream", in))
           }
         }
   
