@@ -42,6 +42,35 @@ object RegexSpecs extends Specification with ScalaCheck with RegexParsers {
       }
     }
     
+    "produce 'expected' error message" in {
+      val p: Parser[String] = """(\d{1,3}\.){3}\d{1,3}"""r
+      
+      {
+        val data = "123.457.321" toProperStream
+        
+        p(data) must beLike {
+          case Failure("""Expected /(\d{1,3}\.){3}\d{1,3}/""", `data`) :: Nil => true
+          case _ => false
+        }
+      }
+      
+      {
+        val data = "123.457.321.sdf" toProperStream
+        
+        p(data) must beLike {
+          case Failure("""Expected /(\d{1,3}\.){3}\d{1,3}/""", `data`) :: Nil => true
+          case _ => false
+        }
+      }
+      
+      {
+        p(Stream()) must beLike {
+          case Failure("""Expected /(\d{1,3}\.){3}\d{1,3}/""", Stream()) :: Nil => true
+          case _ => false
+        }
+      }
+    }
+    
     "eat leading whitespace" in {
       val p = literal("daniel")
       
