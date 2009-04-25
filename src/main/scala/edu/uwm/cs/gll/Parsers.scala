@@ -32,7 +32,6 @@ trait Parsers {
      */
     def computeFirst(seen: Set[Parser[Any]]): Option[Set[Char]]
     
-    // TODO handle failure somehow
     def queue(t: Trampoline, in: Stream[Char])(f: Result[R]=>Unit)
     
     // syntax
