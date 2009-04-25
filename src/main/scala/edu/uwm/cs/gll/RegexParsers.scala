@@ -19,6 +19,9 @@ trait RegexParsers extends Parsers with ImplicitConversions with CharSequenceCon
   
   implicit def funRegexSyntax(p: Regex) = new RichSyntax1(regex(p))
   
+  override protected def processTail(tail: Stream[Char]) = 
+    super.processTail(handleWhitespace(tail))
+  
   private def handleWhitespace(s: Stream[Char]) = {
     s.drop(whitespace findPrefixOf s map { _.length } getOrElse 0)
   }

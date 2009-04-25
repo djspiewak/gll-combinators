@@ -65,9 +65,23 @@ object RegexSpecs extends Specification with ScalaCheck with RegexParsers {
         case Success("daniel", Stream()) :: Nil => true
         case _ => false
       }
+    }
+    
+    "eat trailing whitespace" in {
+      val p = literal("daniel")
       
       p("daniel    " toProperStream) must beLike {
-        case Success("daniel", Stream(' ', ' ', ' ', ' ')) :: Nil => true
+        case Success("daniel", Stream()) :: Nil => true
+        case _ => false
+      }
+      
+      p("daniel\t" toProperStream) must beLike {
+        case Success("daniel", Stream()) :: Nil => true
+        case _ => false
+      }
+      
+      p("daniel\n" toProperStream) must beLike {
+        case Success("daniel", Stream()) :: Nil => true
         case _ => false
       }
     }

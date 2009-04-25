@@ -15,6 +15,8 @@ trait Parsers {
   
   def rep1[A](p: Parser[A]) = p+
   
+  protected def processTail(tail: Stream[Char]) = if (tail.isEmpty) Some(tail) else None
+  
   //////////////////////////////////////////////////////////////////////////////
   
   sealed trait Parser[+R] extends (Stream[Char]=>List[Result[R]]) { self =>
@@ -152,7 +154,14 @@ trait Parsers {
       
       queue(t, in) {
         case s @ Success(_, Stream()) => successes += s
-        case Success(_, tail) => failures += Failure("Unexpected trailing characters: '%s'".format(tail.mkString), tail)
+        
+        case Success(res, tail) => {
+          processTail(tail) match {
+            case Some(tail) => successes += Success(res, tail)
+            case None => failures += Failure("Unexpected trailing characters: '%s'".format(tail.mkString), tail)
+          }
+        }
+        
         case f: Failure => failures += f
       }
       t.run()
