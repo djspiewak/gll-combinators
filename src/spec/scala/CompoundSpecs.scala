@@ -154,4 +154,53 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
       check("bbbbb")
     }
   }
+  
+  "repeated non-terminal parsers" should {
+    "repeat 0..n times" in {
+      val p = literal("123")*
+      
+      p("123" toProperStream) must beLike {
+        case Success(List("123"), Stream()) :: Nil => true
+        case _ => false
+      }
+      
+      p("123123123123123123123123123123123" toProperStream) must beLike {
+        case Success(List("123", "123", "123", "123", "123", "123", "123", "123", "123", "123", "123"), Stream()) :: Nil => true
+        case _ => false
+      }
+      
+      p(Stream()) must beLike {
+        case Success(Nil, Stream()) :: Nil => true
+        case _ => false
+      }
+    }
+    
+    "repeat 1..n times" in {
+      val p = literal("123")+
+      
+      p("123" toProperStream) must beLike {
+        case Success(List("123"), Stream()) :: Nil => true
+        case _ => false
+      }
+      
+      p("123123123123123123123123123123123" toProperStream) must beLike {
+        case Success(List("123", "123", "123", "123", "123", "123", "123", "123", "123", "123", "123"), Stream()) :: Nil => true
+        case _ => false
+      }
+    }
+    
+    "repeat 0..1 times" in {
+      val p = literal("123")?
+      
+      p("123" toProperStream) must beLike {
+        case Success(Some("123"), Stream()) :: Nil => true
+        case _ => false
+      }
+      
+      p(Stream()) must beLike {
+        case Success(None, Stream()) :: Nil => true
+        case _ => false
+      }
+    }
+  }
 }
