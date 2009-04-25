@@ -10,7 +10,8 @@ object DisjunctionSpecs extends Specification with ImplicitConversions with Scal
   "disjunctive parser" should {
     "gather binary alternatives" in {
       val prop = forAll { (left: String, right: String) =>
-        (left | right).asInstanceOf[DisjunctiveParser[String]].gather == Set(literal(left), literal(right))
+        val p = (left | right).asInstanceOf[DisjunctiveParser[String]]
+        p.gather mustEqual Set(literal(left), literal(right))
       }
       
       prop must pass
@@ -21,10 +22,8 @@ object DisjunctionSpecs extends Specification with ImplicitConversions with Scal
         val leftFirst = if (left.length == 0) Set[Char]() else Set(left charAt 0)
         val rightFirst = if (right.length == 0) Set[Char]() else Set(right charAt 0)
         
-        (left | right).first == leftFirst ++ rightFirst
+        (left | right).first mustEqual (leftFirst ++ rightFirst)
       }
-      
-      ("" | "").first mustEqual Set()
       
       prop must pass
     }
@@ -136,13 +135,15 @@ object DisjunctionSpecs extends Specification with ImplicitConversions with Scal
             | right
           ) ^^ f
           
-          (p(left toProperStream) match {
+          p(left toProperStream) must beLike {
             case Success(v, Stream()) :: Nil => v == f(left)
             case _ => false
-          }) && (p(right toProperStream) match {
+          }
+          
+          p(right toProperStream) must beLike {
             case Success(v, Stream()) :: Nil => v == f(right)
             case _ => false
-          })
+          }
         }
       }
       
@@ -166,25 +167,25 @@ object DisjunctionSpecs extends Specification with ImplicitConversions with Scal
         
         val result = p((head + suffix) toProperStream)
         
-        val a = {
+        result.length mustBe 2
+        
+        {
           val v = head + suffix
           
-          result exists {
+          result must have {
             case Success(`v`, Stream()) => true
             case _ => false
           }
         }
         
-        val b = {
+        {
           val v = head + " " + suffix
           
-          result exists {
+          result must have {
             case Success(`v`, Stream()) => true
             case _ => false
           }
         }
-        
-        a && b && result.length == 2
       }
       
       prop must pass

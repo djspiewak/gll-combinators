@@ -29,9 +29,9 @@ object TerminalSpecs extends Specification with ScalaCheck with ImplicitConversi
     "compute FIRST set" in {
       val prop = forAll { s: String =>
         if (s.length == 0)
-          literal(s).first == Set()
+          literal(s).first mustEqual Set()
         else
-          literal(s).first == Set(s charAt 0)
+          literal(s).first mustEqual Set(s charAt 0)
       }
       
       prop must pass
