@@ -3,7 +3,7 @@ import edu.uwm.cs.gll._
 import org.specs._
 import org.scalacheck._
 
-object TerminalSpecs extends Specification with ScalaCheck with Parsers {
+object TerminalSpecs extends Specification with ScalaCheck with ImplicitConversions {
   import Prop._
   import StreamUtils._
   

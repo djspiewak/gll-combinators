@@ -1,6 +1,6 @@
 package edu.uwm.cs.gll
 
-trait ImplicitConversions {
+trait ImplicitConversions extends Parsers {
   implicit def disjunctiveSyntax[A](left: =>Parser[A]) = new RichParser(left)
   implicit def disjunctiveLiterals(left: String) = new RichParser(literal(left))
   

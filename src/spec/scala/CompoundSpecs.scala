@@ -3,7 +3,7 @@ import edu.uwm.cs.gll._
 import org.specs._
 import org.scalacheck._
 
-object CompoundSpecs extends Specification with Parsers with ScalaCheck {
+object CompoundSpecs extends Specification with ImplicitConversions with ScalaCheck {
   import Prop._
   import StreamUtils._
   
