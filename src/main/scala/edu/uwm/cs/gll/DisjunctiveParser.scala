@@ -1,5 +1,6 @@
 package edu.uwm.cs.gll
 
+import scala.collection.mutable.{Buffer, ListBuffer}
 import Global._
 
 class DisjunctiveParser[A](l: =>Parser[A], r: =>Parser[A]) extends NonTerminalParser[A] with Thunkable {
@@ -9,7 +10,7 @@ class DisjunctiveParser[A](l: =>Parser[A], r: =>Parser[A]) extends NonTerminalPa
   private lazy val leftClass = thunk[Parser[A]]('l).getClass
   private lazy val rightClass = thunk[Parser[A]]('r).getClass
   
-  lazy val gather = gatherImpl(Set())
+  lazy val gather = gatherImpl(Set()).toList
 
   /**
    * The PREDICT table for this disjunction.  Please note that
@@ -62,7 +63,7 @@ class DisjunctiveParser[A](l: =>Parser[A], r: =>Parser[A]) extends NonTerminalPa
     }
   }
   
-  def queue(t: Trampoline, in: Stream[Char])(f: (A, Stream[Char])=>Unit) {
+  def queue(t: Trampoline, in: Stream[Char])(f: Result[A]=>Unit) {
     if (isLL1) {        // graceful degrade to LL(1)
       trace("Detected LL(1): " + this)
       
@@ -72,8 +73,8 @@ class DisjunctiveParser[A](l: =>Parser[A], r: =>Parser[A]) extends NonTerminalPa
       } p.queue(t, in)(f)
     } else {
       val thunk = new ThunkParser(this) {
-        def queue(t: Trampoline, in: Stream[Char])(f: (A, Stream[Char])=>Unit) {
-          var results = Set[(Any, Stream[Char])]()    // merge results
+        def queue(t: Trampoline, in: Stream[Char])(f: Result[A]=>Unit) {
+          var results = Set[Result[A]]()    // merge results
           
           for {
             pre <- gather
@@ -82,35 +83,33 @@ class DisjunctiveParser[A](l: =>Parser[A], r: =>Parser[A]) extends NonTerminalPa
             // [(S = {}) -> (FIRST = {})] /\ [~(S = {}) -> (S[0] \in FIRST \/ FIRST = {})]
             if (!in.isEmpty || p.first.size == 0) &&
               (in.isEmpty || (p.first.contains(in.head) || p.first.size == 0))      // lookahead
-          } t.push(p, in) { (v, tail) =>
-            val tuple = (v, tail)
+          } t.push(p, in) { res =>
+            if (!results.contains(res)) {
+              tracef("Reduced: %s *=> %s%n".format(this, res))
 
-            if (!results.contains(tuple)) {
-              trace("Disjunctive reduce: " + tuple)
-
-              f(v.asInstanceOf[A], tail)
-              results += tuple
+              f(res)
+              results += res
             }
           }
         }
       }
 
-      t.push(thunk, in)(f.asInstanceOf[(Any, Stream[Char])=>Unit])
+      t.push(thunk, in)(f)
     }
   }
   
-  private def gatherImpl(seen: Set[DisjunctiveParser[A]]): Set[Parser[A]] = {
-    lazy val newSeen = seen + this
+  private def gatherImpl(seen: Set[DisjunctiveParser[A]]): Buffer[Parser[A]] = {
+    val newSeen = seen + this
     
-    def process(p: Parser[A]): Set[Parser[A]] = p match {
+    def process(p: Parser[A]) = p match {
       case d: DisjunctiveParser[A] => {
         if (!seen.contains(d))
           d.gatherImpl(newSeen)
         else
-          Set[Parser[A]]()
+          new ListBuffer[Parser[A]]
       }
       
-      case p => Set(p)
+      case p => p +: new ListBuffer[Parser[A]]
     }
     
     process(left) ++ process(right)

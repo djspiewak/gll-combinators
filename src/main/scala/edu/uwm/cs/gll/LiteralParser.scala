@@ -12,7 +12,7 @@ case class LiteralParser(str: String) extends TerminalParser[String] {
     lazy val errorMessage = "Expected '%s' got '%s'".format(str, trunc.mkString)
     
     List(if (trunc.lengthCompare(str.length) != 0) {
-      Failure(errorMessage, in)
+      Failure("Unexpected end of stream (expected '%s')".format(str), in)
     } else {
       val succ = trunc.zipWithIndex forall {
         case (c, i) => c == str(i)

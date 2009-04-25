@@ -12,7 +12,7 @@ sealed trait Parser[+R] extends (Stream[Char]=>List[Result[R]]) {
   def computeFirst(seen: Set[Parser[Any]]): Option[Set[Char]]
   
   // TODO handle failure somehow
-  def queue(t: Trampoline, in: Stream[Char])(f: (R, Stream[Char])=>Unit)
+  def queue(t: Trampoline, in: Stream[Char])(f: Result[R]=>Unit)
   
   // syntax
   
@@ -35,11 +35,8 @@ trait TerminalParser[+R] extends Parser[R] { self =>
   /**
    * For terminal parsing, this just delegates back to apply()
    */
-  def queue(t: Trampoline, in: Stream[Char])(f: (R, Stream[Char])=>Unit) {
-    apply(in) match {
-      case Success(v, tail) :: Nil => f(v, tail)
-      case _ => ()
-    }
+  def queue(t: Trampoline, in: Stream[Char])(f: Result[R]=>Unit) {
+    apply(in) foreach { f(_) }
   }
   
   override def ~[R2](other: Parser[R2]) = if (other.terminal) {
@@ -91,20 +88,28 @@ trait NonTerminalParser[+R] extends Parser[R] { self =>
   def apply(in: Stream[Char]) = {
     val t = new Trampoline
     
-    var back = Set[Result[R]]()
-    queue(t, in) { (res, tail) => 
-      if (tail.isEmpty) back += Success(res, tail)
+    var successes = Set[Success[R]]()
+    var failures = Set[Failure]()
+    
+    queue(t, in) {
+      case s @ Success(_, Stream()) => successes += s
+      case Success(_, tail) => failures += Failure("Unexpected trailing characters: '%s'".format(tail.mkString), tail)
+      case f: Failure => failures += f
     }
     t.run()
     
-    if (back.size == 0) back += Failure("No valid derivations", in)
-    
-    back.toList
+    if (successes.isEmpty)
+      failures.toList
+    else
+      successes.toList
   }
   
   def map[R2](f1: R=>R2): Parser[R2] = new MappedParser[R, R2](self, f1) with NonTerminalParser[R2] {
-    def queue(t: Trampoline, in: Stream[Char])(f2: (R2, Stream[Char])=>Unit) {
-      self.queue(t, in) { (res, tail) => f2(f1(res), tail) }
+    def queue(t: Trampoline, in: Stream[Char])(f2: Result[R2]=>Unit) {
+      self.queue(t, in) { 
+        case Success(res, tail) => f2(Success(f1(res), tail))
+        case f: Failure => f2(f)
+      }
     }
   }
 }

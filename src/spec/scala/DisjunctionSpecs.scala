@@ -11,7 +11,7 @@ object DisjunctionSpecs extends Specification with ImplicitConversions with Scal
     "gather binary alternatives" in {
       val prop = forAll { (left: String, right: String) =>
         val p = (left | right).asInstanceOf[DisjunctiveParser[String]]
-        p.gather mustEqual Set(literal(left), literal(right))
+        p.gather mustEqual List(literal(left), literal(right))
       }
       
       prop must pass
@@ -55,7 +55,7 @@ object DisjunctionSpecs extends Specification with ImplicitConversions with Scal
     
     "gather nary alternatives" in {
       def check(p: Parser[Any], expected: Parser[String]*) {
-        p.asInstanceOf[DisjunctiveParser[String]].gather mustEqual Set(expected:_*)
+        p.asInstanceOf[DisjunctiveParser[String]].gather must containAll(expected)
       }
       
       {

@@ -16,11 +16,17 @@ class SequentialParser[+A, +B](private val left: Parser[A], private val right: P
     }
   }
   
-  def queue(t: Trampoline, in: Stream[Char])(f: (~[A, B], Stream[Char])=>Unit) {
-    left.queue(t, in) { (res1, tail) =>
-      right.queue(t, tail) { (res2, tail) =>
-        f(new ~(res1, res2), tail)
+  def queue(t: Trampoline, in: Stream[Char])(f: Result[~[A, B]]=>Unit) {
+    left.queue(t, in) {
+      case Success(res1, tail) => {
+        right.queue(t, tail) {
+          case Success(res2, tail) => f(Success(new ~(res1, res2), tail))
+          
+          case res: Failure => f(res)
+        }
       }
+      
+      case res: Failure => f(res)
     }
   }
   

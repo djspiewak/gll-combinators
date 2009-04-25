@@ -23,15 +23,19 @@ object RegexSpecs extends Specification with ScalaCheck with RegexParsers {
         val p: Parser[String] = """\d+"""r
         
         var passed = false
-        p.queue(null, "1234daniel" toProperStream) { (res, tail) =>
-          if (passed) {
-            fail("Produced more than one result")
-          } else {
-            passed = true
-            
-            res mustEqual "1234"
-            tail zip "daniel".toProperStream forall { case (a, b) => a == b } mustBe true
+        p.queue(null, "1234daniel" toProperStream) {
+          case Success(res, tail) => {
+            if (passed) {
+              fail("Produced more than one result")
+            } else {
+              passed = true
+              
+              res mustEqual "1234"
+              tail zip "daniel".toProperStream forall { case (a, b) => a == b } mustBe true
+            }
           }
+          
+          case _ =>
         }
         
         passed mustBe true
