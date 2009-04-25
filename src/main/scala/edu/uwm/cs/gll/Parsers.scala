@@ -7,6 +7,8 @@ import Global._
 
 // I hate the way this file is organized, but I don't have a choice
 trait Parsers {
+  private val TAIL_ERROR_PATTERN = "Unexpected trailing characters: '%s'"
+  
   implicit def literal(str: String): Parser[String] = new LiteralParser(str)
   
   def opt[A](p: Parser[A]) = p?
@@ -93,40 +95,53 @@ trait Parsers {
   trait TerminalParser[+R] extends Parser[R] { self =>
     final val terminal = true
     
+    final def apply(in: Stream[Char]) = List(parse(in) match {
+      case Success(res, tail) => processTail(tail) match {
+        case Some(tail) => Success(res, tail)
+        case None => Failure(TAIL_ERROR_PATTERN.format(tail.mkString), tail)
+      }
+      
+      case x => x
+    })
+    
     /**
      * For terminal parsing, this just delegates back to apply()
      */
     def queue(t: Trampoline, in: Stream[Char])(f: Result[R]=>Unit) {
-      apply(in) foreach { f(_) }
+      f(parse(in))
     }
     
-    override def ~[R2](other: Parser[R2]) = if (other.terminal) {
-      new TerminalParser[~[R, R2]] {
-        def computeFirst(s: Set[Parser[Any]]) = {
-          val sub = self.computeFirst(s)
-          sub flatMap { set =>
-            if (set.size == 0)
-              other.computeFirst(s)
-            else
-              sub
-          }
-        }
-        
-        def apply(in: Stream[Char]) = self(in) match {
-          case Success(res1, tail) :: Nil => other(tail) match {
-            case Success(res2, tail) :: Nil => Success(new ~(res1, res2), tail) :: Nil
-            case (f @ Failure(_, _)) :: Nil => f :: Nil
-            case _ => throw new AssertionError    // basically, this should never happen
+    protected def parse(in: Stream[Char]): Result[R]
+    
+    override def ~[R2](other: Parser[R2]) = other match {
+      case other: TerminalParser[R2] => {
+        new TerminalParser[~[R, R2]] {
+          def computeFirst(s: Set[Parser[Any]]) = {
+            val sub = self.computeFirst(s)
+            sub flatMap { set =>
+              if (set.size == 0)
+                other.computeFirst(s)
+              else
+                sub
+            }
           }
           
-          case (f @ Failure(_, _)) :: Nil => f :: Nil
-          case _ => throw new AssertionError    // basically, this should never happen
+          def parse(in: Stream[Char]) = self.parse(in) match {
+            case Success(res1, tail) => other.parse(tail) match {
+              case Success(res2, tail) => Success(new ~(res1, res2), tail)
+              case f: Failure => f
+            }
+            
+            case f: Failure => f
+          }
         }
       }
-    } else super.~(other)
+      
+      case other => super.~(other)
+    }
     
     def map[R2](f: R=>R2): Parser[R2] = new MappedParser[R, R2](self, f) with TerminalParser[R2] {
-      def apply(in: Stream[Char]) = self(in) map {
+      def parse(in: Stream[Char]) = self.parse(in) match {
         case Success(res, tail) => Success(f(res), tail)
         case x: Failure => x
       }
@@ -146,7 +161,7 @@ trait Parsers {
      * we define any Success with a non-empty tail to be a
      * Failure
      */
-    def apply(in: Stream[Char]) = {
+    final def apply(in: Stream[Char]) = {
       val t = new Trampoline
       
       var successes = Set[Success[R]]()
@@ -158,7 +173,7 @@ trait Parsers {
         case Success(res, tail) => {
           processTail(tail) match {
             case Some(tail) => successes += Success(res, tail)
-            case None => failures += Failure("Unexpected trailing characters: '%s'".format(tail.mkString), tail)
+            case None => failures += Failure(TAIL_ERROR_PATTERN.format(tail.mkString), tail)
           }
         }
         
@@ -222,11 +237,11 @@ trait Parsers {
       Some(if (str.length > 0) Set(str charAt 0) else Set())
     }
     
-    def apply(in: Stream[Char]) = {
+    def parse(in: Stream[Char]) = {
       val trunc = in take str.length
       lazy val errorMessage = "Expected '%s' got '%s'".format(str, trunc.mkString)
       
-      List(if (trunc.lengthCompare(str.length) != 0) {
+      if (trunc.lengthCompare(str.length) != 0) {
         Failure("Unexpected end of stream (expected '%s')".format(str), in)
       } else {
         val succ = trunc.zipWithIndex forall {
@@ -237,7 +252,7 @@ trait Parsers {
           Success(str, in drop str.length)
         else
           Failure(errorMessage, in)
-      })
+      }
     }
     
     override def equals(other: Any) = other match {

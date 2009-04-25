@@ -20,8 +20,8 @@ object TerminalSpecs extends Specification with ScalaCheck with ImplicitConversi
     "parse the empty string" in {
       val p = literal("")
       
-      p("test" toProperStream) must beLike {
-        case Success("", Stream('t', 'e', 's', 't')) :: Nil => true     // should I keep this??
+      p(Stream()) must beLike {
+        case Success("", Stream()) :: Nil => true
         case _ => false
       }
     }

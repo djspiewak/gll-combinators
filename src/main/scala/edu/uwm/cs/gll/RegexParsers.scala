@@ -8,11 +8,11 @@ trait RegexParsers extends Parsers with ImplicitConversions with CharSequenceCon
   
   override implicit def literal(str: String): Parser[String] = new LiteralParser(str) {
     // there should be a way to do this with traits, but I haven't found it yet
-    override def apply(s: Stream[Char]) = super.apply(handleWhitespace(s))
+    override def parse(s: Stream[Char]) = super.parse(handleWhitespace(s))
   }
   
   implicit def regex(r: Regex): Parser[String] = new RegexParser(r) {
-    override def apply(s: Stream[Char]) = super.apply(handleWhitespace(s))
+    override def parse(s: Stream[Char]) = super.parse(handleWhitespace(s))
   }
   
   implicit def disjunctiveRegex(left: Regex) = new RichParser(regex(left))
@@ -22,16 +22,15 @@ trait RegexParsers extends Parsers with ImplicitConversions with CharSequenceCon
   override protected def processTail(tail: Stream[Char]) = 
     super.processTail(handleWhitespace(tail))
   
-  private def handleWhitespace(s: Stream[Char]) = {
+  private def handleWhitespace(s: Stream[Char]) =
     s.drop(whitespace findPrefixOf s map { _.length } getOrElse 0)
-  }
   
   case class RegexParser(private val regex: Regex) extends TerminalParser[String] with CharSequenceConversions {
     def computeFirst(s: Set[Parser[Any]]) = Some(UniversalCharSet)
     
-    def apply(in: Stream[Char]) = {
+    def parse(in: Stream[Char]) = {
       val res = regex findPrefixOf in map { str => Success(str, in drop str.length) }
-      (res getOrElse Failure("Expected /%s/".format(regex), in)) :: Nil
+      res getOrElse Failure("Expected /%s/".format(regex), in)
     }
     
     override def equals(other: Any) = other match {
