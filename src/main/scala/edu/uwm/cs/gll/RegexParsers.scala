@@ -3,7 +3,7 @@ package edu.uwm.cs.gll
 import scala.util.matching.Regex
 
 // TODO need to handle trailing whitespace (somehow)
-trait RegexParsers extends ImplicitConversions with CharSequenceConversions {
+trait RegexParsers extends Parsers with CharSequenceConversions {
   protected val whitespace = """\s+"""r
   
   override implicit def literal(str: String): Parser[String] = new LiteralParser(str) {
