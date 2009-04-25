@@ -381,8 +381,7 @@ trait Parsers {
             var results = Set[Result[A]]()    // merge results
             
             for {
-              pre <- gather
-              val p = pre.asInstanceOf[Parser[A]]
+              p <- gather
               
               // [(S = {}) -> (FIRST = {})] /\ [~(S = {}) -> (S[0] \in FIRST \/ FIRST = {})]
               if !in.isEmpty || p.first.size == 0
