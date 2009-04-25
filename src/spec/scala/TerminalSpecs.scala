@@ -34,6 +34,11 @@ object TerminalSpecs extends Specification with ScalaCheck with ImplicitConversi
     "detect an unexpected end of stream" in {
       val p = literal("foo")
       
+      p(Stream('f')) must beLike {
+        case Failure("Unexpected end of stream (expected 'foo')", Stream('f')) :: Nil => true
+        case _ => false
+      }
+      
       p(Stream()) must beLike {
         case Failure("Unexpected end of stream (expected 'foo')", Stream()) :: Nil => true
         case _ => false
@@ -85,6 +90,44 @@ object TerminalSpecs extends Specification with ScalaCheck with ImplicitConversi
       
       p("test" toProperStream) must beLike {
         case Success("te" ~ "st", Stream()) :: Nil => true
+        case _ => false
+      }
+    }
+    
+    "produce 'expected' error message" in {
+      val p = "te" ~ "st"
+      
+      p("foo" toProperStream) must beLike {
+        case Failure("Expected 'te' got 'fo'", Stream('f', 'o', 'o')) :: Nil => true
+        case _ => false
+      }
+      
+      p("tefoo" toProperStream) must beLike {
+        case Failure("Expected 'st' got 'fo'", Stream('f', 'o', 'o')) :: Nil => true
+        case _ => false
+      }
+    }
+    
+    "detect an unexpected end of stream" in {
+      val p = "te" ~ "st"
+      
+      p(Stream('t')) must beLike {
+        case Failure("Unexpected end of stream (expected 'te')", Stream('t')) :: Nil => true
+        case _ => false
+      }
+      
+      p(Stream()) must beLike {
+        case Failure("Unexpected end of stream (expected 'te')", Stream()) :: Nil => true
+        case _ => false
+      }
+      
+      p("tes" toProperStream) must beLike {
+        case Failure("Unexpected end of stream (expected 'st')", Stream('s')) :: Nil => true
+        case _ => false
+      }
+      
+      p("te" toProperStream) must beLike {
+        case Failure("Unexpected end of stream (expected 'st')", Stream()) :: Nil => true
         case _ => false
       }
     }
