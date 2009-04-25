@@ -17,6 +17,29 @@ object TerminalSpecs extends Specification with ScalaCheck with ImplicitConversi
       }
     }
     
+    "produce 'expected' failure message" in {
+      val p = literal("foo")
+      
+      p("bar" toProperStream) must beLike {
+        case Failure("Expected 'foo' got 'bar'", Stream('b', 'a', 'r')) :: Nil => true
+        case _ => false
+      }
+      
+      p("test" toProperStream) must beLike {
+        case Failure("Expected 'foo' got 'tes'", Stream('t', 'e', 's', 't')) :: Nil => true
+        case _ => false
+      }
+    }
+    
+    "detect an unexpected end of stream" in {
+      val p = literal("foo")
+      
+      p(Stream()) must beLike {
+        case Failure("Unexpected end of stream (expected 'foo')", Stream()) :: Nil => true
+        case _ => false
+      }
+    }
+    
     "parse the empty string" in {
       val p = literal("")
       
