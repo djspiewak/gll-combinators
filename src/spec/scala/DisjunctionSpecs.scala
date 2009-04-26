@@ -8,6 +8,48 @@ object DisjunctionSpecs extends Specification with ImplicitConversions with Scal
   import StreamUtils._
   
   "disjunctive parser" should {
+    "detect LL(1) grammar" in {
+      {
+        val p = "daniel" | "chris" | "joseph"
+        p.asInstanceOf[DisjunctiveParser[String]].isLL1 mustBe true
+      }
+      
+      {
+        lazy val p: Parser[String] = (
+            "a" ~ p ^^ { _ + _ }
+          | "b"
+        )
+        p.asInstanceOf[DisjunctiveParser[String]].isLL1 mustBe true
+      }
+      
+      {
+        lazy val p: Parser[String] = (
+            "a" ~ p ^^ { _ + _ }
+          | "a"
+        )
+        
+        p.asInstanceOf[DisjunctiveParser[String]].isLL1 mustBe false
+      }
+      
+      {
+        lazy val p: Parser[String] = (
+            p ~ "b" ^^ { _ + _ }
+          | "a"
+        )
+        
+        p.asInstanceOf[DisjunctiveParser[String]].isLL1 mustBe false
+      }
+      
+      {
+        lazy val p: Parser[String] = (
+            "b" ~ p ^^ { _ + _ }
+          | ""
+        )
+        
+        p.asInstanceOf[DisjunctiveParser[String]].isLL1 mustBe false
+      }
+    }
+    
     "gather binary alternatives" in {
       val prop = forAll { (left: String, right: String) =>
         val p = (left | right).asInstanceOf[DisjunctiveParser[String]]

@@ -343,12 +343,12 @@ trait Parsers {
      * Checks if all FIRST sets are disjoint and none
      * are empty.  This is convergent even for
      * left-recursive parsers.
-     */ 
+     */
     lazy val isLL1 = {
       val sets = gather map { _.first }
       val totalSize = sets.foldLeft(0) { _ + _.size }
-      val intersect = sets.foldLeft(Set[Char]()) { _ ** _ }
-      (totalSize == intersect.size) && (sets forall { _.size > 0 })
+      val union = sets.reduceLeft[Set[Char]] { _ ++ _ }
+      (totalSize == union.size) && (sets forall { _.size > 0 })
     }
     
     def computeFirst(seen: Set[Parser[Any]]) = {
