@@ -53,6 +53,68 @@ object DisjunctionSpecs extends Specification with ImplicitConversions with Scal
       }
     }
     
+    "detect PREDCIT failure for LL(1)" in {
+      val p = "daniel" | "chris"
+      
+      p(Stream('j')) must beLike {
+        case Failure("Unexpected value in stream: 'j'", Stream('j')) :: Nil => true
+        case _ => false
+      }
+      
+      p(Stream()) must beLike {
+        case Failure("Unexpected end of stream", Stream()) :: Nil => true
+        case _ => false
+      }
+    }
+    
+    "detect PREDICT failure for non-LL(1)" in {
+      val p = "daniel" | "danielle"
+      
+      p(Stream('j')) must beLike {
+        case Failure("Unexpected value in stream: 'j'", Stream('j')) :: Nil => true
+        case _ => false
+      }
+      
+      p(Stream()) must beLike {
+        case Failure("Unexpected end of stream", Stream()) :: Nil => true
+        case _ => false
+      }
+    }
+    
+    "produce binary failures for LL(1)" in {
+      val p = "daniel" | "chris"
+      
+      p("dan" toProperStream) must beLike {
+        case Failure("Unexpected end of stream (expected 'daniel')", Stream('d', 'a', 'n')) :: Nil => true
+        case _ => false
+      }
+      
+      p("dancin" toProperStream) must beLike {
+        case Failure("Expected 'daniel' got 'dancin'", Stream('d', 'a', 'n', 'c', 'i', 'n')) :: Nil => true
+        case _ => false
+      }
+    }
+    
+    "produce binary failures for non-LL(1)" in {
+      val p = "foobar" | "foobaz"
+      
+      {
+        val data = "foo" toProperStream
+        
+        p(data) must haveTheSameElementsAs(List(
+          Failure("Unexpected end of stream (expected 'foobar')", data),
+          Failure("Unexpected end of stream (expected 'foobaz')", data)))
+      }
+      
+      {
+        val data = "foobat" toProperStream
+        
+        p(data) must haveTheSameElementsAs(List(
+          Failure("Expected 'foobar' got 'foobat'", data),
+          Failure("Expected 'foobaz' got 'foobat'", data)))
+      }
+    }
+    
     "gather nary alternatives" in {
       def check(p: Parser[Any], expected: Parser[String]*) {
         p.asInstanceOf[DisjunctiveParser[String]].gather must containAll(expected)
@@ -105,7 +167,7 @@ object DisjunctionSpecs extends Specification with ImplicitConversions with Scal
       def check(p: Parser[Any], data: String*) = {
         for (str <- data) {
           p(str toProperStream) must beLike {
-            case Success(str, Stream()) :: Nil => true
+            case Success(`str`, Stream()) :: Nil => true
             case _ => false
           }
         }
@@ -124,6 +186,63 @@ object DisjunctionSpecs extends Specification with ImplicitConversions with Scal
       {
         val p = "daniel" | "chris" | "joseph" | "renee"
         check(p, "daniel", "chris", "joseph", "renee")
+      }
+    }
+    
+    "produce nary failures for LL(1)" in {
+      // assumes unambiguous data
+      def check1(p: Parser[Any], expect: String*)(data: String*) = {
+        val pattern = "Expected '%s' got '%s'"
+        
+        for (str <- data) {
+          val stream = str toProperStream
+          val res = p(stream)
+          
+          val failures = expect.foldRight(List[String]()) { _ :: _ } map { ex => 
+            Failure(pattern.format(ex, str), stream)
+          }
+          
+          res must haveTheSameElementsAs(failures)
+        }
+      }
+      
+      def check2(p: Parser[Any], expect: String*)(data: String*) = {
+        val pattern = "Unexpected end of stream (expected '%s')"
+        
+        for (str <- data) {
+          val stream = str toProperStream
+          val res = p(stream)
+          
+          val failures = expect.foldRight(List[String]()) { _ :: _ } map { ex => 
+            Failure(pattern.format(ex), stream)
+          }
+          
+          res must haveTheSameElementsAs(failures)
+        }
+      }
+      
+      {
+        val p = "daniel" | "chris" | "joseph" | "renee" | "bethany" | "grace"
+        
+        check1(p, "daniel")("dancin")
+        check1(p, "chris")("chari")
+        check1(p, "joseph")("josefs")
+        
+        check2(p, "daniel")("dan", "d")
+        check2(p, "joseph")("joe", "j")
+        check2(p, "bethany")("beth", "b")
+      }
+      
+      {
+        val p = "renee" | "bethany" | "grace"
+        
+        check1(p, "renee")("rainb")
+        check1(p, "bethany")("battiny")
+        check1(p, "grace")("grabo")
+        
+        check2(p, "renee")("ren", "r")
+        check2(p, "bethany")("beth", "b")
+        check2(p, "grace")("gr", "g")
       }
     }
     
