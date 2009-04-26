@@ -373,14 +373,14 @@ trait Parsers {
       if (isLL1) {        // graceful degrade to LL(1)
         trace("Detected LL(1): " + this)
         
-        for {
-          set <- predict get in.head
-          p <- set
-        } p.queue(t, in)(f)
-        
-        if (in.isEmpty)
+        if (in.isEmpty) {
           f(Failure("Unexpected end of stream", in))
-        else {
+        } else {
+          for {
+            set <- predict get in.head
+            p <- set
+          } p.queue(t, in)(f)
+          
           if (!predict.contains(in.head))
             f(Failure(UNEXPECTED_PATTERN.format(in.head), in))
         }
