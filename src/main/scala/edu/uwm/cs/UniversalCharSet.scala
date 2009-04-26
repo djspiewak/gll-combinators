@@ -9,7 +9,7 @@ case object UniversalCharSet extends Set[Char] {
   
   override def forall(f: Char=>Boolean) = false
   
-  def **(that: Set[Char]) = UniversalCharSet
+  def **(that: Set[Char]) = that
   
   def +(e: Char) = UniversalCharSet
   
