@@ -14,6 +14,10 @@ object StreamUtils {
     def #::[B](v: B) = cons(v, str)
   }
   
+  implicit def repSyntax[A](v: A) = new {
+    def rep: Stream[A] = cons(v, rep)
+  }
+  
   implicit def str2stream(str: String) = new {
     def toProperStream = {
       def gen(i: Int): Stream[Char] = {
