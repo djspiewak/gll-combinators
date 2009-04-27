@@ -53,7 +53,7 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
     }
     
     "parse an unambiguous left-recursive grammar" in {
-      def p: Parser[String] = (
+      lazy val p: Parser[String] = (
           p ~ "a" ^^ { _ + _ }
         | "a"
       )
@@ -75,15 +75,15 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
     }
     
     "parse Gamma_1" in {
-      def b = "" | "a"
+      val b = "" | "a"
       
-      def c: Parser[String] = (
+      lazy val c: Parser[String] = (
           "b"
         | b ~ c ~ "b" ^^ { _ + _ + _ }
         | "b" ~ "b"   ^^^ "bb"
       )
       
-      def s = (
+      val s = (
           c ~ "a" ^^ { _ + _ }
         | "d"
       )
@@ -110,7 +110,7 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
     }
     
     "parse Gamma_2" in {
-      def s: Parser[String] = (
+      lazy val s: Parser[String] = (
           "b"
         | s ~ s     ^^ { _ + _ }
         | s ~ s ~ s ^^ { _ + _ + _ }
@@ -133,7 +133,7 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
     }
     
     "parse Gamma_2*" in {
-      def s: Parser[String] = (
+      lazy val s: Parser[String] = (
           "b"
         | s ~ s ~ (s | "") ^^ { _ + _ + _ }
       )
