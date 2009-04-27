@@ -461,24 +461,23 @@ trait Parsers {
   //////////////////////////////////////////////////////////////////////////////
   
   class Trampoline {
-    private type Potential = (Parser[Any], Stream[Char])
-    
-    private val queue = new mutable.Queue[Potential]
+    private val queue = new mutable.Queue[(Parser[Any], Stream[Char])]
     private val backlinks = mutable.Map[Stream[Char], mutable.Map[Parser[Any], mutable.ListBuffer[Result[Any]=>Unit]]]()
-    private val popped = mutable.Map[Potential, mutable.Set[Result[Any]]]()
+    private val popped = mutable.Map[Stream[Char], mutable.Map[Parser[Any], mutable.Set[Result[Any]]]]()
     
     def run() {
       while (queue.length > 0) {
         val (p, s, f) = pop()
         
         p.queue(this, s) { res =>
-          val tuple = (p, s)
+          if (!popped.contains(s))
+            popped += (s -> new mutable.HashMap[Parser[Any], mutable.Set[Result[Any]]])
           
-          if (!popped.contains(tuple))
-            popped += (tuple -> new mutable.HashSet[Result[Any]])
+          if (!popped(s).contains(p))
+            popped(s) += (p -> new mutable.HashSet[Result[Any]])
           
-          popped(tuple) += res
-          tracef("Saved: %s *=> %s%n", tuple, res)
+          popped(s)(p) += res
+          tracef("Saved: %s *=> %s%n", (p, s), res)
           
           f(res)
         }
@@ -488,8 +487,8 @@ trait Parsers {
     def push[A](p: Parser[A], s: Stream[Char])(f: Result[A]=>Unit) {
       val tuple = (p, s)
       
-      if (popped contains tuple) {
-        for (res <- popped(tuple)) {           // if we've already done that, use the result
+      if (popped.contains(s) && popped(s).contains(p)) {
+        for (res <- popped(s)(p)) {           // if we've already done that, use the result
           tracef("Revisited: %s *=> %s%n", tuple, res)
           f(res.asInstanceOf[Result[A]])
         }
