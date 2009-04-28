@@ -514,7 +514,7 @@ trait Parsers {
         if (links.size == 1)
           links.toList.head
         else
-          { res: Result[Any] => links foreach { _(res) } }
+          (res: Result[Any]) => links foreach { _(res) }
       }
       
       backlinks(s) -= p
