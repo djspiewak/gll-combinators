@@ -38,6 +38,17 @@ trait Parsers {
     
     def map[R2](f: R=>R2): Parser[R2]
     
+    def flatMap[R2](f1: R=>Parser[R2]): Parser[R2] = new NonTerminalParser[R2] {
+      def computeFirst(seen: Set[Parser[Any]]) = self.computeFirst(seen + this)
+      
+      def queue(t: Trampoline, in: Stream[Char])(f2: Result[R2]=>Unit) {
+        self.queue(t, in) {
+          case Success(res1, tail) => f1(res1).queue(t, in)(f2)
+          case f: Failure => f2(f)
+        }
+      }
+    }
+    
     // operators
     
     def ~[R2](that: Parser[R2]): Parser[~[R, R2]] = new SequentialParser(this, that)
