@@ -472,19 +472,23 @@ trait Parsers {
   //////////////////////////////////////////////////////////////////////////////
   
   class Trampoline {
+    private type RSet[A] = mutable.Set[Result[A]]
+    private type FSet[A] = mutable.Set[Result[A]=>Unit]
+    
     // R
     private val queue = new mutable.Queue[(Parser[Any], Stream[Char])]
+    
     // U_j
     private val done = mutable.Map[Stream[Char], mutable.Set[Parser[Any]]]()
     
     // P
-    private val popped = mutable.Map[Stream[Char], mutable.Map[Parser[Any], mutable.Set[Result[Any]]]]()
+    private val popped = mutable.Map[Stream[Char], HOMap[Parser, RSet]]()
     
     // GSS back edges
-    private val backlinks = mutable.Map[Parser[Any], mutable.Set[Result[Any]=>Unit]]()
+    private val backlinks = HOMap[Parser, FSet]()
     
     // prevents divergence in cyclic GSS traversal
-    private val saved = mutable.Map[Result[Any], mutable.Set[Result[Any]=>Unit]]()
+    private val saved = HOMap[Result, FSet]()
     
     // L0
     def run() {
@@ -493,7 +497,7 @@ trait Parsers {
         
         p.queue(this, s) { res =>
           if (!popped.contains(s))
-            popped += (s -> new mutable.HashMap[Parser[Any], mutable.Set[Result[Any]]])
+            popped += (s -> HOMap[Parser, RSet]())
         
           if (!popped(s).contains(p))
             popped(s) += (p -> new mutable.HashSet[Result[Any]])
@@ -520,13 +524,13 @@ trait Parsers {
       if (popped.contains(s) && popped(s).contains(p)) {
         for (res <- popped(s)(p)) {           // if we've already done that, use the result
           tracef("Revisited: %s *=> %s%n", tuple, res)
-          f(res.asInstanceOf[Result[A]])
+          f(res)
         }
       } else {
         if (!backlinks.contains(p)) {
           backlinks += (p -> new mutable.HashSet[Result[Any]=>Unit])
         }
-        backlinks(p) += f.asInstanceOf[Result[Any]=>Unit]
+        backlinks(p) += f
         
         if (!done.contains(s))
           done += (s -> new mutable.HashSet[Parser[Any]])
