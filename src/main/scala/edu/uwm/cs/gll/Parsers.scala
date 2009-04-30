@@ -63,12 +63,12 @@ trait Parsers {
       def computeFirst(seen: Set[Parser[Any]]) = self.computeFirst(seen + this)
       
       def queue(t: Trampoline, in: Stream[Char])(f: Result[List[R]]=>Unit) {
-        t.push(self, in) {
+        t.add(self, in) {
           case Success(res1, tail) => {
             f(Success(res1 :: Nil, tail))
             
             if ((!tail.isEmpty || first.size == 0) && (tail.isEmpty || (first.contains(in.head) || first.size == 0))) {      // lookahead}
-              t.push(this, tail) {
+              t.add(this, tail) {
                 case Success(res2, tail) => f(Success(res1 :: res2, tail))
                 case res: Failure => f(res)
               }
@@ -88,7 +88,7 @@ trait Parsers {
       def queue(t: Trampoline, in: Stream[Char])(f: Result[Option[R]]=>Unit) {
         f(Success(None, in))
         
-        t.push(self, in) {
+        t.add(self, in) {
           case Success(res, tail) => f(Success(Some(res), tail))
           case res: Failure => f(res)
         }
@@ -409,7 +409,7 @@ trait Parsers {
               if in.isEmpty || p.first.contains(in.head) || p.first.size == 0      // lookahead
             } {
               predicted = true
-              t.push(p, in) { res =>
+              t.add(p, in) { res =>
                 if (!results.contains(res)) {
                   tracef("Reduced: %s *=> %s%n".format(this, res))
     
@@ -428,7 +428,7 @@ trait Parsers {
           }
         }
   
-        t.push(thunk, in)(f)
+        t.add(thunk, in)(f)
       }
     }
     
@@ -472,15 +472,24 @@ trait Parsers {
   //////////////////////////////////////////////////////////////////////////////
   
   class Trampoline {
+    // R
     private val queue = new mutable.Queue[(Parser[Any], Stream[Char])]
+    // U_j
     private val done = mutable.Map[Stream[Char], mutable.Set[Parser[Any]]]()
-    private val backlinks = mutable.Map[Parser[Any], mutable.Set[Result[Any]=>Unit]]()
+    
+    // P
     private val popped = mutable.Map[Stream[Char], mutable.Map[Parser[Any], mutable.Set[Result[Any]]]]()
+    
+    // GSS back edges
+    private val backlinks = mutable.Map[Parser[Any], mutable.Set[Result[Any]=>Unit]]()
+    
+    // prevents divergence in cyclic GSS traversal
     private val saved = mutable.Map[Result[Any], mutable.Set[Result[Any]=>Unit]]()
     
+    // L0
     def run() {
       while (queue.length > 0) {
-        val (p, s) = pop()
+        val (p, s) = remove()
         
         p.queue(this, s) { res =>
           if (!popped.contains(s))
@@ -505,7 +514,7 @@ trait Parsers {
       }
     }
   
-    def push[A](p: Parser[A], s: Stream[Char])(f: Result[A]=>Unit) {
+    def add[A](p: Parser[A], s: Stream[Char])(f: Result[A]=>Unit) {
       val tuple = (p, s)
       
       if (popped.contains(s) && popped(s).contains(p)) {
@@ -526,14 +535,14 @@ trait Parsers {
           queue += tuple
           done(s) += p
           
-          trace("Pushed: " + tuple)
+          trace("Added: " + tuple)
         }
       }
     }
     
-    private def pop() = {
+    private def remove() = {
       val tuple @ (p, s) = queue.dequeue()
-      trace("Popped: " + tuple)
+      trace("Removed: " + tuple)
       
       tuple
     }
