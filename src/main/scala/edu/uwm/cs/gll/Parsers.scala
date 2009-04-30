@@ -488,7 +488,7 @@ trait Parsers {
     
     // L0
     def run() {
-      while (queue.length > 0) {
+      while (!queue.isEmpty) {
         val (p, s) = remove()
         
         p.queue(this, s) { res =>
