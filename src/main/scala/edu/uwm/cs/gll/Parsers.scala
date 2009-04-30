@@ -473,24 +473,34 @@ trait Parsers {
   
   class Trampoline {
     private val queue = new mutable.Queue[(Parser[Any], Stream[Char])]
-    private val backlinks = mutable.Map[Stream[Char], mutable.Map[Parser[Any], mutable.ListBuffer[Result[Any]=>Unit]]]()
+    private val done = mutable.Map[Stream[Char], mutable.Set[Parser[Any]]]()
+    private val backlinks = mutable.Map[Parser[Any], mutable.Set[Result[Any]=>Unit]]()
     private val popped = mutable.Map[Stream[Char], mutable.Map[Parser[Any], mutable.Set[Result[Any]]]]()
+    private val saved = mutable.Map[Result[Any], mutable.Set[Result[Any]=>Unit]]()
     
     def run() {
       while (queue.length > 0) {
-        val (p, s, f) = pop()
+        val (p, s) = pop()
         
         p.queue(this, s) { res =>
           if (!popped.contains(s))
             popped += (s -> new mutable.HashMap[Parser[Any], mutable.Set[Result[Any]]])
-          
+        
           if (!popped(s).contains(p))
             popped(s) += (p -> new mutable.HashSet[Result[Any]])
-          
+        
           popped(s)(p) += res
           tracef("Saved: %s *=> %s%n", (p, s), res)
+        
+          if (!saved.contains(res))
+            saved += (res -> new mutable.HashSet[Result[Any]=>Unit])
           
-          f(res)
+          for (f <- backlinks(p)) {
+            if (!saved(res).contains(f)) {
+              saved(res) += f
+              f(res)
+            }
+          }
         }
       }
     }
@@ -504,37 +514,28 @@ trait Parsers {
           f(res.asInstanceOf[Result[A]])
         }
       } else {
-        if (!backlinks.contains(s))
-          backlinks += (s -> new mutable.HashMap[Parser[Any], mutable.ListBuffer[Result[Any]=>Unit]]())
-        
-        if (!backlinks(s).contains(p)) {
-          queue += tuple
-          backlinks(s) += (p -> new ListBuffer[Result[Any]=>Unit])
+        if (!backlinks.contains(p)) {
+          backlinks += (p -> new mutable.HashSet[Result[Any]=>Unit])
         }
-        backlinks(s)(p) += f.asInstanceOf[Result[Any]=>Unit]
-  
-        trace("Pushed: " + tuple)
+        backlinks(p) += f.asInstanceOf[Result[Any]=>Unit]
+        
+        if (!done.contains(s))
+          done += (s -> new mutable.HashSet[Parser[Any]])
+        
+        if (!done(s).contains(p)) {
+          queue += tuple
+          done(s) += p
+          
+          trace("Pushed: " + tuple)
+        }
       }
     }
     
     private def pop() = {
       val tuple @ (p, s) = queue.dequeue()
-      val f = {
-        val links = backlinks(s)(p)
-        
-        if (links.size == 1)
-          links.toList.head
-        else
-          (res: Result[Any]) => links foreach { _(res) }
-      }
-      
-      backlinks(s) -= p
-      if (backlinks(s).size == 0)
-        backlinks -= s
-  
       trace("Popped: " + tuple)
       
-      (p, s, f)
+      tuple
     }
   }
 }
