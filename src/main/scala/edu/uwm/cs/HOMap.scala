@@ -21,3 +21,10 @@ private[cs] class HOMap[K[_], V[_]] {
   def apply[T](key: K[T]) = get(key) getOrElse { throw new IllegalArgumentException("No value for specified key") }
 }
 
+private[cs] object HOMap {
+  def apply[K[_], V[_]](tuples: (K[A], V[A]) forSome { type A } *) = {
+    val back = new HOMap[K, V]
+    tuples foreach { case (k, v) => back.add(k, v) } 
+    back
+  }
+}
