@@ -19,6 +19,17 @@ private[cs] class HOMap[K[_], V[_]] {
   def get[T](key: K[T]): Option[V[T]] = underlying.get(key).asInstanceOf[Option[V[T]]]
   
   def apply[T](key: K[T]) = get(key) getOrElse { throw new IllegalArgumentException("No value for specified key") }
+  
+  def update[T](key: K[T], value: V[T]) {
+    underlying(key) = value
+  }
+  
+  def +=[T](tuple: (K[T], V[T])) {
+    underlying += tuple
+  }
+  
+  
+  def contains(key: K[_]) = underlying.contains(key)
 }
 
 private[cs] object HOMap {
