@@ -8,14 +8,6 @@ define 'gll-combinators' do
   
   test.using :specs
   test.exclude 'AllSpecs'
-  
-  if defined? cobertura
-    cobertura.include /edu.uwm.cs.gll..+/
-    
-    cobertura.exclude /edu.uwm.cs.gll.Global/
-    cobertura.exclude /^[^\.]+$/
-    cobertura.exclude /edu.uwm.cs.util..+/
-  end
 
   package
 end
