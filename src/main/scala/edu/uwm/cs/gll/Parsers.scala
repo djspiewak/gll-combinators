@@ -54,6 +54,25 @@ trait Parsers {
       }
     }
     
+    def filter(f: R=>Boolean): Parser[R] = new NonTerminalParser[R] {
+      def computeFirst(seen: Set[Parser[Any]]) = self.computeFirst(seen + this)
+      
+      def queue(t: Trampoline, in: Stream[Char])(f2: Result[R]=>Unit) {
+        self.queue(t, in) {
+          case s @ Success(res, _) => {
+            if (f(res))
+              f2(s)
+            else
+              f2(Failure("Syntax error", in))
+          }
+          
+          case f: Failure => f2(f)
+        }
+      }
+    }
+    
+    def orElse[R2 >: R](alternate: =>Parser[R2]): Parser[R2] = new DisjunctiveParser(this, alternate)
+    
     // operators
     
     def ~[R2](that: Parser[R2]): Parser[R ~ R2] = new SequentialParser(this, that)
