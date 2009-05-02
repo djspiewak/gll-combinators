@@ -345,13 +345,8 @@ trait Parsers {
      * FIRST set must be handled specially.
      */
     lazy val predict = {
-      gather.foldLeft(Map[Char, Set[Parser[A]]]()) { (map, p) =>
-        p.first.foldLeft(map) { (map, c) =>
-          if (map contains c)
-            map(c) += p
-          else
-            map + (c -> Set(p))
-        }
+      gather.foldLeft(Map[Char, Parser[A]]()) { (map, p) =>
+        p.first.foldLeft(map) { _(_) = p }
       }
     }
   
@@ -392,13 +387,11 @@ trait Parsers {
         if (in.isEmpty) {
           f(Failure("Unexpected end of stream", in))
         } else {
-          for {
-            set <- predict get in.head
-            p <- set
-          } p.queue(t, in)(f)
-          
-          if (!predict.contains(in.head))
-            f(Failure(UNEXPECTED_PATTERN.format(in.head), in))
+          predict get in.head match {
+            case Some(p) => p.queue(t, in)(f)
+            
+            case None => f(Failure(UNEXPECTED_PATTERN.format(in.head), in))
+          }
         }
       } else {
         val thunk = new ThunkParser(this) {
