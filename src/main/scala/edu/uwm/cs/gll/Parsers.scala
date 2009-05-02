@@ -48,7 +48,7 @@ trait Parsers {
       
       def queue(t: Trampoline, in: Stream[Char])(f2: Result[R2]=>Unit) {
         self.queue(t, in) {
-          case Success(res1, tail) => f1(res1).queue(t, in)(f2)
+          case Success(res1, tail) => f1(res1).queue(t, tail)(f2)
           case f: Failure => f2(f)
         }
       }
