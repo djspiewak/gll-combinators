@@ -1,0 +1,26 @@
+require 'buildr/scala'
+
+GLL = task '../target/classes' do
+  Dir.chdir '..' do
+    system 'buildr compile' or fail 'Failed to compile gll-combinators.'
+  end
+end
+
+define 'examples' do
+  compile.with GLL
+  
+  run_eg = proc do |name|
+    classname = "#{name}.#{name.capitalize}Parser"
+    puts "Running #{classname}"
+    
+    cp = compile.dependencies.map(&:to_s).join(File::PATH_SEPARATOR) + File::PATH_SEPARATOR + _(:target, :classes)
+    trace cp
+    system 'java', '-cp', cp, classname, *Dir.glob("input/#{name}/*")
+  end
+  
+  task :arithmetic => :compile do
+    run_eg.call 'arithmetic'
+  end
+  
+  task :run => [:arithmetic]
+end
