@@ -11,7 +11,7 @@ object StreamUtils {
   }
   
   implicit def streamSyntax[A](str: =>Stream[A]) = new {
-    def #::[B](v: B) = cons(v, str)
+    def #::[B >: A](v: B) = cons(v, str)
   }
   
   implicit def repSyntax[A](v: A) = new {
