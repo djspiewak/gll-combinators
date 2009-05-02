@@ -399,7 +399,7 @@ trait Parsers {
         val thunk = new ThunkParser(this) {
           def queue(t: Trampoline, in: Stream[Char])(f: Result[A]=>Unit) {
             var predicted = false
-            var results = Set[Result[A]]()    // merge results
+            val results = mutable.Set[Result[A]]()    // merge results
             
             for {
               p <- gather
