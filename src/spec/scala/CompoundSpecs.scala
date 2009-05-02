@@ -216,6 +216,8 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
         case Failure("Expected 'b' got 'c'", Stream('c')) :: Nil => true
         case _ => false
       }
+      
+      p.first mustEqual Set('a')
     }
     
     "compose using map" in {
@@ -230,6 +232,8 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
         case Failure("Expected '1' got '2'", Stream('2')) :: Nil => true
         case _ => false
       }
+      
+      p.first mustEqual Set('1')
     }
     
     "compose using orElse" in {
@@ -249,6 +253,8 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
         case Failure("Unexpected value in stream: 'c'", Stream('c')) :: Nil => true
         case _ => false
       }
+      
+      p.first mustEqual Set('a', 'b')
     }
     
     "filter" in {
@@ -268,6 +274,8 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
         case Failure("Unexpected value in stream: 'c'", Stream('c')) :: Nil => true
         case _ => false
       }
+      
+      p.first mustEqual Set('a', 'b')
     }
   }
 }
