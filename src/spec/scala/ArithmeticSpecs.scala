@@ -132,7 +132,6 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
       prop must pass
     }
     
-    // non-deterministic bugs here??
     "produce both associativity configurations" in {
       val res = expr("42 + 13 + 12") map { 
         case Success(e, Stream()) => e
