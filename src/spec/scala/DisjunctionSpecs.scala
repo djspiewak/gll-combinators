@@ -5,7 +5,6 @@ import org.scalacheck._
 
 object DisjunctionSpecs extends Specification with ImplicitConversions with ScalaCheck {
   import Prop._
-  import StreamUtils._
   
   "disjunctive parser" should {
     "detect LL(1) grammar" in {
@@ -74,12 +73,12 @@ object DisjunctionSpecs extends Specification with ImplicitConversions with Scal
       {
         val p = "daniel" | "chris"
         
-        p("daniel" toProperStream) must beLike {
+        p("daniel") must beLike {
           case Success("daniel", Stream()) :: Nil => true
           case _ => false
         }
         
-        p("chris" toProperStream) must beLike {
+        p("chris") must beLike {
           case Success("chris", Stream()) :: Nil => true
           case _ => false
         }
@@ -88,7 +87,7 @@ object DisjunctionSpecs extends Specification with ImplicitConversions with Scal
       {
         val p = "" | ""
         
-        p("" toProperStream) must beLike {
+        p("") must beLike {
           case Success("", Stream()) :: Nil => true
           case _ => false
         }
@@ -126,12 +125,12 @@ object DisjunctionSpecs extends Specification with ImplicitConversions with Scal
     "produce binary failures for LL(1)" in {
       val p = "daniel" | "chris"
       
-      p("dan" toProperStream) must beLike {
+      p("dan") must beLike {
         case Failure("Unexpected end of stream (expected 'daniel')", Stream('d', 'a', 'n')) :: Nil => true
         case _ => false
       }
       
-      p("dancin" toProperStream) must beLike {
+      p("dancin") must beLike {
         case Failure("Expected 'daniel' got 'dancin'", Stream('d', 'a', 'n', 'c', 'i', 'n')) :: Nil => true
         case _ => false
       }
@@ -141,7 +140,7 @@ object DisjunctionSpecs extends Specification with ImplicitConversions with Scal
       val p = "foobar" | "foobaz"
       
       {
-        val data = "foo" toProperStream
+        val data = "foo".foldRight(Stream[Char]()) { Stream.cons(_, _) }
         
         p(data) must haveTheSameElementsAs(List(
           Failure("Unexpected end of stream (expected 'foobar')", data),
@@ -149,7 +148,7 @@ object DisjunctionSpecs extends Specification with ImplicitConversions with Scal
       }
       
       {
-        val data = "foobat" toProperStream
+        val data = "foobat".foldRight(Stream[Char]()) { Stream.cons(_, _) }
         
         p(data) must haveTheSameElementsAs(List(
           Failure("Expected 'foobar' got 'foobat'", data),
@@ -208,7 +207,7 @@ object DisjunctionSpecs extends Specification with ImplicitConversions with Scal
       // assumes unambiguous data
       def check(p: Parser[Any], data: String*) = {
         for (str <- data) {
-          p(str toProperStream) must beLike {
+          p(str) must beLike {
             case Success(`str`, Stream()) :: Nil => true
             case _ => false
           }
@@ -237,7 +236,7 @@ object DisjunctionSpecs extends Specification with ImplicitConversions with Scal
         val pattern = "Expected '%s' got '%s'"
         
         for (str <- data) {
-          val stream = str toProperStream
+          val stream = str.foldRight(Stream[Char]()) { Stream.cons(_, _) }
           val res = p(stream)
           
           val failures = expect.foldRight(List[String]()) { _ :: _ } map { ex => 
@@ -252,7 +251,7 @@ object DisjunctionSpecs extends Specification with ImplicitConversions with Scal
         val pattern = "Unexpected end of stream (expected '%s')"
         
         for (str <- data) {
-          val stream = str toProperStream
+          val stream = str.foldRight(Stream[Char]()) { Stream.cons(_, _) }
           val res = p(stream)
           
           val failures = expect.foldRight(List[String]()) { _ :: _ } map { ex => 
@@ -296,12 +295,12 @@ object DisjunctionSpecs extends Specification with ImplicitConversions with Scal
             | right
           ) ^^ f
           
-          p(left toProperStream) must beLike {
+          p(left) must beLike {
             case Success(v, Stream()) :: Nil => v == f(left)
             case _ => false
           }
           
-          p(right toProperStream) must beLike {
+          p(right) must beLike {
             case Success(v, Stream()) :: Nil => v == f(right)
             case _ => false
           }
@@ -326,7 +325,7 @@ object DisjunctionSpecs extends Specification with ImplicitConversions with Scal
         
         // %%
         
-        val result = p((head + suffix) toProperStream)
+        val result = p((head + suffix))
         
         result.length mustBe 2
         

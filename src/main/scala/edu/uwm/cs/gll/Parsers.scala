@@ -4,6 +4,7 @@ import scala.collection.mutable
 import mutable.{Buffer, ListBuffer}
 
 import Global._
+import StreamUtils._
 
 // I hate the way this file is organized, but I don't have a choice
 trait Parsers {
@@ -35,6 +36,8 @@ trait Parsers {
     def queue(t: Trampoline, in: Stream[Char])(f: Result[R]=>Unit)
     
     // syntax
+    
+    def apply(str: String): List[Result[R]] = apply(str toProperStream)
     
     def map[R2](f: R=>R2): Parser[R2]
     

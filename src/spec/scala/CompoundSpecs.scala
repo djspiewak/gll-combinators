@@ -5,7 +5,6 @@ import org.scalacheck._
 
 object CompoundSpecs extends Specification with ImplicitConversions with ScalaCheck {
   import Prop._
-  import StreamUtils._
   
   "compound non-terminal parsers" should {
     "parse an unambiguous right-recursive grammar" in {
@@ -16,7 +15,7 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
    
       // assumes data =~ /a+/
       def check(data: String) {
-        p(data toProperStream) must beLike {
+        p(data) must beLike {
           case Success(`data`, Stream()) :: Nil => true
           case _ => false
         }
@@ -38,7 +37,7 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
       
       // assumes data =~ /a+/
       def check(data: String) {
-        p(data toProperStream) must beLike {
+        p(data) must beLike {
           case Success(`data`, Stream()) :: Nil => true
           case _ => false
         }
@@ -60,7 +59,7 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
       
       // assumes data =~ /a+/
       def check(data: String) {
-        p(data toProperStream) must beLike {
+        p(data) must beLike {
           case Success(`data`, Stream()) :: Nil => true
           case _ => false
         }
@@ -90,7 +89,7 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
       
       // assumes data =~ /a+/
       def check(data: String) {
-        s(data toProperStream) must beLike {
+        s(data) must beLike {
           case Success(`data`, Stream()) :: _ => true     // we don't care how many derivations, just that it works
           case _ => false
         }
@@ -118,7 +117,7 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
       
       // assumes data =~ /a+/
       def check(data: String) {
-        s(data toProperStream) must beLike {
+        s(data) must beLike {
           case Success(`data`, Stream()) :: _ => true     // we don't care how many derivations, just that it works
           case _ => false
         }
@@ -140,7 +139,7 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
       
       // assumes data =~ /a+/
       def check(data: String) {
-        s(data toProperStream) must beLike {
+        s(data) must beLike {
           case Success(`data`, Stream()) :: _ => true     // we don't care how many derivations, just that it works
           case _ => false
         }
@@ -159,12 +158,12 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
     "repeat 0..n times" in {
       val p = literal("123")*
       
-      p("123" toProperStream) must beLike {
+      p("123") must beLike {
         case Success(List("123"), Stream()) :: Nil => true
         case _ => false
       }
       
-      p("123123123123123123123123123123123" toProperStream) must beLike {
+      p("123123123123123123123123123123123") must beLike {
         case Success(List("123", "123", "123", "123", "123", "123", "123", "123", "123", "123", "123"), Stream()) :: Nil => true
         case _ => false
       }
@@ -178,12 +177,12 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
     "repeat 1..n times" in {
       val p = literal("123")+
       
-      p("123" toProperStream) must beLike {
+      p("123") must beLike {
         case Success(List("123"), Stream()) :: Nil => true
         case _ => false
       }
       
-      p("123123123123123123123123123123123" toProperStream) must beLike {
+      p("123123123123123123123123123123123") must beLike {
         case Success(List("123", "123", "123", "123", "123", "123", "123", "123", "123", "123", "123"), Stream()) :: Nil => true
         case _ => false
       }
@@ -192,7 +191,7 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
     "repeat 0..1 times" in {
       val p = literal("123")?
       
-      p("123" toProperStream) must beLike {
+      p("123") must beLike {
         case Success(Some("123"), Stream()) :: Nil => true
         case _ => false
       }

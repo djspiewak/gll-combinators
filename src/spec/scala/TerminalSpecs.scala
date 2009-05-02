@@ -5,13 +5,12 @@ import org.scalacheck._
 
 object TerminalSpecs extends Specification with ScalaCheck with ImplicitConversions {
   import Prop._
-  import StreamUtils._
   
   "terminal parser" should {
     "parse single tokens" in {
       val p = literal("test")
       
-      p("test" toProperStream) must beLike {
+      p("test") must beLike {
         case Success("test", Stream()) :: Nil => true
         case _ => false
       }
@@ -20,12 +19,12 @@ object TerminalSpecs extends Specification with ScalaCheck with ImplicitConversi
     "produce 'expected' failure message" in {
       val p = literal("foo")
       
-      p("bar" toProperStream) must beLike {
+      p("bar") must beLike {
         case Failure("Expected 'foo' got 'bar'", Stream('b', 'a', 'r')) :: Nil => true
         case _ => false
       }
       
-      p("test" toProperStream) must beLike {
+      p("test") must beLike {
         case Failure("Expected 'foo' got 'tes'", Stream('t', 'e', 's', 't')) :: Nil => true
         case _ => false
       }
@@ -68,7 +67,7 @@ object TerminalSpecs extends Specification with ScalaCheck with ImplicitConversi
     "map results according to a function" in {
       val p = "test" ^^ { _.length }
       
-      p("test" toProperStream) match {
+      p("test") match {
         case Success(4, Stream()) :: Nil => true
         case _ => false
       }
@@ -77,7 +76,7 @@ object TerminalSpecs extends Specification with ScalaCheck with ImplicitConversi
     "map results according to a value" in {
       val p = "test" ^^^ 42
       
-      p("test" toProperStream) match {
+      p("test") match {
         case Success(42, Stream()) :: Nil => true
         case _ => false
       }
@@ -88,7 +87,7 @@ object TerminalSpecs extends Specification with ScalaCheck with ImplicitConversi
     "parse multiple tokens" in {
       val p = "te" ~ "st"
       
-      p("test" toProperStream) must beLike {
+      p("test") must beLike {
         case Success("te" ~ "st", Stream()) :: Nil => true
         case _ => false
       }
@@ -97,12 +96,12 @@ object TerminalSpecs extends Specification with ScalaCheck with ImplicitConversi
     "produce 'expected' error message" in {
       val p = "te" ~ "st"
       
-      p("foo" toProperStream) must beLike {
+      p("foo") must beLike {
         case Failure("Expected 'te' got 'fo'", Stream('f', 'o', 'o')) :: Nil => true
         case _ => false
       }
       
-      p("tefoo" toProperStream) must beLike {
+      p("tefoo") must beLike {
         case Failure("Expected 'st' got 'fo'", Stream('f', 'o', 'o')) :: Nil => true
         case _ => false
       }
@@ -121,12 +120,12 @@ object TerminalSpecs extends Specification with ScalaCheck with ImplicitConversi
         case _ => false
       }
       
-      p("tes" toProperStream) must beLike {
+      p("tes") must beLike {
         case Failure("Unexpected end of stream (expected 'st')", Stream('s')) :: Nil => true
         case _ => false
       }
       
-      p("te" toProperStream) must beLike {
+      p("te") must beLike {
         case Failure("Unexpected end of stream (expected 'st')", Stream()) :: Nil => true
         case _ => false
       }

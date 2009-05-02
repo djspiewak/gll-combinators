@@ -5,7 +5,6 @@ import org.scalacheck._
 
 object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
   import Prop._
-  import StreamUtils._
   
   "arithmetic grammar" should {
     "compute FIRST set" in {
@@ -14,7 +13,7 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
     
     "parse numbers" in {
       val prop = forAll { x: Int =>
-        expr(x.toString.toProperStream) match {
+        expr(x.toString) match {
           case Success(e, Stream()) :: Nil => e.solve == x
           case _ => false
         }
@@ -25,7 +24,7 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
     
     "parse simple addition" in {
       val prop = forAll { (x: Int, y: Int) =>
-        val res = expr((x + "+" + y) toProperStream)
+        val res = expr((x + "+" + y))
         
         if (x < 0) {
           res.length mustBe 2
@@ -52,7 +51,7 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
     
     "parse simple subtraction" in {
       val prop = forAll { (x: Int, y: Int) =>
-        val res = expr((x + "-" + y) toProperStream)
+        val res = expr((x + "-" + y))
         
         if (x < 0) {
           res.length mustBe 2
@@ -79,7 +78,7 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
     
     "parse simple multiplication" in {
       val prop = forAll { (x: Int, y: Int) =>
-        val res = expr((x + "*" + y) toProperStream)
+        val res = expr((x + "*" + y))
         
         if (x < 0) {
           res.length mustBe 2
@@ -107,7 +106,7 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
     "parse simple division" in {
       val prop = forAll { (x: Int, y: Int) =>
         y != 0 ==> {
-          val res = expr((x + "/" + y) toProperStream)
+          val res = expr((x + "/" + y))
           
           if (x < 0) {
             res.length mustBe 2
@@ -135,7 +134,7 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
     
     // non-deterministic bugs here??
     "produce both associativity configurations" in {
-      val res = expr("42 + 13 + 12" toProperStream) map { 
+      val res = expr("42 + 13 + 12") map { 
         case Success(e, Stream()) => e
         case r => fail("%s does not match the expected pattern".format(r))
       }
@@ -147,7 +146,7 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
     }
     
     "produce both binary precedence configurations" in {
-      val res = expr("42 + 13 - 12" toProperStream) map { 
+      val res = expr("42 + 13 - 12") map { 
         case Success(e, Stream()) => e
         case r => fail("%s does not match the expected pattern".format(r))
       }
@@ -158,7 +157,7 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
     }
     
     "produce both unary precedence configurations" in {
-      val res = expr("-42 + 13" toProperStream) map {
+      val res = expr("-42 + 13") map {
         case Success(e, Stream()) => e.solve
         case r => fail("%s does not match the expected pattern".format(r))
       }

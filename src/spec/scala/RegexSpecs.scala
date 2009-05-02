@@ -3,8 +3,6 @@ import edu.uwm.cs.gll._
 import org.specs._
 import org.scalacheck._
 
-import StreamUtils._
-
 object RegexSpecs extends Specification with ScalaCheck with RegexParsers {
   import Prop._
   
@@ -13,7 +11,7 @@ object RegexSpecs extends Specification with ScalaCheck with RegexParsers {
       {
         val p: Parser[String] = """(\d{1,3}\.){3}\d{1,3}"""r
         
-        p("192.168.101.2" toProperStream) must beLike {
+        p("192.168.101.2") must beLike {
           case Success("192.168.101.2", Stream()) :: Nil => true
           case _ => false
         }
@@ -23,7 +21,7 @@ object RegexSpecs extends Specification with ScalaCheck with RegexParsers {
         val p: Parser[String] = """\d+"""r
         
         var passed = false
-        p.queue(null, "1234daniel" toProperStream) {
+        p.queue(null, "1234daniel".foldRight(Stream[Char]()) { Stream.cons(_, _) }) {
           case Success(res, tail) => {
             if (passed) {
               fail("Produced more than one result")
@@ -31,7 +29,7 @@ object RegexSpecs extends Specification with ScalaCheck with RegexParsers {
               passed = true
               
               res mustEqual "1234"
-              tail zip "daniel".toProperStream forall { case (a, b) => a == b } mustBe true
+              tail zip Stream('d', 'a', 'n', 'i', 'e', 'l') forall { case (a, b) => a == b } mustBe true
             }
           }
           
@@ -46,7 +44,7 @@ object RegexSpecs extends Specification with ScalaCheck with RegexParsers {
       val p: Parser[String] = """(\d{1,3}\.){3}\d{1,3}"""r
       
       {
-        val data = "123.457.321" toProperStream
+        val data = "123.457.321".foldRight(Stream[Char]()) { Stream.cons(_, _) }
         
         p(data) must beLike {
           case Failure("""Expected /(\d{1,3}\.){3}\d{1,3}/""", `data`) :: Nil => true
@@ -55,7 +53,7 @@ object RegexSpecs extends Specification with ScalaCheck with RegexParsers {
       }
       
       {
-        val data = "123.457.321.sdf" toProperStream
+        val data = "123.457.321.sdf".foldRight(Stream[Char]()) { Stream.cons(_, _) }
         
         p(data) must beLike {
           case Failure("""Expected /(\d{1,3}\.){3}\d{1,3}/""", `data`) :: Nil => true
@@ -74,23 +72,23 @@ object RegexSpecs extends Specification with ScalaCheck with RegexParsers {
     "eat leading whitespace" in {
       val p = literal("daniel")
       
-      p("daniel" toProperStream) must beLike {
+      p("daniel") must beLike {
         case Success("daniel", Stream()) :: Nil => true
         case _ => false
       }
       
-      p("  daniel" toProperStream) must beLike {
+      p("  daniel") must beLike {
         case Success("daniel", Stream()) :: Nil => true
         case _ => false
       }
       
-      p("\tdaniel" toProperStream) must beLike {
+      p("\tdaniel") must beLike {
         case Success("daniel", Stream()) :: Nil => true
         case _ => false
       }
       
       p("""
-      daniel""" toProperStream) must beLike {
+      daniel""") must beLike {
         case Success("daniel", Stream()) :: Nil => true
         case _ => false
       }
@@ -99,17 +97,17 @@ object RegexSpecs extends Specification with ScalaCheck with RegexParsers {
     "eat trailing whitespace" in {
       val p = literal("daniel")
       
-      p("daniel    " toProperStream) must beLike {
+      p("daniel    ") must beLike {
         case Success("daniel", Stream()) :: Nil => true
         case _ => false
       }
       
-      p("daniel\t" toProperStream) must beLike {
+      p("daniel\t") must beLike {
         case Success("daniel", Stream()) :: Nil => true
         case _ => false
       }
       
-      p("daniel\n" toProperStream) must beLike {
+      p("daniel\n") must beLike {
         case Success("daniel", Stream()) :: Nil => true
         case _ => false
       }
