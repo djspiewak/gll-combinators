@@ -51,7 +51,7 @@ trait Parsers {
     
     // operators
     
-    def ~[R2](that: Parser[R2]): Parser[~[R, R2]] = new SequentialParser(this, that)
+    def ~[R2](that: Parser[R2]): Parser[R ~ R2] = new SequentialParser(this, that)
     
     def <~[R2](that: Parser[R2]) = this ~ that map { case a ~ _ => a }
     
@@ -125,7 +125,7 @@ trait Parsers {
     
     override def ~[R2](other: Parser[R2]) = other match {
       case other: TerminalParser[R2] => {
-        new TerminalParser[~[R, R2]] {
+        new TerminalParser[R ~ R2] {
           def computeFirst(s: Set[Parser[Any]]) = {
             val sub = self.computeFirst(s)
             sub flatMap { set =>
@@ -291,7 +291,7 @@ trait Parsers {
       }
     }
     
-    def queue(t: Trampoline, in: Stream[Char])(f: Result[~[A, B]]=>Unit) {
+    def queue(t: Trampoline, in: Stream[Char])(f: Result[A ~ B]=>Unit) {
       left.queue(t, in) {
         case Success(res1, tail) => {
           right.queue(t, tail) {
