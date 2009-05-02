@@ -7,6 +7,7 @@ define 'gll-combinators' do
   project.version = '0.2.0'
   
   test.using :specs
+  test.exclude 'AllSpecs'
 
   package
 end
