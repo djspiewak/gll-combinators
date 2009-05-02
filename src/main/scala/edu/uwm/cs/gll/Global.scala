@@ -1,7 +1,7 @@
 package edu.uwm.cs.gll
 
 private[gll] object Global {
-  val debug = true
+  val debug = false
 
   def trace(msg: String) {
     if (debug) println(msg)

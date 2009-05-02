@@ -485,7 +485,7 @@ trait Parsers {
     private val popped = mutable.Map[Stream[Char], HOMap[Parser, RSet]]()
     
     // GSS back edges
-    private val backlinks = HOMap[Parser, FSet]()
+    private val backlinks = mutable.Map[Stream[Char], HOMap[Parser, FSet]]()
     
     // prevents divergence in cyclic GSS traversal
     private val saved = HOMap[Result, FSet]()
@@ -508,7 +508,7 @@ trait Parsers {
           if (!saved.contains(res))
             saved += (res -> new mutable.HashSet[Result[Any]=>Unit])
           
-          for (f <- backlinks(p)) {
+          for (f <- backlinks(s)(p)) {
             if (!saved(res).contains(f)) {
               saved(res) += f
               f(res)
@@ -527,10 +527,13 @@ trait Parsers {
           f(res)
         }
       } else {
-        if (!backlinks.contains(p)) {
-          backlinks += (p -> new mutable.HashSet[Result[Any]=>Unit])
-        }
-        backlinks(p) += f
+        if (!backlinks.contains(s))
+          backlinks += (s -> HOMap[Parser, FSet]())
+        
+        if (!backlinks(s).contains(p))
+          backlinks(s) += (p -> new mutable.HashSet[Result[Any]=>Unit])
+        
+        backlinks(s)(p) += f
         
         if (!done.contains(s))
           done += (s -> new mutable.HashSet[Parser[Any]])
