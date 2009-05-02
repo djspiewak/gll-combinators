@@ -202,4 +202,72 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
       }
     }
   }
+  
+  "monadic parsers" should {
+    "compose using bind" in {
+      val p = literal("a") flatMap { _ => literal("b") }
+      
+      p(Stream('a', 'b')) must beLike {
+        case Success("b", Stream()) :: Nil => true
+        case _ => false
+      }
+      
+      p(Stream('a', 'c')) must beLike {
+        case Failure("Expected 'b' got 'c'", Stream('c')) :: Nil => true
+        case _ => false
+      }
+    }
+    
+    "compose using map" in {
+      val p = literal("1") map { _.toInt }
+      
+      p(Stream('1')) must beLike {
+        case Success(1, Stream()) :: Nil => true
+        case _ => false
+      }
+      
+      p(Stream('2')) must beLike {
+        case Failure("Expected '1' got '2'", Stream('2')) :: Nil => true
+        case _ => false
+      }
+    }
+    
+    "compose using orElse" in {
+      val p = literal("a") orElse literal("b")
+      
+      p(Stream('a')) must beLike {
+        case Success("a", Stream()) :: Nil => true
+        case _ => false
+      }
+      
+      p(Stream('b')) must beLike {
+        case Success("b", Stream()) :: Nil => true
+        case _ => false
+      }
+      
+      p(Stream('c')) must beLike {
+        case Failure("Unexpected value in stream: 'c'", Stream('c')) :: Nil => true
+        case _ => false
+      }
+    }
+    
+    "filter" in {
+      val p = ("a" | "b") filter { _ == "a" }
+      
+      p(Stream('a')) must beLike {
+        case Success("a", Stream()) :: Nil => true
+        case _ => false
+      }
+      
+      p(Stream('b')) must beLike {
+        case Failure("Syntax error", Stream('b')) :: Nil => true
+        case _ => false
+      }
+      
+      p(Stream('c')) must beLike {
+        case Failure("Unexpected value in stream: 'c'", Stream('c')) :: Nil => true
+        case _ => false
+      }
+    }
+  }
 }
