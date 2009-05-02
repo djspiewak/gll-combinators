@@ -1,8 +1,8 @@
-package edu.uwm.cs
+package edu.uwm.cs.util
 
 private[cs] object StreamUtils {
   import Stream._
-  
+    
   object #:: {
     def unapply[A](str: Stream[A]) = str match {
       case cons(hd, tail) => Some((hd, tail))

@@ -1,6 +1,6 @@
-package edu.uwm.cs
+package edu.uwm.cs.util
 
-import scala.collection._
+import collection.mutable
 
 /**
  * @author Jorge Ortiz

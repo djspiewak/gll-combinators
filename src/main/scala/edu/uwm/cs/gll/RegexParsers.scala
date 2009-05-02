@@ -2,6 +2,8 @@ package edu.uwm.cs.gll
 
 import scala.util.matching.Regex
 
+import util._
+
 // TODO need to handle trailing whitespace (somehow)
 trait RegexParsers extends Parsers with ImplicitConversions with CharSequenceConversions {
   protected val whitespace = """\s+"""r

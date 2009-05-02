@@ -114,7 +114,7 @@ object RegexSpecs extends Specification with ScalaCheck with RegexParsers {
     }
     
     "have universal FIRST set" in {
-      """\d""".r.first mustBe edu.uwm.cs.UniversalCharSet
+      """\d""".r.first mustBe edu.uwm.cs.util.UniversalCharSet
     }
   }
 }

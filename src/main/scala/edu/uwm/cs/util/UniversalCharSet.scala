@@ -1,4 +1,4 @@
-package edu.uwm.cs
+package edu.uwm.cs.util
 
 case object UniversalCharSet extends Set[Char] {
   val size = Math.MAX_INT     // should be infinite
