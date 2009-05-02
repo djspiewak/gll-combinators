@@ -1,6 +1,6 @@
 package edu.uwm.cs.util
 
-private[cs] object StreamUtils {
+object StreamUtils {
   import Stream._
     
   object #:: {
