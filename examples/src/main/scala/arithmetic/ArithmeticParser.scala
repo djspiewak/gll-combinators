@@ -48,6 +48,8 @@ object ArithmeticParser extends RegexParsers {
           }
         }
       }
+      
+      println()
     }
   }
   
