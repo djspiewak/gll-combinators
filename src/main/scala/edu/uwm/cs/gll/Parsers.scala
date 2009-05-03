@@ -376,9 +376,16 @@ trait Parsers {
      */
     lazy val isLL1 = {
       val sets = gather map { _.first }
-      val totalSize = sets.foldLeft(0) { _ + _.size }
-      val union = sets.reduceLeft[Set[Char]] { _ ++ _ }
-      (totalSize == union.size) && (sets forall { _.size > 0 })
+      val areFinite = sets forall { 
+        case UniversalCharSet => false
+        case _ => true
+      }
+      
+      if (areFinite) {
+        val totalSize = sets.foldLeft(0) { _ + _.size }
+        val union = sets.reduceLeft[Set[Char]] { _ ++ _ }
+        (totalSize == union.size) && (sets forall { _.size > 0 })
+      } else false
     }
     
     def computeFirst(seen: Set[Parser[Any]]) = {

@@ -1,4 +1,5 @@
 import edu.uwm.cs.gll._
+import edu.uwm.cs.util._
 
 import org.specs._
 import org.scalacheck._
@@ -151,6 +152,40 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
       check("bb")
       check((0 to 50).foldLeft("") { (str, _) => str + "b" })
       check("bbbbb")
+    }
+    
+    "parse an unambiguous arithmetic grammar" in {
+      import StreamUtils._
+      
+      object MathParser extends RegexParsers {
+        lazy val expr: Parser[Int] = (
+            expr ~ "*" ~ factor   ^^ { (e1, _, e2) => e1 * e2 }
+          | expr ~ "/" ~ factor   ^^ { (e1, _, e2) => e1 / e2 }
+          | factor
+        )
+        
+        lazy val factor: Parser[Int] = (
+            factor ~ "+" ~ term   ^^ { (e1, _, e2) => e1 + e2 }
+          | factor ~ "-" ~ term   ^^ { (e1, _, e2) => e1 - e2 }
+          | term
+        )
+        
+        lazy val term: Parser[Int] = (
+            "(" ~> expr <~ ")"
+          | "-" ~> term           ^^ { -_ }
+          | """\d+""".r           ^^ { _.toInt }
+        )
+      }
+      
+      val input = """1 + 6 / 3 * 2
+- -2 + 3 /
+
+(1 + 2)"""
+      
+      MathParser.expr(input toProperStream) must beLike {
+        case Success(5, Stream()) :: Nil => true
+        case _ => false
+      }
     }
   }
   
