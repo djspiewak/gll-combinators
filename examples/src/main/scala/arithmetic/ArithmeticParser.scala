@@ -12,20 +12,20 @@ object ArithmeticParser extends RegexParsers {
   // %%
   
   lazy val expr: Parser[Expr] = (
-      expr ~ "*" ~ factor   ^^ { (e1, _, e2) => Mul(e1, e2) }
-    | expr ~ "/" ~ factor   ^^ { (e1, _, e2) => Div(e1, e2) }
-    | factor
-  )
-  
-  lazy val factor: Parser[Expr] = (
-      factor ~ "+" ~ term   ^^ { (e1, _, e2) => Add(e1, e2) }
-    | factor ~ "-" ~ term   ^^ { (e1, _, e2) => Sub(e1, e2) }
+      expr ~ "+" ~ term     ^^ { (e1, _, e2) => Add(e1, e2) }
+    | expr ~ "-" ~ term     ^^ { (e1, _, e2) => Sub(e1, e2) }
     | term
   )
   
   lazy val term: Parser[Expr] = (
+      term ~ "*" ~ factor   ^^ { (e1, _, e2) => Mul(e1, e2) }
+    | term ~ "/" ~ factor   ^^ { (e1, _, e2) => Div(e1, e2) }
+    | factor
+  )
+  
+  lazy val factor: Parser[Expr] = (
       "(" ~> expr <~ ")"
-    | "-" ~> term           ^^ Neg
+    | "-" ~> factor           ^^ Neg
     | """\d+""".r           ^^ { str => IntLit(str.toInt) }
   )
   
