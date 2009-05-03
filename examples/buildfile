@@ -17,7 +17,13 @@ define 'examples' do
     
     cp = compile.dependencies.map(&:to_s).join(File::PATH_SEPARATOR) + File::PATH_SEPARATOR + _(:target, :classes)
     trace cp
+
+	start = Time.now
     system 'java', '-cp', cp, classname, *Dir.glob("input/#{name.downcase}/*")
+
+	puts "Total run time: #{Time.now - start} seconds"
+	puts '---------------------------------------'
+	puts
   end
   
   task :arithmetic => :compile do
