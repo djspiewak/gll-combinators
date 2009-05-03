@@ -9,7 +9,7 @@ import util.StreamUtils
 object MiniMLParser extends RegexParsers {
   import StreamUtils._
   
-  override val whitespace = """(\s|\(\*[.\s]*\*\))+"""r
+  override val whitespace = """(\s|\(\*([^*]|\*[^)])*\*\))+"""r
   
   // %%
   
