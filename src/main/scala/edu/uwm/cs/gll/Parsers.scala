@@ -545,8 +545,13 @@ trait Parsers {
     def add[A](p: Parser[A], s: Stream[Char])(f: Result[A]=>Unit) {
       val tuple = (p, s)
       
-      if (popped.contains(s) && popped(s).contains(p)) {
-        for (res <- popped(s)(p)) {           // if we've already done that, use the result
+      lazy val containsSuccess = popped(s)(p) exists {
+        case _: Success[A] => true
+        case _ => false
+      }
+      
+      if (popped.contains(s) && popped(s).contains(p) && containsSuccess) {
+        for (res @ Success(_, _) <- popped(s)(p)) {           // if we've already done that, use the result
           tracef("Revisited: %s *=> %s%n", tuple, res)
           f(res)
         }

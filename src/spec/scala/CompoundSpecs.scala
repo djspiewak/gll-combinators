@@ -155,8 +155,6 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
     }
     
     "parse an unambiguous arithmetic grammar" in {
-      import StreamUtils._
-      
       object MathParser extends RegexParsers {
         lazy val expr: Parser[Int] = (
             expr ~ "+" ~ term     ^^ { (e1, _, e2) => e1 + e2 }
@@ -182,8 +180,32 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
 
 (1 + 2)"""
       
-      MathParser.expr(input toProperStream) must beLike {
+      MathParser.expr(input) must beLike {
         case Success(8, Stream()) :: Nil => true
+        case _ => false
+      }
+    }
+    
+    "handle nested left-recursion" in {
+      object ComplexParser extends RegexParsers {
+        lazy val exp: Parser[Any] = (
+            n
+          | "(" ~ commaExps ~ ")"
+          | exp ~ exp
+        ) ^^^ null
+        
+        lazy val commaExps: Parser[Any] = (
+            exp
+          | commaExps ~ "," ~ exp
+        )
+        
+        val n = """\d+"""r
+      }
+      
+      import ComplexParser._
+      
+      exp("(0,0) 2") must beLike {
+        case Success(_, Stream()) :: Nil => true
         case _ => false
       }
     }
