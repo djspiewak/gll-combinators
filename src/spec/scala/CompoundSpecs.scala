@@ -159,20 +159,20 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
       
       object MathParser extends RegexParsers {
         lazy val expr: Parser[Int] = (
-            expr ~ "*" ~ factor   ^^ { (e1, _, e2) => e1 * e2 }
-          | expr ~ "/" ~ factor   ^^ { (e1, _, e2) => e1 / e2 }
-          | factor
-        )
-        
-        lazy val factor: Parser[Int] = (
-            factor ~ "+" ~ term   ^^ { (e1, _, e2) => e1 + e2 }
-          | factor ~ "-" ~ term   ^^ { (e1, _, e2) => e1 - e2 }
+            expr ~ "+" ~ term     ^^ { (e1, _, e2) => e1 + e2 }
+          | expr ~ "-" ~ term     ^^ { (e1, _, e2) => e1 - e2 }
           | term
         )
         
         lazy val term: Parser[Int] = (
+            term ~ "*" ~ factor   ^^ { (e1, _, e2) => e1 * e2 }
+          | term ~ "/" ~ factor   ^^ { (e1, _, e2) => e1 / e2 }
+          | factor
+        )
+        
+        lazy val factor: Parser[Int] = (
             "(" ~> expr <~ ")"
-          | "-" ~> term           ^^ { -_ }
+          | "-" ~> factor         ^^ { -_ }
           | """\d+""".r           ^^ { _.toInt }
         )
       }
@@ -183,7 +183,7 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
 (1 + 2)"""
       
       MathParser.expr(input toProperStream) must beLike {
-        case Success(5, Stream()) :: Nil => true
+        case Success(8, Stream()) :: Nil => true
         case _ => false
       }
     }
