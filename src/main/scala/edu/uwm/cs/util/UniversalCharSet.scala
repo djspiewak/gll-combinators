@@ -1,34 +1,56 @@
 package edu.uwm.cs.util
 
-case object UniversalCharSet extends Set[Char] {
+class ComplementarySet[A] private (private val without: Set[A]) extends collection.immutable.Set[A] {
   val size = Math.MAX_INT     // should be infinite
   
-  def contains(e: Char) = true
+  def this() = this(Set())
   
-  override def exists(f: Char=>Boolean) = true
+  def contains(e: A) = !without.contains(e)
   
-  override def forall(f: Char=>Boolean) = false
+  override def exists(f: A=>Boolean) = !without.exists(f)
   
-  def **(that: Set[Char]) = that
+  override def forall(f: A=>Boolean) = false
   
-  def +(e: Char) = UniversalCharSet
+  def **(that: Set[A]) = new ComplementarySet(that -- without)
   
-  def -(e: Char) = throw new AssertionError("Cannot remove anything from the universal set")
+  def +(e: A) = {
+    if (without contains e)
+      new ComplementarySet(without - e)
+    else
+      this
+  }
   
-  override def ++(that: Iterable[Char]) = UniversalCharSet
+  def -(e: A) = new ComplementarySet(without + e)
   
-  def subsetOf(that: Set[Char]) = false
+  override def ++(other: Iterable[A]) = other match {
+    case that: ComplementarySet[A] => new ComplementarySet(this.without ** that.without)
+    
+    case _ => without -- other
+  }
   
-  def empty[A] = Set[A]()
+  override def --(other: Iterable[A]) = other match {
+    case that: ComplementarySet[A] => new ComplementarySet(this.without ++ that.without)
+    
+    case _ => without ++ other
+  }
   
-  def elements = throw new AssertionError("Cannot enumerate the universal set")
-  
-  override def toString = "UniversalCharSet"
-  
-  override def equals(other: Any) = other match {
-    case that: AnyRef => this eq that
+  def subsetOf(other: Set[A]) = other match {
+    case that: ComplementarySet[A] => that.without subsetOf this.without
     case _ => false
   }
   
-  override def hashCode = 0   // why not?
+  def empty[A] = Set[A]()
+  
+  def elements = throw new AssertionError("Cannot enumerate the complementary set")
+  
+  override def toString = "ComplementarySet(%s)".format(without)
+  
+  override def equals(other: Any) = other match {
+    case that: ComplementarySet[A] => this.without == that.without
+    case _ => false
+  }
+  
+  override def hashCode = ~(without.hashCode)
 }
+
+case object UniversalCharSet extends ComplementarySet[Char]
