@@ -140,3 +140,9 @@ divergence.  This isn't really a problem with GLL or the combinator implementati
 Rather, it is an issue with the Scala ``Stream`` implementation.  To avoid this,
 we must ensure that all input streams are created using ``Stream()``, ``Stream.cons``
 and ``Stream.empty``.
+
+
+From Recognizer to Parser
+=========================
+
+*TODO*
