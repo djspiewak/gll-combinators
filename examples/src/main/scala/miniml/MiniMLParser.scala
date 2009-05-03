@@ -86,7 +86,7 @@ object MiniMLParser extends RegexParsers {
       println("=============================")
       
       decs(readFile(file)) match {
-        case Success(tree, _) :: Nil => println("  Successfully recognized!")
+        case Success(tree, _) :: _ => println("  Successfully recognized!")
         
         case errors => {
           val sorted = errors sort { _.tail.length < _.tail.length }
