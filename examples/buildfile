@@ -10,19 +10,23 @@ define 'examples' do
   compile.with GLL
   
   run_eg = proc do |name|
-    classname = "#{name}.#{name.capitalize}Parser"
+    classname = "#{name.downcase}.#{name}Parser"
     
     puts "Running #{name} example"
     puts
     
     cp = compile.dependencies.map(&:to_s).join(File::PATH_SEPARATOR) + File::PATH_SEPARATOR + _(:target, :classes)
     trace cp
-    system 'java', '-cp', cp, classname, *Dir.glob("input/#{name}/*")
+    system 'java', '-cp', cp, classname, *Dir.glob("input/#{name.downcase}/*")
   end
   
   task :arithmetic => :compile do
-    run_eg.call 'arithmetic'
+    run_eg.call 'Arithmetic'
   end
   
-  task :run => [:arithmetic]
+  task :miniml => :compile do
+    run_eg.call 'MiniML'
+  end
+  
+  task :run => [:arithmetic, :miniml]
 end
