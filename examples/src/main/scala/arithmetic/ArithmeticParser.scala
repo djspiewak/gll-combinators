@@ -25,7 +25,7 @@ object ArithmeticParser extends RegexParsers {
   
   lazy val factor: Parser[Expr] = (
       "(" ~> expr <~ ")"
-    | "-" ~> factor           ^^ Neg
+    | "-" ~> factor         ^^ Neg
     | """\d+""".r           ^^ { str => IntLit(str.toInt) }
   )
   
