@@ -9,11 +9,15 @@ trait RegexParsers extends Parsers with ImplicitConversions with CharSequenceCon
   protected val whitespace = """\s+"""r
   
   override implicit def literal(str: String): Parser[String] = new LiteralParser(str) {
+    override def computeFirst(seen: Set[Parser[Any]]) = Some(UniversalCharSet)    // because of whitespace
+    
     // there should be a way to do this with traits, but I haven't found it yet
     override def parse(s: Stream[Char]) = super.parse(handleWhitespace(s))
   }
   
   implicit def regex(r: Regex): Parser[String] = new RegexParser(r) {
+    override def computeFirst(seen: Set[Parser[Any]]) = Some(UniversalCharSet)
+    
     override def parse(s: Stream[Char]) = super.parse(handleWhitespace(s))
   }
   
