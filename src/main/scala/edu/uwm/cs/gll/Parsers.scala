@@ -473,12 +473,15 @@ trait Parsers {
       process(left) ++ process(right)
     }
     
-    override def equals(other: Any) = other match {
-      case that: DisjunctiveParser[A] => {
-        this.leftClass == that.leftClass && this.rightClass == that.rightClass
+    override def equals(other: Any) = {
+      other match {
+        case that: DisjunctiveParser[A] => {
+          (this eq that) ||
+            (this.leftClass == that.leftClass && this.rightClass == that.rightClass)
+        }
+        
+        case _ => false
       }
-      
-      case _ => false
     }
     
     override def hashCode = leftClass.hashCode + rightClass.hashCode
