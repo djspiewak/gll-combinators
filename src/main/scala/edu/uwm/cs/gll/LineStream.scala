@@ -56,6 +56,28 @@ sealed abstract class LineStream(lineAndTail: (String, Option[LineStream]), val 
   
   def subSequence(start: Int, end: Int) = page(end).subSequence(start, end)
   
+  override def take(length: Int): LineStream = {
+    if (length < 0)
+      throw new IllegalArgumentException(length.toString)
+    else if (length > 0 && !isEmpty)
+      new LineCons(head, tail take length - 1, line, lineNum)
+    else if (length == 0)
+      LineNil
+    else
+      throw new IndexOutOfBoundsException(length.toString)
+  }
+  
+  override def drop(length: Int): LineStream = {
+    if (length < 0)
+      throw new IllegalArgumentException(length.toString)
+    else if (length > 0 && !isEmpty)
+      tail drop length - 1
+    else if (length == 0)
+      tail
+    else
+      throw new IndexOutOfBoundsException(length.toString)
+  }
+  
   override def lengthCompare(i: Int) = {
     if (isEmpty)
       i
@@ -63,6 +85,24 @@ sealed abstract class LineStream(lineAndTail: (String, Option[LineStream]), val 
       i
     else
       tail lengthCompare i - 1
+  }
+  
+  def zip(that: LineStream): Stream[(Char, Char)] = {
+    if (this.isEmpty || that.isEmpty)
+      Stream.empty
+    else
+      Stream.cons((this.head, that.head), tail zip that)
+  }
+  
+  def zipWithIndex = {
+    def gen(tail: LineStream, i: Int): Stream[(Char, Int)] = {
+      if (tail.isEmpty)
+        Stream.empty
+      else
+        Stream.cons((tail.head, i), gen(tail.tail, i + 1))
+    }
+    
+    gen(this, 0)
   }
   
   override def toString = mkString
