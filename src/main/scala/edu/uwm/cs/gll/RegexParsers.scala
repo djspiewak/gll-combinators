@@ -31,7 +31,7 @@ trait RegexParsers extends Parsers with ImplicitConversions {
   private def handleWhitespace(s: LineStream) =
     s.drop(whitespace findPrefixOf s map { _.length } getOrElse 0)
   
-  case class RegexParser(private val regex: Regex) extends TerminalParser[String] with CharSequenceConversions {
+  case class RegexParser(private val regex: Regex) extends TerminalParser[String] {
     def computeFirst(s: Set[Parser[Any]]) = Some(UniversalCharSet)
     
     def parse(in: LineStream) = {

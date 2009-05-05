@@ -6,7 +6,6 @@ import mutable.{Buffer, ListBuffer}
 import util._
 
 import Global._
-import StreamUtils._
 
 // I hate the way this file is organized, but I don't have a choice
 trait Parsers {
