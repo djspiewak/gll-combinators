@@ -17,7 +17,7 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
       // assumes data =~ /a+/
       def check(data: String) {
         p(data) must beLike {
-          case Success(`data`, Stream()) :: Nil => true
+          case Success(`data`, LineStream()) :: Nil => true
           case _ => false
         }
       }
@@ -39,7 +39,7 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
       // assumes data =~ /a+/
       def check(data: String) {
         p(data) must beLike {
-          case Success(`data`, Stream()) :: Nil => true
+          case Success(`data`, LineStream()) :: Nil => true
           case _ => false
         }
       }
@@ -61,7 +61,7 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
       // assumes data =~ /a+/
       def check(data: String) {
         p(data) must beLike {
-          case Success(`data`, Stream()) :: Nil => true
+          case Success(`data`, LineStream()) :: Nil => true
           case _ => false
         }
       }
@@ -91,7 +91,7 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
       // assumes data =~ /a+/
       def check(data: String) {
         s(data) must beLike {
-          case Success(`data`, Stream()) :: _ => true     // we don't care how many derivations, just that it works
+          case Success(`data`, LineStream()) :: _ => true     // we don't care how many derivations, just that it works
           case _ => false
         }
       }
@@ -119,7 +119,7 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
       // assumes data =~ /a+/
       def check(data: String) {
         s(data) must beLike {
-          case Success(`data`, Stream()) :: _ => true     // we don't care how many derivations, just that it works
+          case Success(`data`, LineStream()) :: _ => true     // we don't care how many derivations, just that it works
           case _ => false
         }
       }
@@ -141,7 +141,7 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
       // assumes data =~ /a+/
       def check(data: String) {
         s(data) must beLike {
-          case Success(`data`, Stream()) :: _ => true     // we don't care how many derivations, just that it works
+          case Success(`data`, LineStream()) :: _ => true     // we don't care how many derivations, just that it works
           case _ => false
         }
       }
@@ -181,7 +181,7 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
 (1 + 2)"""
       
       MathParser.expr(input) must beLike {
-        case Success(8, Stream()) :: Nil => true
+        case Success(8, LineStream()) :: Nil => true
         case _ => false
       }
     }
@@ -205,7 +205,7 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
       import ComplexParser._
       
       exp("(0,0) 2") must beLike {
-        case Success(_, Stream()) :: Nil => true
+        case Success(_, LineStream()) :: Nil => true
         case _ => false
       }
     }
@@ -216,17 +216,17 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
       val p = literal("123")*
       
       p("123") must beLike {
-        case Success(List("123"), Stream()) :: Nil => true
+        case Success(List("123"), LineStream()) :: Nil => true
         case _ => false
       }
       
       p("123123123123123123123123123123123") must beLike {
-        case Success(List("123", "123", "123", "123", "123", "123", "123", "123", "123", "123", "123"), Stream()) :: Nil => true
+        case Success(List("123", "123", "123", "123", "123", "123", "123", "123", "123", "123", "123"), LineStream()) :: Nil => true
         case _ => false
       }
       
-      p(Stream()) must beLike {
-        case Success(Nil, Stream()) :: Nil => true
+      p(LineStream()) must beLike {
+        case Success(Nil, LineStream()) :: Nil => true
         case _ => false
       }
     }
@@ -235,12 +235,12 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
       val p = literal("123")+
       
       p("123") must beLike {
-        case Success(List("123"), Stream()) :: Nil => true
+        case Success(List("123"), LineStream()) :: Nil => true
         case _ => false
       }
       
       p("123123123123123123123123123123123") must beLike {
-        case Success(List("123", "123", "123", "123", "123", "123", "123", "123", "123", "123", "123"), Stream()) :: Nil => true
+        case Success(List("123", "123", "123", "123", "123", "123", "123", "123", "123", "123", "123"), LineStream()) :: Nil => true
         case _ => false
       }
     }
@@ -249,12 +249,12 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
       val p = literal("123")?
       
       p("123") must beLike {
-        case Success(Some("123"), Stream()) :: Nil => true
+        case Success(Some("123"), LineStream()) :: Nil => true
         case _ => false
       }
       
-      p(Stream()) must beLike {
-        case Success(None, Stream()) :: Nil => true
+      p(LineStream()) must beLike {
+        case Success(None, LineStream()) :: Nil => true
         case _ => false
       }
     }
@@ -264,13 +264,13 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
     "compose using bind" in {
       val p = literal("a") flatMap { _ => literal("b") }
       
-      p(Stream('a', 'b')) must beLike {
-        case Success("b", Stream()) :: Nil => true
+      p(LineStream('a', 'b')) must beLike {
+        case Success("b", LineStream()) :: Nil => true
         case _ => false
       }
       
-      p(Stream('a', 'c')) must beLike {
-        case Failure("Expected 'b' got 'c'", Stream('c')) :: Nil => true
+      p(LineStream('a', 'c')) must beLike {
+        case Failure("Expected 'b' got 'c'", LineStream('c')) :: Nil => true
         case _ => false
       }
       
@@ -280,13 +280,13 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
     "compose using map" in {
       val p = literal("1") map { _.toInt }
       
-      p(Stream('1')) must beLike {
-        case Success(1, Stream()) :: Nil => true
+      p(LineStream('1')) must beLike {
+        case Success(1, LineStream()) :: Nil => true
         case _ => false
       }
       
-      p(Stream('2')) must beLike {
-        case Failure("Expected '1' got '2'", Stream('2')) :: Nil => true
+      p(LineStream('2')) must beLike {
+        case Failure("Expected '1' got '2'", LineStream('2')) :: Nil => true
         case _ => false
       }
       
@@ -296,18 +296,18 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
     "compose using orElse" in {
       val p = literal("a") orElse literal("b")
       
-      p(Stream('a')) must beLike {
-        case Success("a", Stream()) :: Nil => true
+      p(LineStream('a')) must beLike {
+        case Success("a", LineStream()) :: Nil => true
         case _ => false
       }
       
-      p(Stream('b')) must beLike {
-        case Success("b", Stream()) :: Nil => true
+      p(LineStream('b')) must beLike {
+        case Success("b", LineStream()) :: Nil => true
         case _ => false
       }
       
-      p(Stream('c')) must beLike {
-        case Failure("Unexpected value in stream: 'c'", Stream('c')) :: Nil => true
+      p(LineStream('c')) must beLike {
+        case Failure("Unexpected value in stream: 'c'", LineStream('c')) :: Nil => true
         case _ => false
       }
       
@@ -317,18 +317,18 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
     "filter" in {
       val p = ("a" | "b") filter { _ == "a" }
       
-      p(Stream('a')) must beLike {
-        case Success("a", Stream()) :: Nil => true
+      p(LineStream('a')) must beLike {
+        case Success("a", LineStream()) :: Nil => true
         case _ => false
       }
       
-      p(Stream('b')) must beLike {
-        case Failure("Syntax error", Stream('b')) :: Nil => true
+      p(LineStream('b')) must beLike {
+        case Failure("Syntax error", LineStream('b')) :: Nil => true
         case _ => false
       }
       
-      p(Stream('c')) must beLike {
-        case Failure("Unexpected value in stream: 'c'", Stream('c')) :: Nil => true
+      p(LineStream('c')) must beLike {
+        case Failure("Unexpected value in stream: 'c'", LineStream('c')) :: Nil => true
         case _ => false
       }
       

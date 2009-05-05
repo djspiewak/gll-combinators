@@ -74,12 +74,12 @@ object DisjunctionSpecs extends Specification with ImplicitConversions with Scal
         val p = "daniel" | "chris"
         
         p("daniel") must beLike {
-          case Success("daniel", Stream()) :: Nil => true
+          case Success("daniel", LineStream()) :: Nil => true
           case _ => false
         }
         
         p("chris") must beLike {
-          case Success("chris", Stream()) :: Nil => true
+          case Success("chris", LineStream()) :: Nil => true
           case _ => false
         }
       }
@@ -88,7 +88,7 @@ object DisjunctionSpecs extends Specification with ImplicitConversions with Scal
         val p = "" | ""
         
         p("") must beLike {
-          case Success("", Stream()) :: Nil => true
+          case Success("", LineStream()) :: Nil => true
           case _ => false
         }
       }
@@ -97,13 +97,13 @@ object DisjunctionSpecs extends Specification with ImplicitConversions with Scal
     "detect PREDCIT failure for LL(1)" in {
       val p = "daniel" | "chris"
       
-      p(Stream('j')) must beLike {
-        case Failure("Unexpected value in stream: 'j'", Stream('j')) :: Nil => true
+      p(LineStream('j')) must beLike {
+        case Failure("Unexpected value in stream: 'j'", LineStream('j')) :: Nil => true
         case _ => false
       }
       
-      p(Stream()) must beLike {
-        case Failure("Unexpected end of stream", Stream()) :: Nil => true
+      p(LineStream()) must beLike {
+        case Failure("Unexpected end of stream", LineStream()) :: Nil => true
         case _ => false
       }
     }
@@ -111,13 +111,13 @@ object DisjunctionSpecs extends Specification with ImplicitConversions with Scal
     "detect PREDICT failure for non-LL(1)" in {
       val p = "daniel" | "danielle"
       
-      p(Stream('j')) must beLike {
-        case Failure("Unexpected value in stream: 'j'", Stream('j')) :: Nil => true
+      p(LineStream('j')) must beLike {
+        case Failure("Unexpected value in stream: 'j'", LineStream('j')) :: Nil => true
         case _ => false
       }
       
-      p(Stream()) must beLike {
-        case Failure("Unexpected end of stream", Stream()) :: Nil => true
+      p(LineStream()) must beLike {
+        case Failure("Unexpected end of stream", LineStream()) :: Nil => true
         case _ => false
       }
     }
@@ -126,12 +126,12 @@ object DisjunctionSpecs extends Specification with ImplicitConversions with Scal
       val p = "daniel" | "chris"
       
       p("dan") must beLike {
-        case Failure("Unexpected end of stream (expected 'daniel')", Stream('d', 'a', 'n')) :: Nil => true
+        case Failure("Unexpected end of stream (expected 'daniel')", LineStream('d', 'a', 'n')) :: Nil => true
         case _ => false
       }
       
       p("dancin") must beLike {
-        case Failure("Expected 'daniel' got 'dancin'", Stream('d', 'a', 'n', 'c', 'i', 'n')) :: Nil => true
+        case Failure("Expected 'daniel' got 'dancin'", LineStream('d', 'a', 'n', 'c', 'i', 'n')) :: Nil => true
         case _ => false
       }
     }
@@ -140,7 +140,7 @@ object DisjunctionSpecs extends Specification with ImplicitConversions with Scal
       val p = "foobar" | "foobaz"
       
       {
-        val data = "foo".foldRight(Stream[Char]()) { Stream.cons(_, _) }
+        val data = LineStream("foo")
         
         p(data) must haveTheSameElementsAs(List(
           Failure("Unexpected end of stream (expected 'foobar')", data),
@@ -148,7 +148,7 @@ object DisjunctionSpecs extends Specification with ImplicitConversions with Scal
       }
       
       {
-        val data = "foobat".foldRight(Stream[Char]()) { Stream.cons(_, _) }
+        val data = LineStream("foobat")
         
         p(data) must haveTheSameElementsAs(List(
           Failure("Expected 'foobar' got 'foobat'", data),
@@ -208,7 +208,7 @@ object DisjunctionSpecs extends Specification with ImplicitConversions with Scal
       def check(p: Parser[Any], data: String*) = {
         for (str <- data) {
           p(str) must beLike {
-            case Success(`str`, Stream()) :: Nil => true
+            case Success(`str`, LineStream()) :: Nil => true
             case _ => false
           }
         }
@@ -236,7 +236,7 @@ object DisjunctionSpecs extends Specification with ImplicitConversions with Scal
         val pattern = "Expected '%s' got '%s'"
         
         for (str <- data) {
-          val stream = str.foldRight(Stream[Char]()) { Stream.cons(_, _) }
+          val stream = LineStream(str)
           val res = p(stream)
           
           val failures = expect.foldRight(List[String]()) { _ :: _ } map { ex => 
@@ -251,7 +251,7 @@ object DisjunctionSpecs extends Specification with ImplicitConversions with Scal
         val pattern = "Unexpected end of stream (expected '%s')"
         
         for (str <- data) {
-          val stream = str.foldRight(Stream[Char]()) { Stream.cons(_, _) }
+          val stream = LineStream(str)
           val res = p(stream)
           
           val failures = expect.foldRight(List[String]()) { _ :: _ } map { ex => 
@@ -296,12 +296,12 @@ object DisjunctionSpecs extends Specification with ImplicitConversions with Scal
           ) ^^ f
           
           p(left) must beLike {
-            case Success(v, Stream()) :: Nil => v == f(left)
+            case Success(v, LineStream()) :: Nil => v == f(left)
             case _ => false
           }
           
           p(right) must beLike {
-            case Success(v, Stream()) :: Nil => v == f(right)
+            case Success(v, LineStream()) :: Nil => v == f(right)
             case _ => false
           }
         }
@@ -333,7 +333,7 @@ object DisjunctionSpecs extends Specification with ImplicitConversions with Scal
           val v = head + suffix
           
           result must have {
-            case Success(`v`, Stream()) => true
+            case Success(`v`, LineStream()) => true
             case _ => false
           }
         }
@@ -342,7 +342,7 @@ object DisjunctionSpecs extends Specification with ImplicitConversions with Scal
           val v = head + " " + suffix
           
           result must have {
-            case Success(`v`, Stream()) => true
+            case Success(`v`, LineStream()) => true
             case _ => false
           }
         }

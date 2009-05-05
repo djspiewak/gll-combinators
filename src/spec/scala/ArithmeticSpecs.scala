@@ -14,7 +14,7 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
     "parse numbers" in {
       val prop = forAll { x: Int =>
         expr(x.toString) match {
-          case Success(e, Stream()) :: Nil => e.solve == x
+          case Success(e, LineStream()) :: Nil => e.solve == x
           case _ => false
         }
       }
@@ -30,17 +30,17 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
           res.length mustBe 2
           
           res must have {
-            case Success(e @ Add(Neg(e1), e2), Stream()) => e.solve == x + y
+            case Success(e @ Add(Neg(e1), e2), LineStream()) => e.solve == x + y
             case _ => false
           }
           
           res must have {
-            case Success(e @ Neg(Add(e1, e2)), Stream()) => e.solve == -(-x + y)
+            case Success(e @ Neg(Add(e1, e2)), LineStream()) => e.solve == -(-x + y)
             case _ => false
           }
         } else {
           res must beLike {
-            case Success(e, Stream()) :: Nil => e.solve == x + y
+            case Success(e, LineStream()) :: Nil => e.solve == x + y
             case _ => false
           }
         }
@@ -57,17 +57,17 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
           res.length mustBe 2
           
           res must have {
-            case Success(e @ Sub(Neg(e1), e2), Stream()) => e.solve == x - y
+            case Success(e @ Sub(Neg(e1), e2), LineStream()) => e.solve == x - y
             case _ => false
           }
           
           res must have {
-            case Success(e @ Neg(Sub(e1, e2)), Stream()) => e.solve == -(-x - y)
+            case Success(e @ Neg(Sub(e1, e2)), LineStream()) => e.solve == -(-x - y)
             case _ => false
           }
         } else {
           res must beLike {
-            case Success(e, Stream()) :: Nil => e.solve == x - y
+            case Success(e, LineStream()) :: Nil => e.solve == x - y
             case _ => false
           }
         }
@@ -84,17 +84,17 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
           res.length mustBe 2
           
           res must have {
-            case Success(e @ Mul(Neg(e1), e2), Stream()) => e.solve == x * y
+            case Success(e @ Mul(Neg(e1), e2), LineStream()) => e.solve == x * y
             case _ => false
           }
           
           res must have {
-            case Success(e @ Neg(Mul(e1, e2)), Stream()) => e.solve == -(-x * y)
+            case Success(e @ Neg(Mul(e1, e2)), LineStream()) => e.solve == -(-x * y)
             case _ => false
           }
         } else {
           res must beLike {
-            case Success(e, Stream()) :: Nil => e.solve == x * y
+            case Success(e, LineStream()) :: Nil => e.solve == x * y
             case _ => false
           }
         }
@@ -112,17 +112,17 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
             res.length mustBe 2
             
             res must have {
-              case Success(e @ Div(Neg(e1), e2), Stream()) => e.solve == x / y
+              case Success(e @ Div(Neg(e1), e2), LineStream()) => e.solve == x / y
               case _ => false
             }
             
             res must have {
-              case Success(e @ Neg(Div(e1, e2)), Stream()) => e.solve == -(-x / y)
+              case Success(e @ Neg(Div(e1, e2)), LineStream()) => e.solve == -(-x / y)
               case _ => false
             }
           } else {
             res must beLike {
-              case Success(e, Stream()) :: Nil => e.solve == x / y
+              case Success(e, LineStream()) :: Nil => e.solve == x / y
               case _ => false
             }
           }
@@ -134,7 +134,7 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
     
     "produce both associativity configurations" in {
       val res = expr("42 + 13 + 12") map { 
-        case Success(e, Stream()) => e
+        case Success(e, LineStream()) => e
         case r => fail("%s does not match the expected pattern".format(r))
       }
       
@@ -146,7 +146,7 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
     
     "produce both binary precedence configurations" in {
       val res = expr("42 + 13 - 12") map { 
-        case Success(e, Stream()) => e
+        case Success(e, LineStream()) => e
         case r => fail("%s does not match the expected pattern".format(r))
       }
       val target = Set(Add(IntLit(42), Sub(IntLit(13), IntLit(12))),
@@ -157,7 +157,7 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
     
     "produce both unary precedence configurations" in {
       val res = expr("-42 + 13") map {
-        case Success(e, Stream()) => e.solve
+        case Success(e, LineStream()) => e.solve
         case r => fail("%s does not match the expected pattern".format(r))
       }
       

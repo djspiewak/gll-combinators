@@ -11,7 +11,7 @@ object TerminalSpecs extends Specification with ScalaCheck with ImplicitConversi
       val p = literal("test")
       
       p("test") must beLike {
-        case Success("test", Stream()) :: Nil => true
+        case Success("test", LineStream()) :: Nil => true
         case _ => false
       }
     }
@@ -20,12 +20,12 @@ object TerminalSpecs extends Specification with ScalaCheck with ImplicitConversi
       val p = literal("foo")
       
       p("bar") must beLike {
-        case Failure("Expected 'foo' got 'bar'", Stream('b', 'a', 'r')) :: Nil => true
+        case Failure("Expected 'foo' got 'bar'", LineStream('b', 'a', 'r')) :: Nil => true
         case _ => false
       }
       
       p("test") must beLike {
-        case Failure("Expected 'foo' got 'tes'", Stream('t', 'e', 's', 't')) :: Nil => true
+        case Failure("Expected 'foo' got 'tes'", LineStream('t', 'e', 's', 't')) :: Nil => true
         case _ => false
       }
     }
@@ -33,13 +33,13 @@ object TerminalSpecs extends Specification with ScalaCheck with ImplicitConversi
     "detect an unexpected end of stream" in {
       val p = literal("foo")
       
-      p(Stream('f')) must beLike {
-        case Failure("Unexpected end of stream (expected 'foo')", Stream('f')) :: Nil => true
+      p(LineStream('f')) must beLike {
+        case Failure("Unexpected end of stream (expected 'foo')", LineStream('f')) :: Nil => true
         case _ => false
       }
       
-      p(Stream()) must beLike {
-        case Failure("Unexpected end of stream (expected 'foo')", Stream()) :: Nil => true
+      p(LineStream()) must beLike {
+        case Failure("Unexpected end of stream (expected 'foo')", LineStream()) :: Nil => true
         case _ => false
       }
     }
@@ -47,8 +47,8 @@ object TerminalSpecs extends Specification with ScalaCheck with ImplicitConversi
     "parse the empty string" in {
       val p = literal("")
       
-      p(Stream()) must beLike {
-        case Success("", Stream()) :: Nil => true
+      p(LineStream()) must beLike {
+        case Success("", LineStream()) :: Nil => true
         case _ => false
       }
     }
@@ -68,7 +68,7 @@ object TerminalSpecs extends Specification with ScalaCheck with ImplicitConversi
       val p = "test" ^^ { _.length }
       
       p("test") match {
-        case Success(4, Stream()) :: Nil => true
+        case Success(4, LineStream()) :: Nil => true
         case _ => false
       }
     }
@@ -77,7 +77,7 @@ object TerminalSpecs extends Specification with ScalaCheck with ImplicitConversi
       val p = "test" ^^^ 42
       
       p("test") match {
-        case Success(42, Stream()) :: Nil => true
+        case Success(42, LineStream()) :: Nil => true
         case _ => false
       }
     }
@@ -88,7 +88,7 @@ object TerminalSpecs extends Specification with ScalaCheck with ImplicitConversi
       val p = "te" ~ "st"
       
       p("test") must beLike {
-        case Success("te" ~ "st", Stream()) :: Nil => true
+        case Success("te" ~ "st", LineStream()) :: Nil => true
         case _ => false
       }
     }
@@ -97,12 +97,12 @@ object TerminalSpecs extends Specification with ScalaCheck with ImplicitConversi
       val p = "te" ~ "st"
       
       p("foo") must beLike {
-        case Failure("Expected 'te' got 'fo'", Stream('f', 'o', 'o')) :: Nil => true
+        case Failure("Expected 'te' got 'fo'", LineStream('f', 'o', 'o')) :: Nil => true
         case _ => false
       }
       
       p("tefoo") must beLike {
-        case Failure("Expected 'st' got 'fo'", Stream('f', 'o', 'o')) :: Nil => true
+        case Failure("Expected 'st' got 'fo'", LineStream('f', 'o', 'o')) :: Nil => true
         case _ => false
       }
     }
@@ -110,23 +110,23 @@ object TerminalSpecs extends Specification with ScalaCheck with ImplicitConversi
     "detect an unexpected end of stream" in {
       val p = "te" ~ "st"
       
-      p(Stream('t')) must beLike {
-        case Failure("Unexpected end of stream (expected 'te')", Stream('t')) :: Nil => true
+      p(LineStream('t')) must beLike {
+        case Failure("Unexpected end of stream (expected 'te')", LineStream('t')) :: Nil => true
         case _ => false
       }
       
-      p(Stream()) must beLike {
-        case Failure("Unexpected end of stream (expected 'te')", Stream()) :: Nil => true
+      p(LineStream()) must beLike {
+        case Failure("Unexpected end of stream (expected 'te')", LineStream()) :: Nil => true
         case _ => false
       }
       
       p("tes") must beLike {
-        case Failure("Unexpected end of stream (expected 'st')", Stream('s')) :: Nil => true
+        case Failure("Unexpected end of stream (expected 'st')", LineStream('s')) :: Nil => true
         case _ => false
       }
       
       p("te") must beLike {
-        case Failure("Unexpected end of stream (expected 'st')", Stream()) :: Nil => true
+        case Failure("Unexpected end of stream (expected 'st')", LineStream()) :: Nil => true
         case _ => false
       }
     }
