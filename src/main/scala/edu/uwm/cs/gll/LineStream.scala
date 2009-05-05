@@ -167,7 +167,6 @@ class LineCons(val head: Char, _tail: =>LineStream, line: String, lineNum: Int) 
 }
 
 private object LineCons {
-  
   def constructLine(line: String, head: Char, _tail: =>LineStream) = head match {
     case '\n' => {
       val tail = _tail
