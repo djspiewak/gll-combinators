@@ -5,7 +5,14 @@ import scala.io.Source
 
 import LineCons._
 
-sealed abstract class LineStream(lineAndTail: (String, Option[LineStream]), val lineNum: Int) extends Seq[Char] { outer =>
+/**
+ * A lazy character stream with line awareness.  This also provides
+ * amortized constant-time {@link CharSequence} access.
+ */
+sealed abstract class LineStream(lineAndTail: (String, Option[LineStream]), val lineNum: Int) extends Seq[Char] with CharSequence { outer =>
+  private var _page: String = null
+  private val pageLock = new AnyRef
+  
   private var _tail = lineAndTail._2
   private val tailLock = new AnyRef
   
@@ -41,13 +48,13 @@ sealed abstract class LineStream(lineAndTail: (String, Option[LineStream]), val 
   def apply(i: Int) = {
     if (lengthCompare(i) < 0)
       throw new IndexOutOfBoundsException(i.toString)
-    else {
-      if (i == 0)
-        head
-      else
-        tail(i - 1)
-    }
+    else
+      page(i) charAt i
   }
+  
+  def charAt(i: Int) = apply(i)
+  
+  def subSequence(start: Int, end: Int) = page(end).subSequence(start, end)
   
   override def lengthCompare(i: Int) = {
     if (isEmpty)
@@ -57,6 +64,8 @@ sealed abstract class LineStream(lineAndTail: (String, Option[LineStream]), val 
     else
       tail lengthCompare i - 1
   }
+  
+  override def toString = mkString
   
   /**
    * Expects a pattern with the following arguments:
@@ -71,6 +80,18 @@ sealed abstract class LineStream(lineAndTail: (String, Option[LineStream]), val 
     val charIndex = line.length - (tail takeWhile { _ != '\n' } length)
     val caret = (1 to charIndex).foldLeft("") { (acc, _) => acc + ' ' } + '^'
     ps.print(pattern.format(lineNum, line, caret))
+  }
+  
+  private def page(length: Int) = pageLock synchronized {
+    while (length > _page.length)
+      paginate()
+    
+    _page
+  }
+  
+  private def paginate() {
+    val newLength = if (_page == null) 10 else _page.length * 2
+    _page = this take newLength mkString
   }
 }
 
