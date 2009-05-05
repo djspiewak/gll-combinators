@@ -20,23 +20,10 @@ object RegexSpecs extends Specification with ScalaCheck with RegexParsers {
       {
         val p: Parser[String] = """\d+"""r
         
-        var passed = false
-        p.queue(null, LineStream("1234daniel")) {
-          case Success(res, tail) => {
-            if (passed) {
-              fail("Produced more than one result")
-            } else {
-              passed = true
-              
-              res mustEqual "1234"
-              tail zip LineStream('d', 'a', 'n', 'i', 'e', 'l') forall { case (a, b) => a == b } mustBe true
-            }
-          }
-          
-          case _ =>
+        p("1234daniel") must beLike {
+          case Failure("Unexpected trailing characters: 'daniel'", LineStream('d', 'a', 'n', 'i', 'e', 'l')) :: Nil => true
+          case _ => false
         }
-        
-        passed mustBe true
       }
     }
     
