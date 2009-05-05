@@ -10,7 +10,7 @@ import LineCons._
  * amortized constant-time {@link CharSequence} access.
  */
 sealed abstract class LineStream(lineAndTail: (String, Option[LineStream]), val lineNum: Int) extends Seq[Char] with CharSequence { outer =>
-  private var _page: String = null
+  private var _page: String = ""
   private val pageLock = new AnyRef
   
   private var _tail = lineAndTail._2
@@ -46,10 +46,12 @@ sealed abstract class LineStream(lineAndTail: (String, Option[LineStream]), val 
   }
   
   def apply(i: Int) = {
-    if (lengthCompare(i) < 0)
+    if (lengthCompare(i) > 0)
       throw new IndexOutOfBoundsException(i.toString)
+    else if (i == 0)      // trivial case
+      head
     else
-      page(i) charAt i
+      page(i + 1) charAt i
   }
   
   def charAt(i: Int) = apply(i)
@@ -61,10 +63,8 @@ sealed abstract class LineStream(lineAndTail: (String, Option[LineStream]), val 
       throw new IllegalArgumentException(length.toString)
     else if (length > 0 && !isEmpty)
       new LineCons(head, tail take length - 1, line, lineNum)
-    else if (length == 0)
-      LineNil
     else
-      throw new IndexOutOfBoundsException(length.toString)
+      LineNil
   }
   
   override def drop(length: Int): LineStream = {
@@ -73,7 +73,7 @@ sealed abstract class LineStream(lineAndTail: (String, Option[LineStream]), val 
     else if (length > 0 && !isEmpty)
       tail drop length - 1
     else if (length == 0)
-      tail
+      this
     else
       throw new IndexOutOfBoundsException(length.toString)
   }
@@ -130,7 +130,7 @@ sealed abstract class LineStream(lineAndTail: (String, Option[LineStream]), val 
   }
   
   private def paginate() {
-    val newLength = if (_page == null) 10 else _page.length * 2
+    val newLength = if (_page.length == 0) 10 else _page.length * 2
     _page = this take newLength mkString
   }
 }
