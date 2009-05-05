@@ -1,13 +1,9 @@
 package miniml
 
 import scala.io.Source
-
-import edu.uwm.cs._
-import gll.{RegexParsers, Success, Failure}
-import util.StreamUtils
+import edu.uwm.cs.gll._
 
 object MiniMLParser extends RegexParsers {
-  import StreamUtils._
   
   override val whitespace = """(\s|\(\*([^*]|\*[^)])*\*\))+"""r
   
@@ -85,7 +81,7 @@ object MiniMLParser extends RegexParsers {
       println(file)
       println("=============================")
       
-      decs(readFile(file)) match {
+      decs(LineStream(Source fromFile file)) match {
         case Success(tree, _) :: _ => println("  Successfully recognized!")
         
         case errors => {
@@ -93,30 +89,13 @@ object MiniMLParser extends RegexParsers {
           val length = sorted.head.tail.length
           
           for (Failure(msg, tail) <- sorted takeWhile { _.tail.length == length }) {
-            println("  " + msg + ":")
-            
-            val lineStream = tail takeWhile { c => c != '\n' && c != '\r' }
-            println("    " + lineStream.foldLeft("") { _ + _ })
-            println("    ^")
-            println()
+            val pattern = "%s:%%d: %s%n  %%s%n  %%s%n".format(file, msg)
+            tail.printError(pattern)(System.err)
           }
         }
       }
       
       println()
     }
-  }
-  
-  private def readFile(file: String) = {
-    val source = Source.fromFile(file)
-    
-    def gen(): Stream[Char] = {
-      if (source.hasNext)
-        source.next #:: gen()
-      else
-        Stream.empty
-    }
-    
-    gen()
   }
 }

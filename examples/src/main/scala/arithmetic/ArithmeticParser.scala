@@ -2,12 +2,9 @@ package arithmetic
 
 import scala.io.Source
 
-import edu.uwm.cs._
-import gll.{RegexParsers, Success, Failure}
-import util.StreamUtils
+import edu.uwm.cs.gll._
 
 object ArithmeticParser extends RegexParsers {
-  import StreamUtils._
   
   // %%
   
@@ -36,34 +33,22 @@ object ArithmeticParser extends RegexParsers {
       println(file)
       println("=============================")
       
-      expr(readFile(file)) match {
+      expr(LineStream(Source fromFile file)) match {
         case Success(tree, _) :: Nil => println(tree)
         
         case errors => {
           val sorted = errors sort { _.tail.length < _.tail.length }
           val length = sorted.head.tail.length
           
-          for (Failure(msg, _) <- sorted takeWhile { _.tail.length == length }) {
-            println("  " + msg)
+          for (Failure(msg, tail) <- sorted takeWhile { _.tail.length == length }) {
+            val pattern = "%s:%%d: %s%n  %%s%n  %%s%n".format(file, msg)
+            tail.printError(pattern)(System.err)
           }
         }
       }
       
       println()
     }
-  }
-  
-  private def readFile(file: String) = {
-    val source = Source.fromFile(file)
-    
-    def gen(): Stream[Char] = {
-      if (source.hasNext)
-        source.next #:: gen()
-      else
-        Stream.empty
-    }
-    
-    gen()
   }
   
   // AST
