@@ -123,15 +123,15 @@ sealed abstract class LineStream(lineAndTail: (String, Option[LineStream]), val 
   }
   
   private def page(length: Int) = pageLock synchronized {
-    while (length > _page.length)
-      paginate()
+    if (length > _page.length) {
+      var newLength = Math.max(_page.length, 10)
+      while (length > newLength)
+        newLength *= 2
+      
+      _page = this take newLength mkString
+    }
     
     _page
-  }
-  
-  private def paginate() {
-    val newLength = if (_page.length == 0) 10 else _page.length * 2
-    _page = this take newLength mkString
   }
 }
 
