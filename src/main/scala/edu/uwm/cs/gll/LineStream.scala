@@ -156,7 +156,7 @@ object LineStream {
     gen(src.getLines, 1)
   }
   
-  def unapplySeq(str: LineStream) = Some(str)
+  def unapplySeq(str: LineStream): Option[Seq[Char]] = Some(str)
 }
 
 class LineCons(val head: Char, _tail: =>LineStream, line: String, lineNum: Int) extends LineStream(constructLine(line, head, _tail), constructLineNum(lineNum, head)) {
