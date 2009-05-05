@@ -117,9 +117,9 @@ sealed abstract class LineStream(lineAndTail: (String, Option[LineStream]), val 
    * </ol>
    */
   def printError(pattern: String)(ps: PrintStream) {
-    val charIndex = line.length - (tail takeWhile { _ != '\n' } length)
+    val charIndex = line.length - (tail takeWhile { _ != '\n' } length) - 2
     val caret = (1 to charIndex).foldLeft("") { (acc, _) => acc + ' ' } + '^'
-    ps.print(pattern.format(lineNum, line, caret))
+    ps.print(pattern.format(lineNum, line.trim, caret))
   }
   
   private def page(length: Int) = pageLock synchronized {
