@@ -1,5 +1,7 @@
 require 'buildr/scala'
 
+JAVA_HOME = ENV['JAVA_HOME']
+
 GLL = task '../target/classes' do
   Dir.chdir '..' do
     system 'buildr compile' or fail 'Failed to compile gll-combinators.'
@@ -19,7 +21,7 @@ define 'examples' do
     trace cp
 
 	start = Time.now
-    system 'java', '-cp', cp, classname, *Dir.glob("input/#{name.downcase}/*")
+    system JAVA_HOME + '/bin/java', '-cp', cp, classname, *Dir.glob("input/#{name.downcase}/*")
 
 	puts "Total run time: #{Time.now - start} seconds"
 	puts '---------------------------------------'
