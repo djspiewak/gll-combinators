@@ -89,7 +89,7 @@ object MiniMLParser extends RegexParsers {
           val length = sorted.head.tail.length
           
           for (Failure(msg, tail) <- sorted takeWhile { _.tail.length == length }) {
-            val pattern = "%s:%%d: %s%n  %%s%n  %%s%n".format(file, msg)
+            val pattern = "  error:%%d: %s%n    %%s%n    %%s%n".format(msg)
             tail.printError(pattern)(System.err)
           }
         }
