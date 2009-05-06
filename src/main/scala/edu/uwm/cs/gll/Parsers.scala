@@ -21,6 +21,18 @@ trait Parsers {
   
   protected def processTail(tail: LineStream) = if (tail.isEmpty) Some(tail) else None
   
+  private def canonicalize(str: String) = str.foldLeft("") { (back, c) =>
+    val tack = c match {
+      case '\n' => "\\n"
+      case '\r' => "\\r"
+      case '\t' => "\\t"
+      case '\f' => "\\f"
+      case c => c.toString
+    }
+    
+    back + tack
+  }
+  
   //////////////////////////////////////////////////////////////////////////////
   
   sealed trait Parser[+R] extends (LineStream=>List[Result[R]]) { self =>
@@ -131,7 +143,7 @@ trait Parsers {
     final def apply(in: LineStream) = List(parse(in) match {
       case Success(res, tail) => processTail(tail) match {
         case Some(tail) => Success(res, tail)
-        case None => Failure(TAIL_ERROR_PATTERN.format(tail.mkString), tail)
+        case None => Failure(TAIL_ERROR_PATTERN.format(canonicalize(tail.mkString)), tail)
       }
       
       case x => x
@@ -206,7 +218,7 @@ trait Parsers {
         case Success(res, tail) => {
           processTail(tail) match {
             case Some(tail) => successes += Success(res, tail)
-            case None => failures += Failure(TAIL_ERROR_PATTERN.format(tail.mkString), tail)
+            case None => failures += Failure(TAIL_ERROR_PATTERN.format(canonicalize(tail.mkString)), tail)
           }
         }
         
@@ -272,7 +284,7 @@ trait Parsers {
     
     def parse(in: LineStream) = {
       val trunc = in take str.length
-      lazy val errorMessage = "Expected '%s' got '%s'".format(str, trunc.mkString)
+      lazy val errorMessage = "Expected '%s' got '%s'".format(str, canonicalize(trunc.mkString))
       
       if (trunc.lengthCompare(str.length) != 0) {
         Failure("Unexpected end of stream (expected '%s')".format(str), in)

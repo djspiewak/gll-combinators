@@ -136,6 +136,15 @@ object DisjunctionSpecs extends Specification with ImplicitConversions with Scal
       }
     }
     
+    "canonicalize failure message" in {
+      val p = literal("") | literal("")
+      
+      p("\n") must beLike {
+        case Failure("Unexpected trailing characters: '\\n'", LineStream('\n')) :: Nil => true
+        case _ => false
+      }
+    }
+    
     "produce binary failures for non-LL(1)" in {
       val p = "foobar" | "foobaz"
       

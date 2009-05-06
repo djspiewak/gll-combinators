@@ -30,6 +30,37 @@ object TerminalSpecs extends Specification with ScalaCheck with ImplicitConversi
       }
     }
     
+    "canonicalize failure message" in {
+      val p = literal("")
+      
+      p("\n") must beLike {
+        case Failure("Unexpected trailing characters: '\\n'", LineStream('\n')) :: Nil => true
+        case _ => false
+      }
+      
+      val p2 = literal("a")
+      
+      p2("\n") must beLike {
+        case Failure("Expected 'a' got '\\n'", LineStream('\n')) :: Nil => true
+        case _ => false
+      }
+      
+      p2("\r") must beLike {
+        case Failure("Expected 'a' got '\\r'", LineStream('\r')) :: Nil => true
+        case _ => false
+      }
+      
+      p2("\t") must beLike {
+        case Failure("Expected 'a' got '\\t'", LineStream('\t')) :: Nil => true
+        case _ => false
+      }
+      
+      p2("\f") must beLike {
+        case Failure("Expected 'a' got '\\f'", LineStream('\f')) :: Nil => true
+        case _ => false
+      }
+    }
+    
     "detect an unexpected end of stream" in {
       val p = literal("foo")
       
