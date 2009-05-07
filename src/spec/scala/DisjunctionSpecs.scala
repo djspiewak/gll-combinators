@@ -314,7 +314,7 @@ object DisjunctionSpecs extends Specification with ImplicitConversions with Scal
         
         // %%
         
-        val result = p((head + suffix))
+        val result = p(head + suffix)
         
         result.length mustBe 2
         
