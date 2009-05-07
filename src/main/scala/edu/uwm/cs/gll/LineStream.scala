@@ -3,8 +3,6 @@ package edu.uwm.cs.gll
 import java.io.PrintStream
 import scala.io.Source
 
-import LineCons._
-
 /**
  * A lazy character stream with line awareness.  This also provides
  * amortized constant-time {@link CharSequence} access.
@@ -138,52 +136,34 @@ sealed abstract class LineStream(lineAndTail: (String, Option[LineStream]), val 
 object LineStream {
   val empty: LineStream = LineNil
   
-  def apply(chars: Char*): LineStream = chars.foldRight(empty) { (c, tail) =>
-    new LineCons(c, tail, tail.line, tail.lineNum)
-  }
+  def apply(chars: Char*): LineStream = apply(new String(chars.toArray))
   
-  def apply(str: String): LineStream = apply(str:_*)
+  def apply(str: String): LineStream = apply("""(.*(\n\r?|\r\n?)|.+$)""".r findAllIn str)
   
-  def apply(src: Source): LineStream = {
-    def gen(lines: Iterator[String], num: Int): LineStream = {
+  def apply(src: Source): LineStream = apply(src.getLines)
+  
+  def apply(lines: Iterator[String]): LineStream = {
+    def gen(num: Int): LineStream = {
       if (lines.hasNext) {
         val line = lines.next
         val trimmed = line.trim
         
-        val init = new LineCons(line(line.length - 1), gen(lines, num + 1), trimmed, num)
+        val init = new LineCons(line(line.length - 1), gen(num + 1), trimmed, num)
         line.substring(0, line.length - 1).foldRight(init) { new LineCons(_, _, trimmed, num) }
       } else LineNil
     }
     
-    gen(src.getLines, 1)
+    gen(1)
   }
   
   def unapplySeq(str: LineStream): Option[Seq[Char]] = Some(str)
 }
 
-class LineCons(val head: Char, _tail: =>LineStream, line: String, lineNum: Int) extends LineStream(constructLine(line, head, _tail), constructLineNum(lineNum, head)) {
+class LineCons(val head: Char, _tail: =>LineStream, line: String, lineNum: Int) extends LineStream((line, None), lineNum) {
   lazy val length = 1 + _tail.length
   override val isEmpty = false
   
   protected def constructTail = _tail
-}
-
-private object LineCons {
-  def constructLine(line: String, head: Char, _tail: =>LineStream) = head match {
-    case '\n' => {
-      val tail = _tail
-      val trunc = tail takeWhile { _ != '\n' }
-      
-      (trunc.mkString, Some(tail))
-    }
-    
-    case _ => (line, None)
-  }
-  
-  def constructLineNum(lineNum: Int, head: Char) = head match {
-    case '\n' => lineNum + 1
-    case _ => lineNum
-  }
 }
 
 object LineNil extends LineStream(("", None), 1) {
