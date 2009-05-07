@@ -176,9 +176,9 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
       }
       
       val input = """1 + 6 / 3 * 2
-- -2 + 3 /
-
-(1 + 2)"""
+                     - -2 + 3 /
+                     
+                     (1 + 2)"""
       
       MathParser.expr(input) must beLike {
         case Success(8, LineStream()) :: Nil => true
