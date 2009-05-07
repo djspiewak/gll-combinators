@@ -6,6 +6,7 @@ object AllSpecs extends Specification {
     ArithmeticSpecs,
     CompoundSpecs,
     DisjunctionSpecs,
+    LineStreamSpecs,
     RegexSpecs,
     TerminalSpecs
   )
