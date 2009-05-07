@@ -44,7 +44,7 @@ sealed abstract class LineStream(lineAndTail: (String, Option[LineStream]), val 
   }
   
   def apply(i: Int) = {
-    if (lengthCompare(i) > 0)
+    if (lengthCompare(i) < 0)
       throw new IndexOutOfBoundsException(i.toString)
     else if (i == 0)      // trivial case
       head
@@ -78,9 +78,9 @@ sealed abstract class LineStream(lineAndTail: (String, Option[LineStream]), val 
   
   override def lengthCompare(i: Int) = {
     if (isEmpty)
-      i
-    else if (i < 0)
-      i
+      -i
+    else if (i <= 0)
+      1
     else
       tail lengthCompare i - 1
   }
@@ -161,6 +161,7 @@ object LineStream {
 
 class LineCons(val head: Char, _tail: =>LineStream, line: String, lineNum: Int) extends LineStream((line, None), lineNum) {
   lazy val length = 1 + _tail.length
+  
   override val isEmpty = false
   
   protected def constructTail = _tail
