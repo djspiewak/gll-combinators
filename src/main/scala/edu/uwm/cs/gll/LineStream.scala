@@ -138,7 +138,7 @@ object LineStream {
   
   def apply(chars: Char*): LineStream = apply(new String(chars.toArray))
   
-  def apply(str: String): LineStream = apply("""(.*(\n\r?|\r\n?)|.+$)""".r findAllIn str)
+  def apply(str: String): LineStream = apply(Source fromString str)
   
   def apply(src: Source): LineStream = apply(src.getLines)
   
