@@ -187,29 +187,9 @@ object DisjunctionSpecs extends Specification with ImplicitConversions with Scal
     }
     
     "compute FIRST for nary alternatives" in {
-      def check(p: Parser[Any], expected: String*) {
-        val set = expected.foldLeft(Set[Char]()) { (set, str) =>
-          if (str.length == 0) set
-          else set + str.charAt(0)
-        }
-        
-        p.first == set
-      }
-      
-      {
-        val p = "daniel" | "chris" | "joseph"
-        check(p, "daniel", "chris", "joseph")
-      }
-      
-      {
-        val p = "daniel" | "daniel" | "chris" | "joseph"
-        check(p, "daniel", "chris", "joseph")
-      }
-      
-      {
-        val p = "" | "chris" | "" | "daniel" | "daniel"
-        check(p, "", "daniel", "chris")
-      }
+      ("daniel" | "chris" | "joseph").first mustEqual Set('d', 'c', 'j')
+      ("daniel" | "daniel" | "chris" | "joseph").first mustEqual Set('d', 'c', 'j')
+      ("" | "chris" | "" | "daniel" | "daniel").first mustEqual Set()
     }
     
     "parse nary alternatives" in {
