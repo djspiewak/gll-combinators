@@ -13,7 +13,7 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
     
     "parse numbers" in {
       val prop = forAll { x: Int =>
-        expr(x.toString) match {
+        expr(x.toString) must beLike {
           case Success(e, LineStream()) :: Nil => e.solve == x
           case _ => false
         }
