@@ -7,29 +7,13 @@ import scala.io.Source
  * A lazy character stream with line awareness.  This also provides
  * amortized constant-time {@link CharSequence} access.
  */
-sealed abstract class LineStream(lineAndTail: (String, Option[LineStream]), val lineNum: Int) extends Seq[Char] with CharSequence { outer =>
+sealed abstract class LineStream(val line: String, val lineNum: Int) extends Seq[Char] with CharSequence { outer =>
   private var _page: String = ""
   private val pageLock = new AnyRef
   
-  private var _tail = lineAndTail._2
-  private val tailLock = new AnyRef
-  
-  val line = lineAndTail._1
-  
   def head: Char
   
-  def tail = tailLock synchronized {
-    _tail match {
-      case Some(tail) => tail
-      
-      case None => {
-        _tail = Some(constructTail)
-        _tail.get
-      }
-    }
-  }
-  
-  protected def constructTail: LineStream
+  def tail: LineStream
   
   def elements = new Iterator[Char] {
     var cur = outer
@@ -54,7 +38,7 @@ sealed abstract class LineStream(lineAndTail: (String, Option[LineStream]), val 
   
   def charAt(i: Int) = apply(i)
   
-  def subSequence(start: Int, end: Int) = page(end).subSequence(start, end)
+  def subSequence(start: Int, end: Int) = this take end drop start
   
   override def take(length: Int): LineStream = {
     if (length < 0)
@@ -159,21 +143,19 @@ object LineStream {
   def unapplySeq(str: LineStream): Option[Seq[Char]] = Some(str)
 }
 
-class LineCons(val head: Char, _tail: =>LineStream, line: String, lineNum: Int) extends LineStream((line, None), lineNum) {
-  lazy val length = 1 + _tail.length
+class LineCons(val head: Char, _tail: =>LineStream, line: String, lineNum: Int) extends LineStream(line, lineNum) {
+  lazy val tail = _tail
+  
+  lazy val length = 1 + tail.length
   
   override val isEmpty = false
-  
-  protected def constructTail = _tail
 }
 
-object LineNil extends LineStream(("", None), 1) {
+object LineNil extends LineStream("", 1) {
   val length = 0
   override val isEmpty = true
   
-  protected def constructTail = throw new AssertionError
-  
   def head = throw new RuntimeException("Cannot get the head of an empty LineStream")
   
-  override def tail = throw new RuntimeException("Cannot get the tail of an empty LineStream")
+  def tail = throw new RuntimeException("Cannot get the tail of an empty LineStream")
 }
