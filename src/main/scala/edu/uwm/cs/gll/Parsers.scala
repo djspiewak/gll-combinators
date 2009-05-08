@@ -176,11 +176,21 @@ trait Parsers {
         new TerminalParser[R ~ R2] {
           def computeFirst(s: Set[Parser[Any]]) = {
             val sub = self.computeFirst(s)
-            sub flatMap { set =>
+        
+            sub map { set =>
               if (set.size == 0 || set.contains(None))
-                other.computeFirst(s) map { set2 => set ++ set2 }
+                other.computeFirst(s) match {
+                  case Some(set2) => {
+                    if (set.isComplement)
+                      (set - None) ++ set2
+                    else
+                      set2 ++ (set - None)
+                  }
+                  
+                  case None => set
+                }
               else
-                sub
+                set
             }
           }
           
@@ -330,11 +340,20 @@ trait Parsers {
         val newSeen = seen + this
         val sub = left.computeFirst(newSeen)
         
-        sub flatMap { set =>
-          if (set.size == 0 || (set.contains(None) && set != UniversalOptCharSet))
-            right.computeFirst(newSeen) map { set2 => set ++ set2 }
+        sub map { set =>
+          if (set.size == 0 || set.contains(None))
+            right.computeFirst(newSeen) match {
+              case Some(set2) => {
+                if (set.isComplement)
+                  (set - None) ++ set2
+                else
+                  set2 ++ (set - None)
+              }
+              
+              case None => set
+            }
           else
-            sub
+            set
         }
       }
     }
@@ -421,8 +440,8 @@ trait Parsers {
         val leftFirst = left.computeFirst(newSeen) getOrElse Set()
         val rightFirst = right.computeFirst(newSeen) getOrElse Set()
         
-        if (leftFirst == UniversalOptCharSet || rightFirst == UniversalOptCharSet)
-          Some(UniversalOptCharSet)
+        if (rightFirst.isComplement)
+          Some(rightFirst ++ leftFirst)
         else
           Some(leftFirst ++ rightFirst)
       }
