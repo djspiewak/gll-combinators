@@ -419,10 +419,7 @@ trait Parsers {
      */
     lazy val isLL1 = {
       val sets = gather map { _.first }
-      val areFinite = sets forall { 
-        case UniversalCharSet => false
-        case _ => true
-      }
+      val areFinite = sets forall { !_.isComplement }
       
       if (areFinite) {
         val totalSize = sets.foldLeft(0) { _ + _.size }
@@ -471,8 +468,8 @@ trait Parsers {
             for {
               p <- gather
               
-              // [(S = {}) -> (FIRST = cmp(X))] /\ [~(S = {}) -> (S[0] \in FIRST)]
-              if !in.isEmpty || p.first.isComplement
+              // [(S = {}) -> (FIRST = U)] /\ [~(S = {}) -> (S[0] \in FIRST)]
+              if !in.isEmpty || p.first == UniversalCharSet
               if in.isEmpty || p.first.contains(in.head)      // lookahead
             } {
               predicted = true
