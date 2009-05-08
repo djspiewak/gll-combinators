@@ -99,7 +99,11 @@ sealed abstract class LineStream(val line: String, val lineNum: Int) extends Seq
    * </ol>
    */
   def printError(pattern: String)(ps: PrintStream) {
-    val charIndex = line.length - (tail takeWhile { _ != '\n' } length) - 1
+    val charIndex = if (isEmpty)
+      line.length
+    else
+      line.length - (tail takeWhile { _ != '\n' } length) - 1
+    
     val caret = (1 to charIndex).foldLeft("") { (acc, _) => acc + ' ' } + '^'
     ps.print(pattern.format(lineNum, line, caret))
   }
