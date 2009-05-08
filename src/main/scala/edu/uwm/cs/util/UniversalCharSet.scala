@@ -1,6 +1,6 @@
 package edu.uwm.cs.util
 
-class ComplementarySet[A] private (private val without: Set[A]) extends collection.immutable.Set[A] {
+class ComplementarySet[A](private val without: Set[A]) extends collection.immutable.Set[A] {
   val size = Math.MAX_INT     // should be infinite
   
   def this() = this(Set())
