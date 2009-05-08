@@ -80,7 +80,7 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
       lazy val c: Parser[String] = (
           "b"
         | b ~ c ~ "b" ^^ { _ + _ + _ }
-        | "b" ~ "b"   ^^^ "bb"
+        | "b" ~ "b"  ^^^ "bb"
       )
       
       val s = (
