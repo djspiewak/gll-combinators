@@ -33,6 +33,12 @@ trait Parsers {
     back + tack
   }
   
+  private implicit def setSyntax[A](set: Set[A]) = new {
+    def isComplement = set.isInstanceOf[ComplementarySet[_]]
+    
+    def complement = new ComplementarySet(set)
+  }
+  
   //////////////////////////////////////////////////////////////////////////////
   
   sealed trait Parser[+R] extends (LineStream=>List[Result[R]]) { self =>
@@ -446,9 +452,9 @@ trait Parsers {
             for {
               p <- gather
               
-              // [(S = {}) -> (FIRST = {})] /\ [~(S = {}) -> (S[0] \in FIRST \/ FIRST = {})]
-              if !in.isEmpty || p.first.size == 0
-              if in.isEmpty || p.first.contains(in.head) || p.first.size == 0      // lookahead
+              // [(S = {}) -> (FIRST = cmp(X))] /\ [~(S = {}) -> (S[0] \in FIRST)]
+              if !in.isEmpty || p.first.isComplement
+              if in.isEmpty || p.first.contains(in.head)      // lookahead
             } {
               predicted = true
               t.add(p, in) { res =>
