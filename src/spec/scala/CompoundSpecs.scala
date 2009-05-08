@@ -99,6 +99,7 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
       s mustNot throwA[Throwable]
       
       check("abba")
+      check("bbbbbbba")
       check("d")
       check("aaaaaaaabbbbbbbbba")
       

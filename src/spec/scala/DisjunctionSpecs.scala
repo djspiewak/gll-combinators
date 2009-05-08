@@ -59,11 +59,16 @@ object DisjunctionSpecs extends Specification with ImplicitConversions with Scal
     }
     
     "compute FIRST for binary alternatives" in {
+      import edu.uwm.cs.util._
+      
       val prop = forAll { (left: String, right: String) =>
         val leftFirst = if (left.length == 0) Set[Char]() else Set(left charAt 0)
         val rightFirst = if (right.length == 0) Set[Char]() else Set(right charAt 0)
         
-        (left | right).first mustEqual (leftFirst ++ rightFirst)
+        if (leftFirst.size == 0 || rightFirst.size == 0)
+          (left | right).first mustEqual UniversalCharSet
+        else
+          (left | right).first mustEqual (leftFirst ++ rightFirst)
       }
       
       prop must pass
@@ -187,9 +192,11 @@ object DisjunctionSpecs extends Specification with ImplicitConversions with Scal
     }
     
     "compute FIRST for nary alternatives" in {
+      import edu.uwm.cs.util._
+      
       ("daniel" | "chris" | "joseph").first mustEqual Set('d', 'c', 'j')
       ("daniel" | "daniel" | "chris" | "joseph").first mustEqual Set('d', 'c', 'j')
-      ("" | "chris" | "" | "daniel" | "daniel").first mustEqual Set()
+      ("" | "chris" | "" | "daniel" | "daniel").first mustEqual UniversalCharSet
     }
     
     "parse nary alternatives" in {

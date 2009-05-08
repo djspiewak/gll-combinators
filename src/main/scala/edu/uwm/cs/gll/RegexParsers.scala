@@ -9,14 +9,14 @@ trait RegexParsers extends Parsers with ImplicitConversions {
   protected val whitespace = """\s+"""r
   
   override implicit def literal(str: String): Parser[String] = new LiteralParser(str) {
-    override def computeFirst(seen: Set[Parser[Any]]) = Some(UniversalCharSet)    // because of whitespace
+    override def computeFirst(seen: Set[Parser[Any]]) = Some(UniversalOptCharSet)    // because of whitespace
     
     // there should be a way to do this with traits, but I haven't found it yet
     override def parse(s: LineStream) = super.parse(handleWhitespace(s))
   }
   
   implicit def regex(r: Regex): Parser[String] = new RegexParser(r) {
-    override def computeFirst(seen: Set[Parser[Any]]) = Some(UniversalCharSet)
+    override def computeFirst(seen: Set[Parser[Any]]) = Some(UniversalOptCharSet)
     
     override def parse(s: LineStream) = super.parse(handleWhitespace(s))
   }
@@ -32,7 +32,7 @@ trait RegexParsers extends Parsers with ImplicitConversions {
     s.drop(whitespace findPrefixOf s map { _.length } getOrElse 0)
   
   case class RegexParser(private val regex: Regex) extends TerminalParser[String] {
-    def computeFirst(s: Set[Parser[Any]]) = Some(UniversalCharSet)
+    def computeFirst(s: Set[Parser[Any]]) = Some(UniversalOptCharSet)
     
     def parse(in: LineStream) = {
       val res = regex findPrefixOf in map { str => Success(str, in drop str.length) }

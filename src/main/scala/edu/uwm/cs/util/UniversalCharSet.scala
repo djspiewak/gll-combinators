@@ -54,3 +54,5 @@ class ComplementarySet[A] private (private val without: Set[A]) extends collecti
 }
 
 case object UniversalCharSet extends ComplementarySet[Char]
+
+case object UniversalOptCharSet extends ComplementarySet[Option[Char]]

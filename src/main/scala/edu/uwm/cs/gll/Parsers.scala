@@ -38,13 +38,20 @@ trait Parsers {
   sealed trait Parser[+R] extends (LineStream=>List[Result[R]]) { self =>
     val terminal: Boolean
     
-    lazy val first = computeFirst(Set()) getOrElse Set()
+    lazy val first = {
+      val set = computeFirst(Set()) getOrElse Set()
+      
+      if (set contains None)
+        UniversalCharSet         // if \epsilon \in FIRST
+      else
+        set flatMap { x => x }
+    }
     
     /**
      * @return The FIRST set for this parser, or the empty set
      *         if the production goes to \epsilon.
      */
-    def computeFirst(seen: Set[Parser[Any]]): Option[Set[Char]]
+    def computeFirst(seen: Set[Parser[Any]]): Option[Set[Option[Char]]]
     
     def queue(t: Trampoline, in: LineStream)(f: Result[R]=>Unit)
     
@@ -164,8 +171,8 @@ trait Parsers {
           def computeFirst(s: Set[Parser[Any]]) = {
             val sub = self.computeFirst(s)
             sub flatMap { set =>
-              if (set.size == 0)
-                other.computeFirst(s)
+              if (set.size == 0 || set.contains(None))
+                other.computeFirst(s) map { set2 => set ++ set2 }
               else
                 sub
             }
@@ -279,7 +286,7 @@ trait Parsers {
   
   case class LiteralParser(str: String) extends TerminalParser[String] {
     def computeFirst(s: Set[Parser[Any]]) = {
-      Some(if (str.length > 0) Set(str charAt 0) else Set())
+      Some(if (str.length > 0) Set(Some(str charAt 0)) else Set(None))
     }
     
     def parse(in: LineStream) = {
@@ -318,8 +325,8 @@ trait Parsers {
         val sub = left.computeFirst(newSeen)
         
         sub flatMap { set =>
-          if (set.size == 0)
-            right.computeFirst(newSeen)
+          if (set.size == 0 || (set.contains(None) && set != UniversalOptCharSet))
+            right.computeFirst(newSeen) map { set2 => set ++ set2 }
           else
             sub
         }
@@ -408,8 +415,8 @@ trait Parsers {
         val leftFirst = left.computeFirst(newSeen) getOrElse Set()
         val rightFirst = right.computeFirst(newSeen) getOrElse Set()
         
-        if (leftFirst == UniversalCharSet || rightFirst == UniversalCharSet)
-          Some(UniversalCharSet)
+        if (leftFirst == UniversalOptCharSet || rightFirst == UniversalOptCharSet)
+          Some(UniversalOptCharSet)
         else
           Some(leftFirst ++ rightFirst)
       }
