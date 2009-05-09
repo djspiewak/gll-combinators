@@ -39,6 +39,10 @@ define 'examples' do
   task :lambdacalc => :compile do
     run_eg.call 'LambdaCalc'
   end
+
+  task :paren => :compile do
+    run_eg.call 'Paren'
+  end
   
-  task :run => [:arithmetic, :miniml, :lambdacalc]
+  task :run => [:arithmetic, :miniml, :lambdacalc, :paren]
 end
