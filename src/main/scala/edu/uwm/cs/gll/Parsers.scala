@@ -437,10 +437,15 @@ trait Parsers {
         val leftFirst = left.computeFirst(newSeen) getOrElse Set()
         val rightFirst = right.computeFirst(newSeen) getOrElse Set()
         
-        if (rightFirst.isComplement)
-          Some(rightFirst ++ leftFirst)
+        val back = if (rightFirst.isComplement)
+          rightFirst ++ leftFirst
         else
-          Some(leftFirst ++ rightFirst)
+          leftFirst ++ rightFirst
+        
+        Some(if (back.size == 0)
+          UniversalOptCharSet
+        else
+          back)
       }
     }
     

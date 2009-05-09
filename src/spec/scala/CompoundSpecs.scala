@@ -209,6 +209,25 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
       }
     }
     
+    "compute FIRST for nested left-recursion" in {
+      object ComplexParser extends RegexParsers {
+        lazy val exp: Parser[Any] = (
+            n
+          | "(" ~ commaExps ~ ")"
+          | exp ~ exp
+        ) ^^^ null
+        
+        lazy val commaExps: Parser[Any] = (
+            exp
+          | commaExps ~ "," ~ exp
+        )
+        
+        val n = """\d+"""r
+      }
+      
+      ComplexParser.exp.first mustEqual UniversalCharSet
+    }
+    
     "handle nested left-recursion" in {
       object ComplexParser extends RegexParsers {
         lazy val exp: Parser[Any] = (
