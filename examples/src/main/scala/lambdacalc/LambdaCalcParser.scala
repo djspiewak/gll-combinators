@@ -10,9 +10,9 @@ object LambdaCalcParser extends RegexParsers {
   
   // %%
   
-  lazy val aliases = (alias+) ~ expr ^^ { (_, _) }
+  lazy val aliases = (alias+) ~ "-{3,}".r ~ expr ^^ { (a, _, e) => (a, e) }
                                 
-  lazy val alias = x ~ "=" ~ expr    ^^ { (id, _, e) => Alias(id, e) }
+  lazy val alias = x ~ "=" ~ expr                ^^ { (id, _, e) => Alias(id, e) }
   
   lazy val expr: Parser[Expr] = (
       "\\" ~> x ~ "." ~ expr      ^^ { (id, _, e) => Lambda(id, e) }
