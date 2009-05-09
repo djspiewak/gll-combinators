@@ -3,7 +3,7 @@ import edu.uwm.cs.gll._
 import org.specs._
 import org.scalacheck._
 
-object DisjunctionSpecs extends Specification with ImplicitConversions with ScalaCheck {
+object DisjunctionSpecs extends Specification with Parsers with ScalaCheck {
   import Prop._
   
   "disjunctive parser" should {

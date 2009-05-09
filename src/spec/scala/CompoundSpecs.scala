@@ -4,7 +4,7 @@ import edu.uwm.cs.util._
 import org.specs._
 import org.scalacheck._
 
-object CompoundSpecs extends Specification with ImplicitConversions with ScalaCheck {
+object CompoundSpecs extends Specification with Parsers with ScalaCheck {
   import Prop._
   
   "compound non-terminal parsers" should {

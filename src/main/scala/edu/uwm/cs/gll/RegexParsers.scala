@@ -5,7 +5,7 @@ import scala.util.matching.Regex
 import util._
 
 // TODO need to handle trailing whitespace (somehow)
-trait RegexParsers extends Parsers with ImplicitConversions {
+trait RegexParsers extends Parsers {
   protected val whitespace = """\s+"""r
   
   override implicit def literal(str: String): Parser[String] = new LiteralParser(str) {
