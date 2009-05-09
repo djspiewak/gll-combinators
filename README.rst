@@ -245,11 +245,64 @@ time.  This is even better than GLR, which is *O(n^4)* in the worst case.
 .. _this paper by Masaru Tomita: http://acl.ldc.upenn.edu/P/P88/P88-1031.pdf
 
 
+.. _Performance:
+
 Performance
 ===========
 
-**TODO**
+At the moment, performance is basically non-existent.  The GLL algorithm itself
+is *O(n^3)* even in the worst case, but there is a high constant factor which is
+introduced by the framework which makes this quite a bit slower than it sounds.
+This is significantly better than traditional parser combinators, which are *O(k^n)*
+in the worst case (where *k* is a constant representing the ambiguity of the
+grammar), but the constant overhead imposed by the framework does make parsing
+according to the average grammar a somewhat longer affair than the traditional
+parser combinators or even mainstream bottom-up parsers such as Bison.
+A good example of poor performance is the **MiniML** example in the ``examples/``
+directory.  Another, somewhat pathological example is the following highly-ambiguous
+grammar::
+    
+    lazy val s: Parser[String] = (
+        "b"
+      | s ~ s       ^^ { _ + _ }
+      | s ~ s ~ s   ^^ { _ + _ + _ }
+    )
+    
+It takes roughly 18 seconds to run this grammar against an input consisting of
+the letter ``b`` repeated 100 times.  If we increase that number to 300, the
+parser will actually exhaust the available heap space in the default JVM
+configuration.  This is not really surprising, consider that this grammar defines
+an exponential number of parse trails, all of which must be followed and reduced
+by the GLL parser.
 
+With that said, there are very few grammar/input combinations which push the
+framework to its limit.  In fact, for grammars which are LL(1)_, the GLL Combinators
+framework should actually be *faster* than traditional parser combinators.  For
+example::
+    
+    val num = ("0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9") ^^ { _.toInt }
+    
+In order to parse this grammar, traditional parser combinators would require time
+proportional to the number of alternates (in this case, 10).  GLL Combinators are
+capable of parsing this grammar in linear time (*O(n)*), which is equivalent to
+the best LL(k) parsers.  This is because the GLL algorithm degrades gracefully
+to predictive recursive-descent when the grammar (or sub-grammar) is LL(1).
+Note that GLL also lacks any form of conventional backtracking, which is how it
+is able to avoid the exponential cases which make naive recursive-descent so
+problematic.
+
+It is also worth noting that the GLL algorithm is inherantly parallelizable.
+This means that, given enough processors, GLL should be quite a bit faster (in
+terms of total parse time) than any conventional bottom-up *or* top-down parser.
+The framework does not currently exploit this design property, but the plan is
+to eventually do so.  Essentially, the parse would seamlessly distribute across
+all available cores.  The more ambiguous the grammar, the better the algorithm
+could parallelize the parse.
+
+.. _LL(1): http://en.wikipedia.org/wiki/LL(1)
+
+
+.. _Theory:
 
 Theory
 ======
