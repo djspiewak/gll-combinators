@@ -186,15 +186,15 @@ The theoretical underpinnings for GLL are quite interesting, but also beyond the
 scope of this readme.  I would refer you to `the original paper`_ by doctors
 Elizabeth Scott and Adrian Johnstone of Royal Holloway, University of London.
 
-In a nutshell, the algorithm is identical to conventional single-token predictive
-recursive-descent parsing with no backtracking.  This technique is only capable
-of handling grammars which are LL(1), meaning no left-recursion, no ambiguity, 
-and no alternates which begin with the same token.  The key difference is GLL
-uses a *trampoline* function to dispatch ambiguous alternates.  The idea of
-using a trampoline function to implement mutual tail-recursion in constant stack
-space is a well-known technique in functional programming (it's at the heart of
-Scheme's dispatch system).  However, GLL is the first (to my knowledge) to apply
-this idea to text parsing.
+In a nutshell, the algorithm is almost identical to conventional single-token predictive
+recursive-descent parsing with no backtracking.  This technique (recursive-descent)
+is only capable of handling grammars which are LL(1), meaning no left-recursion,
+no ambiguity, and no alternates which begin with the same token.  The key difference
+is that GLL uses a *trampoline* function to dispatch ambiguous alternates.  The
+idea of using a trampoline function to implement mutual tail-recursion in
+constant stack space is a well-known technique in functional programming (it's
+at the heart of Scheme's dispatch system).  However, GLL is the first (to my
+knowledge) to apply this idea to text parsing.
 
 The trampoline contains a queue (or stack) of pending alternate productions and
 their corresponding position in the input stream.  Any number of alternates may
