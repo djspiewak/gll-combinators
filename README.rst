@@ -46,7 +46,7 @@ incompatible with the combinator model due to their highly-unintuitive control
 flow.  In GLL parsing, the control flow follows that of the grammar, as it does
 in traditional parser combinators or any other form of recursive-descent.
 
-* Usage_
+* `Getting Started`_
     * Fundamentals_
     * Examples_
 * Advantages_
@@ -57,10 +57,10 @@ in traditional parser combinators or any other form of recursive-descent.
 .. _recursive-descent parsing: http://en.wikipedia.org/wiki/Recursive_descent_parser
 
 
-.. _Usage:
+.. _`Getting Started`:
 
-Usage
-=====
+Getting Started
+===============
 
 Thanks to `Apache Buildr`_, it is quite simple to build the GLL Combinators
 library into a fully-realized JAR.  Note that you will need Buildr 1.3.4 (or later)
