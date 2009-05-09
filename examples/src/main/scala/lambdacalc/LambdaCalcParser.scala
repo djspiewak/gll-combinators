@@ -51,8 +51,13 @@ object LambdaCalcParser extends RegexParsers {
             
             Some(expr.eval(env))
           } catch {
-            case e => {
-              errors += e.getMessage
+            case EvalException(msg) => {
+              errors += msg
+              None
+            }
+            
+            case e: StackOverflowError => {
+              errors += "stack overflow"
               None
             }
           }
