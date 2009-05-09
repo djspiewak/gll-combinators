@@ -8,7 +8,10 @@ GLL = task '../target/classes' do
   end
 end
 
-define 'examples' do
+layout = Layout.new
+layout[:source, :main, :scala] = 'src'
+
+define 'examples', :layout => layout do
   compile.with GLL
   
   run_eg = proc do |name|
