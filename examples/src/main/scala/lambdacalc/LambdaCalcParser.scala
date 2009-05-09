@@ -4,9 +4,9 @@ import scala.io.Source
 import scala.collection.mutable
 
 import edu.uwm.cs.gll._
+import AST._
 
-object LambdaCalcParser extends RegexParsers {
-  import AST._
+object LambdaCalcParser extends common.Example[(List[Alias], Expr)] with RegexParsers {
   
   // %%
   
@@ -33,57 +33,40 @@ object LambdaCalcParser extends RegexParsers {
   
   // %%
   
-  def main(args: Array[String]) {
-    for (file <- args) {
-      println(file)
-      println("=============================")
-      
-      val forest = aliases(LineStream(Source fromFile file))
-      
-      if (forest exists { _.isInstanceOf[Success[_]] }) {
-        val errors = mutable.Set[String]()
+  def parser = aliases
+  
+  def handleSuccesses(forest: List[(List[Alias], Expr)]) {
+    val errors = mutable.Set[String]()
         
-        val status = for (Success((tree, expr), _) <- forest) yield {
-          try {
-            val env = tree.foldLeft(Map():Env) { (env, alias) =>
-              env(alias.id) = alias.expr.eval(env)
-            }
-            
-            Some(expr.eval(env))
-          } catch {
-            case EvalException(msg) => {
-              errors += msg
-              None
-            }
-            
-            case e: StackOverflowError => {
-              errors += "stack overflow"
-              None
-            }
-          }
+    val status = for ((tree, expr) <- forest) yield {
+      try {
+        val env = tree.foldLeft(Map():Env) { (env, alias) =>
+          env(alias.id) = alias.expr.eval(env)
         }
         
-        val results = status flatMap { x => x }
+        Some(expr.eval(env))
+      } catch {
+        case EvalException(msg) => {
+          errors += msg
+          None
+        }
         
-        if (results.length == 0) {
-          for (msg <- errors) {
-            System.err.println("  runtime error: " + msg)
-          }
-        } else if (results.length == 1)
-          println("  " + results.head)
-        else
-          System.err.printf("  parse error: Ambiguous parse: %s valid trees%n", results.length.toString)
-      } else {
-        val sorted = forest sort { _.tail.length < _.tail.length }
-        val length = sorted.head.tail.length
-        
-        for (Failure(msg, tail) <- sorted takeWhile { _.tail.length == length }) {
-          val pattern = "  parse error:%%d: %s%n    %%s%n    %%s%n".format(msg)
-          tail.printError(pattern)(System.err)
+        case e: StackOverflowError => {
+          errors += "stack overflow"
+          None
         }
       }
-      
-      println()
     }
+    
+    val results = status flatMap { x => x }
+    
+    if (results.length == 0) {
+      for (msg <- errors) {
+        System.err.println("  runtime error: " + msg)
+      }
+    } else if (results.length == 1)
+      println("  " + results.head)
+    else
+      System.err.printf("  parse error: Ambiguous parse: %s valid trees%n", results.length.toString)
   }
 }

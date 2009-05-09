@@ -1,9 +1,8 @@
 package miniml
 
-import scala.io.Source
 import edu.uwm.cs.gll._
 
-object MiniMLParser extends RegexParsers {
+object MiniMLParser extends common.Example[Any] with RegexParsers {
   
   override val whitespace = """(\s|\(\*([^*]|\*[^)])*\*\))+"""r
   
@@ -76,26 +75,10 @@ object MiniMLParser extends RegexParsers {
   
   // %%
   
-  def main(args: Array[String]) {
-    for (file <- args) {
-      println(file)
-      println("=============================")
-      
-      decs(LineStream(Source fromFile file)) match {
-        case Success(tree, _) :: _ => println("  Successfully recognized!")
-        
-        case errors => {
-          val sorted = errors sort { _.tail.length < _.tail.length }
-          val length = sorted.head.tail.length
-          
-          for (Failure(msg, tail) <- sorted takeWhile { _.tail.length == length }) {
-            val pattern = "  error:%%d: %s%n    %%s%n    %%s%n".format(msg)
-            tail.printError(pattern)(System.err)
-          }
-        }
-      }
-      
-      println()
-    }
+  def parser = decs
+  
+  def handleSuccesses(v: List[Any]) {
+    if (!v.isEmpty)
+      println("  Successfully recognized!")
   }
 }
