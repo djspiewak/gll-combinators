@@ -46,18 +46,9 @@ incompatible with the combinator model due to their highly-unintuitive control
 flow.  In GLL parsing, the control flow follows that of the grammar, as it does
 in traditional parser combinators or any other form of recursive-descent.
 
-* `Getting Started`_
-    * Fundamentals_
-    * Examples_
-* Advantages_
-* Performance_
-* Theory_
-
 .. _`GLL parsing algorithm`: http://ldta.info/ldta2009proceedings.pdf
 .. _recursive-descent parsing: http://en.wikipedia.org/wiki/Recursive_descent_parser
 
-
-.. _`Getting Started`:
 
 Getting Started
 ===============
@@ -104,23 +95,17 @@ for use:
 .. _`Apache Buildr`: http://buildr.apache.org
 
 
-.. _Fundamentals:
-
 Fundamentals
 ------------
 
 **TODO**
 
 
-.. _Examples:
-
 Examples
 --------
 
 **TODO**
 
-
-.. _Advantages:
 
 Advantages
 ==========
@@ -245,8 +230,6 @@ time.  This is even better than GLR, which is *O(n^4)* in the worst case.
 .. _this paper by Masaru Tomita: http://acl.ldc.upenn.edu/P/P88/P88-1031.pdf
 
 
-.. _Performance:
-
 Performance
 ===========
 
@@ -301,8 +284,6 @@ could parallelize the parse.
 
 .. _LL(1): http://en.wikipedia.org/wiki/LL(1)
 
-
-.. _Theory:
 
 Theory
 ======
