@@ -652,6 +652,7 @@ trait Parsers {
   
   class Trampoline {
     private type RSet[A] = mutable.Set[Result[A]]
+    private type SSet[A] = mutable.Set[Success[A]]
     private type FSet[A] = mutable.Set[Result[A]=>Unit]
     
     // R
@@ -661,7 +662,7 @@ trait Parsers {
     private val done = mutable.Map[LineStream, mutable.Set[Parser[Any]]]()
     
     // P
-    private val popped = mutable.Map[LineStream, HOMap[Parser, RSet]]()
+    private val popped = mutable.Map[LineStream, HOMap[Parser, SSet]]()
     
     // GSS back edges
     private val backlinks = mutable.Map[LineStream, HOMap[Parser, FSet]]()
@@ -676,13 +677,19 @@ trait Parsers {
         
         p.queue(this, s) { res =>
           if (!popped.contains(s))
-            popped += (s -> HOMap[Parser, RSet]())
+            popped += (s -> HOMap[Parser, SSet]())
         
           if (!popped(s).contains(p))
-            popped(s) += (p -> new mutable.HashSet[Result[Any]])
+            popped(s) += (p -> new mutable.HashSet[Success[Any]])
         
-          popped(s)(p) += res
-          tracef("Saved: %s *=> %s%n", (p, s), res)
+          res match {
+            case succ: Success[Any] => {
+              popped(s)(p) += succ
+              tracef("Saved: %s *=> %s%n", (p, s), succ)
+            }
+            
+            case _: Failure => ()
+          }
         
           if (!saved.contains(res))
             saved += (res -> new mutable.HashSet[Result[Any]=>Unit])
@@ -700,11 +707,6 @@ trait Parsers {
     def add[A](p: Parser[A], s: LineStream)(f: Result[A]=>Unit) {
       val tuple = (p, s)
       
-      lazy val containsSuccess = popped(s)(p) exists {
-        case _: Success[A] => true
-        case _ => false
-      }
-      
       if (!backlinks.contains(s))
         backlinks += (s -> HOMap[Parser, FSet]())
       
@@ -713,8 +715,8 @@ trait Parsers {
       
       backlinks(s)(p) += f
       
-      if (popped.contains(s) && popped(s).contains(p) && containsSuccess) {
-        for (res @ Success(_, _) <- popped(s)(p)) {           // if we've already done that, use the result
+      if (popped.contains(s) && popped(s).contains(p)) {
+        for (res <- popped(s)(p)) {           // if we've already done that, use the result
           tracef("Revisited: %s *=> %s%n", tuple, res)
           f(res)
         }
