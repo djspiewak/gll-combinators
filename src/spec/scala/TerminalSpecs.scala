@@ -85,9 +85,11 @@ object TerminalSpecs extends Specification with ScalaCheck with ImplicitConversi
     }
     
     "compute FIRST set" in {
+      import edu.uwm.cs.util.UniversalCharSet
+      
       val prop = forAll { s: String =>
         if (s.length == 0)
-          literal(s).first mustEqual Set()
+          literal(s).first mustEqual UniversalCharSet
         else
           literal(s).first mustEqual Set(s charAt 0)
       }
@@ -163,17 +165,19 @@ object TerminalSpecs extends Specification with ScalaCheck with ImplicitConversi
     }
     
     "compute FIRST set" in {
+      import edu.uwm.cs.util.UniversalCharSet
+      
       val prop = forAll { strs: List[String] =>
         strs.length > 0 ==> {
           val p = strs.map(literal).reduceLeft[Parser[Any]] { _ ~ _ }
           
           val composite = strs.mkString
-          val first = if (composite.length == 0) Set() else Set(composite charAt 0)
+          val first = if (composite.length == 0) UniversalCharSet else Set(composite charAt 0)
           
           if (p.first.size == 0 && first.size == 0)
             p.first.size mustBe first.size      // tautology
           else
-            p.first must haveTheSameElementsAs(first)
+            p.first mustEqual first
         }
       }
       
