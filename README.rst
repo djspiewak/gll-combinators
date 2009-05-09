@@ -46,9 +46,81 @@ incompatible with the combinator model due to their highly-unintuitive control
 flow.  In GLL parsing, the control flow follows that of the grammar, as it does
 in traditional parser combinators or any other form of recursive-descent.
 
+* Usage_
+    * Fundamentals_
+    * Examples_
+* Advantages_
+* Performance_
+* Theory_
+
 .. _`GLL parsing algorithm`: http://ldta.info/ldta2009proceedings.pdf
 .. _recursive-descent parsing: http://en.wikipedia.org/wiki/Recursive_descent_parser
 
+
+.. _Usage:
+
+Usage
+=====
+
+Thanks to `Apache Buildr`_, it is quite simple to build the GLL Combinators
+library into a fully-realized JAR.  Note that you will need Buildr 1.3.4 (or later)
+installed, otherwise the build will fail while attempting to run the test suite.
+You can create the library JAR by running the following command::
+    
+    buildr package
+    
+This will produce a file of the form ``gll-combinators-0.3.0.jar`` (where "``0.3.0``"
+is the current version number) in the ``target/`` directory.  Note that this
+command will also invoke the test suite, failing if any of the tests are
+unsuccessful.  You can by-pass the test suite by appending the ``test=no`` option
+to the command given above.
+
+If you are using Buildr or Maven2, it may be easier to simply install the GLL
+Combinators framework into your local repository (by default, ``~/.m2/repository/``).
+This is easily accomplished by using the following command::
+    
+    buildr install
+    
+Once this installation is complete, you should be able to reference the library
+using a ``groupId`` of "``edu.uwm.cs``", an ``artifactId`` of "``gll-combinators``"
+and the relevant version number (can be found in ``buildfile`` at the root of
+the project).  If you are using Buildr, the full artifact descriptor would be
+"``edu.uwm.cs:gll-combinators:jar:0.3.0``" (for version **0.3.0**).  If you are
+using Maven2, you will want to add the following snippet to your POM file::
+    
+    <dependency>
+      <groupId>edu.uwm.cs</groupId>
+      <artifactId>gll-combinators</artifactId>
+      <version>0.3.0</version>
+    </dependency>
+    
+Once the JAR is on your CLASSPATH, you should have the following packages available
+for use:
+
+* ``edu.uwm.cs.gll`` -- The complete public interface for the framework.
+* ``edu.uwm.cs.util`` -- A number of useful utility classes used internally.  Should
+  not be considered as part of the stable API.
+
+.. _`Apache Buildr`: http://buildr.apache.org
+
+
+.. _Fundamentals:
+
+Fundamentals
+------------
+
+**TODO**
+
+
+.. _Examples:
+
+Examples
+--------
+
+**TODO**
+
+
+.. _Advantages:
 
 Advantages
 ==========
