@@ -100,7 +100,7 @@ object TerminalSpecs extends Specification with ScalaCheck with ImplicitConversi
     "map results according to a function" in {
       val p = "test" ^^ { _.length }
       
-      p("test") match {
+      p("test") must beLike {
         case Success(4, LineStream()) :: Nil => true
         case _ => false
       }
@@ -109,7 +109,7 @@ object TerminalSpecs extends Specification with ScalaCheck with ImplicitConversi
     "map results according to a value" in {
       val p = "test" ^^^ 42
       
-      p("test") match {
+      p("test") must beLike {
         case Success(42, LineStream()) :: Nil => true
         case _ => false
       }
