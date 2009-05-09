@@ -593,20 +593,20 @@ trait Parsers {
         case _ => false
       }
       
+      if (!backlinks.contains(s))
+        backlinks += (s -> HOMap[Parser, FSet]())
+      
+      if (!backlinks(s).contains(p))
+        backlinks(s) += (p -> new mutable.HashSet[Result[Any]=>Unit])
+      
+      backlinks(s)(p) += f
+      
       if (popped.contains(s) && popped(s).contains(p) && containsSuccess) {
         for (res @ Success(_, _) <- popped(s)(p)) {           // if we've already done that, use the result
           tracef("Revisited: %s *=> %s%n", tuple, res)
           f(res)
         }
       } else {
-        if (!backlinks.contains(s))
-          backlinks += (s -> HOMap[Parser, FSet]())
-        
-        if (!backlinks(s).contains(p))
-          backlinks(s) += (p -> new mutable.HashSet[Result[Any]=>Unit])
-        
-        backlinks(s)(p) += f
-        
         if (!done.contains(s))
           done += (s -> new mutable.HashSet[Parser[Any]])
         

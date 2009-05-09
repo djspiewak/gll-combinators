@@ -52,10 +52,32 @@ object CompoundSpecs extends Specification with ImplicitConversions with ScalaCh
       check("aaaab")
     }
     
-    "parse an unambiguous left-recursive grammar" in {
+    "parse an unambiguous left-recursive grammar (recursive-major)" in {
       lazy val p: Parser[String] = (
           p ~ "a" ^^ { _ + _ }
         | "a"
+      )
+      
+      // assumes data =~ /a+/
+      def check(data: String) {
+        p(data) must beLike {
+          case Success(`data`, LineStream()) :: Nil => true
+          case _ => false
+        }
+      }
+      
+      p mustNot throwA[Throwable]
+      
+      check("a")
+      check("aa")
+      check((0 to 256).foldLeft("") { (s, _) => s + "a" })
+      check("aaaaa")
+    }
+    
+    "parse an unambiguous left-recursive grammar (recursive-minor)" in {
+      lazy val p: Parser[String] = (
+          "a"
+        | p ~ "a" ^^ { _ + _ }
       )
       
       // assumes data =~ /a+/
