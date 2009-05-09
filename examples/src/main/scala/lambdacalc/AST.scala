@@ -8,19 +8,24 @@ object AST {
   sealed trait Expr {
     def eval(env: Env): Lambda
     
-    def format(tab: String): String
-    
-    override def toString = format("")
+    def sub(id: Symbol, value: Lambda): Expr
   }
   
   case class Lambda(id: Symbol, expr: Expr) extends Expr {
     def eval(env: Env) = this   // no beta evaluation
     
-    def apply(env: Env, arg: Lambda) = expr.eval(env(id) = arg)
+    def apply(env: Env, arg: Lambda) = expr.sub(id, arg).eval(env)
     
-    def format(tab: String) = {
-      val Symbol(arg) = id
-      "%s(\u03BB%s .%n%s)".format(tab, arg, expr.format(tab + "  "))
+    def sub(id: Symbol, value: Lambda) = {
+      if (this.id == id)
+        this
+      else
+        Lambda(this.id, expr.sub(id, value))
+    }
+    
+    override def toString = {
+      val Symbol(name) = id
+      "(\u03BB%s . %s)".format(name, expr)
     }
   }
   
@@ -30,18 +35,29 @@ object AST {
       lambda(env, e2.eval(env))
     }
     
-    def format(tab: String) = "%s%n%s".format(e1.format(tab), e2.format(tab))
+    def sub(id: Symbol, value: Lambda) = App(e1.sub(id, value), e2.sub(id, value))
+    
+    override def toString = "(%s %s)".format(e1, e2)
   }
   
   case class Val(id: Symbol) extends Expr {
     def eval(env: Env) = env.get(id) match {
       case Some(lam) => lam
-      case None => throw new RuntimeException("Identifier %s' is unbound".format(id))
+      case None => throw EvalException("Identifier %s' is unbound".format(id))
     }
     
-    def format(tab: String) = {
+    def sub(id: Symbol, value: Lambda) = {
+      if (this.id == id)
+        value
+      else
+        this
+    }
+    
+    override def toString = {
       val Symbol(name) = id
-      "%s%s".format(tab, name)
+      name
     }
   }
+  
+  case class EvalException(msg: String) extends RuntimeException(msg)
 }

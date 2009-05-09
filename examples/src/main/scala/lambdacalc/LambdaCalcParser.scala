@@ -70,7 +70,7 @@ object LambdaCalcParser extends RegexParsers {
             System.err.println("  runtime error: " + msg)
           }
         } else if (results.length == 1)
-          println(results.head.format("  "))
+          println("  " + results.head)
         else
           System.err.printf("  parse error: Ambiguous parse: %s valid trees%n", results.length.toString)
       } else {
