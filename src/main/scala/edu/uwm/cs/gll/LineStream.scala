@@ -8,9 +8,6 @@ import scala.io.Source
  * amortized constant-time {@link CharSequence} access.
  */
 sealed abstract class LineStream(val line: String, val lineNum: Int) extends Seq[Char] with CharSequence { outer =>
-  private var _page: String = ""
-  private val pageLock = new AnyRef
-  
   def head: Char
   
   def tail: LineStream
@@ -28,12 +25,12 @@ sealed abstract class LineStream(val line: String, val lineNum: Int) extends Seq
   }
   
   def apply(i: Int) = {
-    if (lengthCompare(i) < 0)
-      throw new IndexOutOfBoundsException(i.toString)
+    if ((i > 0 && isEmpty) || i < 0)
+      throw new IndexOutOfBoundsException
     else if (i == 0)      // trivial case
       head
     else
-      page(i + 1) charAt i
+      tail(i - 1)
   }
   
   def charAt(i: Int) = apply(i)
@@ -106,18 +103,6 @@ sealed abstract class LineStream(val line: String, val lineNum: Int) extends Seq
     
     val caret = (1 to charIndex).foldLeft("") { (acc, _) => acc + ' ' } + '^'
     ps.print(pattern.format(lineNum, line, caret))
-  }
-  
-  private def page(length: Int) = pageLock synchronized {
-    if (length > _page.length) {
-      var newLength = Math.max(_page.length, 10)
-      while (length > newLength)
-        newLength *= 2
-      
-      _page = this take newLength mkString
-    }
-    
-    _page
   }
 }
 
