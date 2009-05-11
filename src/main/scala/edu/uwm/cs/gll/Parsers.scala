@@ -656,7 +656,7 @@ trait Parsers {
     private type FSet[A] = mutable.Set[Result[A]=>Unit]
     
     // R
-    private val queue = new mutable.Queue[(Parser[Any], LineStream)]
+    private val queue = new mutable.Stack[(Parser[Any], LineStream)]
     
     // U_j
     private val done = mutable.Map[LineStream, mutable.Set[Parser[Any]]]()
@@ -734,7 +734,7 @@ trait Parsers {
     }
     
     private def remove() = {
-      val tuple @ (p, s) = queue.dequeue()
+      val tuple @ (p, s) = queue.pop()
       trace("Removed: " + tuple)
       
       tuple
