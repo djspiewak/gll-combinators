@@ -557,7 +557,7 @@ trait Parsers {
     }
     
     def queue(t: Trampoline, in: LineStream)(f: Result[A]=>Unit) {
-      val UNEXPECTED_PATTERN = "Unexpected value in stream: '%s'"
+      val UNEXPECTED_PATTERN = "Unexpected value in stream: '"
       
       if (isLL1) {        // graceful degrade to LL(1)
         trace("Detected LL(1): " + this)
@@ -568,7 +568,7 @@ trait Parsers {
           predict get in.head match {
             case Some(p) => p.queue(t, in)(f)
             
-            case None => f(Failure(UNEXPECTED_PATTERN.format(in.head), in))
+            case None => f(Failure(UNEXPECTED_PATTERN + in.head + "'", in))
           }
         }
       } else {
@@ -587,7 +587,7 @@ trait Parsers {
               predicted = true
               t.add(p, in) { res =>
                 if (!results.contains(res)) {
-                  tracef("Reduced: %s *=> %s%n".format(this, res))
+                  tracef("Reduced: %s *=> %s%n", this, res)
     
                   f(res)
                   results += res
@@ -599,7 +599,7 @@ trait Parsers {
               if (in.isEmpty)
                 f(Failure("Unexpected end of stream", in))
               else
-                f(Failure(UNEXPECTED_PATTERN.format(in.head), in))
+                f(Failure(UNEXPECTED_PATTERN + in.head + "'", in))
             }
           }
         }
