@@ -7,7 +7,7 @@ Project.local_task :html
 
 define 'gll-combinators' do
   project.group = 'edu.uwm.cs'
-  project.version = '0.4.0'
+  project.version = '0.3.5'
   
   test.using :specs
   test.exclude 'AllSpecs'
