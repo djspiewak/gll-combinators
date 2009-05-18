@@ -348,7 +348,7 @@ object DisjunctionSpecs extends Specification with Parsers with ScalaCheck {
     }
     
     "compute FIRST for left-recursive grammar" in {
-      def p: Parser[Any] = p ~ "a" | "a"
+      lazy val p: Parser[Any] = p ~ "a" | "a"
       
       p.first mustEqual Set('a')
     }

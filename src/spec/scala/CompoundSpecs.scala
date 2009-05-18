@@ -9,7 +9,7 @@ object CompoundSpecs extends Specification with Parsers with ScalaCheck {
   
   "compound non-terminal parsers" should {
     "parse an unambiguous right-recursive grammar" in {
-      def p: Parser[String] = (
+      lazy val p: Parser[String] = (
           "a" ~ p ^^ { _ + _ }
         | "a"
       )
@@ -31,7 +31,7 @@ object CompoundSpecs extends Specification with Parsers with ScalaCheck {
     }
 
     "parse an LL(1) right-recursive grammar" in {
-      def p: Parser[String] = (
+      lazy val p: Parser[String] = (
           "a" ~ p ^^ { _ + _ }
         | "b"
       )
