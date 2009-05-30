@@ -721,7 +721,7 @@ trait Parsers {
     }
     
     private def remove() = {
-      val tuple @ (p, s) = queue.pop()
+      val tuple = queue.pop()
       trace("Removed: " + tuple)
       
       tuple
