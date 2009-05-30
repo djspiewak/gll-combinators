@@ -657,7 +657,7 @@ trait Parsers {
     // prevents divergence in cyclic GSS traversal
     private val saved = HOMap[Result, FSet]()
     
-    // L0
+    // L_0
     def run() {
       while (!queue.isEmpty) {
         val (p, s) = remove()
