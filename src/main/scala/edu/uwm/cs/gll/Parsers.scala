@@ -440,7 +440,7 @@ trait Parsers {
     override def toString = "'%s'".format(str)
   }
   
-  class SequentialParser[+A, +B](private val left: Parser[A], private val right: Parser[B]) extends NonTerminalParser[~[A, B]] {
+  class SequentialParser[+A, +B](private val left: Parser[A], private val right: Parser[B]) extends NonTerminalParser[A ~ B] {
     def computeFirst(seen: Set[Parser[Any]]) = {
       if (seen contains this) None    // left-recursion detected!
       else {
