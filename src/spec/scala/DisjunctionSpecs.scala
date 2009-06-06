@@ -306,6 +306,83 @@ object DisjunctionSpecs extends Specification with Parsers with ScalaCheck {
       prop must pass
     }
     
+    "map results with stream tail" in {
+      var in1: LineStream = null
+      val p1 = "foo" | "bar" ^# { in => s =>
+        in1 = in
+        s
+      }
+      
+      var in2: LineStream = null
+      val p2 = "baz" | "bin" ^# { in => s =>
+        in2 = in
+        s
+      }
+      
+      val p = p1 ~ "\n" ~> p2
+      
+      p("foo\nbaz") must beLike {
+        case Success("baz", LineStream()) :: Nil => true
+        case _ => false
+      }
+      
+      in1.line mustEqual "foo"
+      in1.lineNum mustEqual 1
+      in1.head mustBe 'f'
+      in1.toString mustEqual "foo\nbaz"
+      
+      in2.line mustEqual "baz"
+      in2.lineNum mustEqual 2
+      in2.head mustBe 'b'
+      in2.toString mustEqual "baz"
+      
+      
+      p("foo\nbin") must beLike {
+        case Success("bin", LineStream()) :: Nil => true
+        case _ => false
+      }
+      
+      in1.line mustEqual "foo"
+      in1.lineNum mustEqual 1
+      in1.head mustBe 'f'
+      in1.toString mustEqual "foo\nbin"
+      
+      in2.line mustEqual "bin"
+      in2.lineNum mustEqual 2
+      in2.head mustBe 'b'
+      in2.toString mustEqual "bin"
+      
+      p("bar\nbaz") must beLike {
+        case Success("baz", LineStream()) :: Nil => true
+        case _ => false
+      }
+      
+      in1.line mustEqual "bar"
+      in1.lineNum mustEqual 1
+      in1.head mustBe 'b'
+      in1.toString mustEqual "bar\nbaz"
+      
+      in2.line mustEqual "baz"
+      in2.lineNum mustEqual 2
+      in2.head mustBe 'b'
+      in2.toString mustEqual "baz"
+      
+      p("bar\nbin") must beLike {
+        case Success("bin", LineStream()) :: Nil => true
+        case _ => false
+      }
+      
+      in1.line mustEqual "bar"
+      in1.lineNum mustEqual 1
+      in1.head mustBe 'b'
+      in1.toString mustEqual "bar\nbin"
+      
+      in2.line mustEqual "bin"
+      in2.lineNum mustEqual 2
+      in2.head mustBe 'b'
+      in2.toString mustEqual "bin"
+    }
+    
     "handle binary shift/reduce ambiguity" in {
       val prop = forAll { (head: String, suffix: String) =>
         // %%

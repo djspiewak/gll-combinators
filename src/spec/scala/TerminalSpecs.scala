@@ -114,6 +114,37 @@ object TerminalSpecs extends Specification with ScalaCheck with Parsers {
         case _ => false
       }
     }
+    
+    "map results with stream tail" in {
+      var in1: LineStream = null
+      val p1 = "foo" ^# { in => s =>
+        in1 = in
+        s
+      }
+      
+      var in2: LineStream = null
+      val p2 = "bar" ^# { in => s =>
+        in2 = in
+        s
+      }
+      
+      val p = p1 ~ "\n" ~> p2
+      
+      p("foo\nbar") must beLike {
+        case Success("bar", LineStream()) :: Nil => true
+        case _ => false
+      }
+      
+      in1.line mustEqual "foo"
+      in1.lineNum mustEqual 1
+      in1.head mustBe 'f'
+      in1.toString mustEqual "foo\nbar"
+      
+      in2.line mustEqual "bar"
+      in2.lineNum mustEqual 2
+      in2.head mustBe 'b'
+      in2.toString mustEqual "bar"
+    }
   }
   
   "terminal sequential parser" should {
