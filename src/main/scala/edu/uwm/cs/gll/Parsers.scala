@@ -212,7 +212,9 @@ trait Parsers {
     
     def ~>[R2](that: Parser[R2]) = this ~ that map { case _ ~ b => b }
     
-    def * = (this+?) map { _ getOrElse Nil }
+    def *(): Parser[List[R]] = (this+?) map { _ getOrElse Nil }
+    
+    def *(sep: Parser[_]): Parser[List[R]] = (this + sep).? ^^ { _ getOrElse Nil }
     
     def +(): Parser[List[R]] = new NonTerminalParser[List[R]] {
       def computeFirst(seen: Set[Parser[Any]]) = self.computeFirst(seen + this)
@@ -236,6 +238,8 @@ trait Parsers {
       
       override def toString = self.toString + "+"
     }
+    
+    def +(sep: Parser[_]) = this ~ (sep ~> this).* ^^ { _ :: _ }
     
     def ?(): Parser[Option[R]] = new NonTerminalParser[Option[R]] {
       def computeFirst(seen: Set[Parser[Any]]) = None

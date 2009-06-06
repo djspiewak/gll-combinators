@@ -272,6 +272,24 @@ object CompoundSpecs extends Specification with Parsers with ScalaCheck {
         case _ => false
       }
     }
+    "repeat 0..n times with separator" in {
+      val p = literal("123") * ","
+      
+      p("123") must beLike {
+        case Success(List("123"), LineStream()) :: Nil => true
+        case _ => false
+      }
+      
+      p("123,123,123,123,123,123,123,123,123,123,123") must beLike {
+        case Success(List("123", "123", "123", "123", "123", "123", "123", "123", "123", "123", "123"), LineStream()) :: Nil => true
+        case _ => false
+      }
+      
+      p(LineStream()) must beLike {
+        case Success(Nil, LineStream()) :: Nil => true
+        case _ => false
+      }
+    }
     
     "repeat 1..n times" in {
       val p = literal("123")+
@@ -282,6 +300,20 @@ object CompoundSpecs extends Specification with Parsers with ScalaCheck {
       }
       
       p("123123123123123123123123123123123") must beLike {
+        case Success(List("123", "123", "123", "123", "123", "123", "123", "123", "123", "123", "123"), LineStream()) :: Nil => true
+        case _ => false
+      }
+    }
+    
+    "repeat 1..n times with separator" in {
+      val p = literal("123") + ","
+      
+      p("123") must beLike {
+        case Success(List("123"), LineStream()) :: Nil => true
+        case _ => false
+      }
+      
+      p("123,123,123,123,123,123,123,123,123,123,123") must beLike {
         case Success(List("123", "123", "123", "123", "123", "123", "123", "123", "123", "123", "123"), LineStream()) :: Nil => true
         case _ => false
       }
