@@ -315,8 +315,9 @@ graph-structured stack (GSS), a well-known device used in many generalized parsi
 algorithms.  GLL expands slightly upon the original concept of the GSS by allowing
 for full-blown cycles in the graph structure, symbolizing direct or indirect
 left-recursion.  These cycles effectively take the place of the ``GOTO`` operation
-used by LR parser automata on grammars with *direct* left-recursion (indirect
-left-recursion is not supported by any of the mainstream LR variants, including
-the ever-popular LALR).
+used by LR parser automata on grammars with *non-hidden* left-recursion (hidden
+left-recursion, where the left-recursive production has a nullable non-terminal
+(one which goes to the empty string) as its first token, is not supported by any
+of the mainstream LR variants, including the ever-popular LALR).
 
 .. _the original paper: http://ldta.info/ldta2009proceedings.pdf
