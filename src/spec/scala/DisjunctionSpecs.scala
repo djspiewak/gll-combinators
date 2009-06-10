@@ -308,13 +308,13 @@ object DisjunctionSpecs extends Specification with Parsers with ScalaCheck {
     
     "map results with stream tail" in {
       var in1: LineStream = null
-      val p1 = "foo" | "bar" ^# { in => s =>
+      val p1 = ("foo" | "bar") ^# { in => s =>
         in1 = in
         s
       }
       
       var in2: LineStream = null
-      val p2 = "baz" | "bin" ^# { in => s =>
+      val p2 = ("baz" | "bin") ^# { in => s =>
         in2 = in
         s
       }
@@ -326,11 +326,13 @@ object DisjunctionSpecs extends Specification with Parsers with ScalaCheck {
         case _ => false
       }
       
+      in1 mustNot beNull
       in1.line mustEqual "foo"
       in1.lineNum mustEqual 1
       in1.head mustBe 'f'
       in1.toString mustEqual "foo\nbaz"
       
+      in2 mustNot beNull
       in2.line mustEqual "baz"
       in2.lineNum mustEqual 2
       in2.head mustBe 'b'
@@ -342,11 +344,13 @@ object DisjunctionSpecs extends Specification with Parsers with ScalaCheck {
         case _ => false
       }
       
+      in1 mustNot beNull
       in1.line mustEqual "foo"
       in1.lineNum mustEqual 1
       in1.head mustBe 'f'
       in1.toString mustEqual "foo\nbin"
       
+      in2 mustNot beNull
       in2.line mustEqual "bin"
       in2.lineNum mustEqual 2
       in2.head mustBe 'b'
@@ -357,11 +361,13 @@ object DisjunctionSpecs extends Specification with Parsers with ScalaCheck {
         case _ => false
       }
       
+      in1 mustNot beNull
       in1.line mustEqual "bar"
       in1.lineNum mustEqual 1
       in1.head mustBe 'b'
       in1.toString mustEqual "bar\nbaz"
       
+      in2 mustNot beNull
       in2.line mustEqual "baz"
       in2.lineNum mustEqual 2
       in2.head mustBe 'b'
@@ -372,11 +378,13 @@ object DisjunctionSpecs extends Specification with Parsers with ScalaCheck {
         case _ => false
       }
       
+      in1 mustNot beNull
       in1.line mustEqual "bar"
       in1.lineNum mustEqual 1
       in1.head mustBe 'b'
       in1.toString mustEqual "bar\nbin"
       
+      in2 mustNot beNull
       in2.line mustEqual "bin"
       in2.lineNum mustEqual 2
       in2.head mustBe 'b'
