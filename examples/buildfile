@@ -28,7 +28,7 @@ define 'examples', :layout => layout do
     trace cp
 
 	start = Time.now
-    system JAVA_HOME + '/bin/java', '-cp', cp, classname, *Dir.glob("input/#{name.downcase}/*")
+    sh JAVA_HOME + '/bin/java', '-cp', cp, classname, *Dir.glob("input/#{name.downcase}/*")
 
 	puts "Total run time: #{Time.now - start} seconds"
 	puts '---------------------------------------'
@@ -49,6 +49,10 @@ define 'examples', :layout => layout do
 
   task :paren => :compile do
     run_eg.call 'Paren'
+  end
+  
+  task :conf => :compile do
+    run_eg.call 'Config'
   end
   
   task :run => [:arithmetic, :miniml, :lambdacalc, :paren]

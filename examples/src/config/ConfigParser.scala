@@ -1,4 +1,4 @@
-package conf
+package config
 
 import scala.io.Source
 import edu.uwm.cs.gll._
@@ -10,7 +10,7 @@ import edu.uwm.cs.gll._
  * possible results into a single map.  This illustrates a practical
  * advantage to ambiguous parsing.
  */
-object ConfigParser extends RegexParsers {
+object ConfigParser extends common.Example[Map[String, String]] with RegexParsers {
   
   class ConfigException(failures: List[Failure]) extends RuntimeException("Failed to parse config file")
   
@@ -40,6 +40,12 @@ object ConfigParser extends RegexParsers {
         case s: Success[_] => None
         case f: Failure => Some(f)
       })
+    }
+  }
+  
+  def handleSuccesses(forest: List[Map[String, String]]) {
+    for ((key, value) <- forest.foldLeft(Map[String, String]()) { _ ++ _ }) {
+      println("  " + key + " -> " + value)
     }
   }
   
