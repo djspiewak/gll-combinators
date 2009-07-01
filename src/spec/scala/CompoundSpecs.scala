@@ -209,6 +209,76 @@ object CompoundSpecs extends Specification with Parsers with ScalaCheck {
       }
     }
     
+    "produce all possible results with recursive ambiguity" in {
+      object ConfigParser extends RegexParsers {
+        override val whitespace = """[ \t]+"""r  // process newlines separately
+        
+        lazy val parser = """\s*""".r ~> config <~ """\s*""".r     // allow leading/trailing whitespace
+        
+        private lazy val config = (pairs <~ newline).? ~ sections ^^ { _.getOrElse(Map()) ++ _ }
+        
+        private lazy val sections: Parser[Map[String, String]] = (
+            sections ~ newline ~ section  ^^ { (map1, _, map2) => map1 ++ map2 }
+          | section
+          | ""                            ^^^ Map()
+        )
+        
+        private lazy val section = ("[" ~> id <~ "]") ~ newline ~ config ^^ { (id, _, map) =>
+          val back = for ((key, value) <- map) yield (id + '.' + key) -> value
+          back.foldLeft(Map[String, String]()) { _ + _ }
+        }
+        
+        private lazy val pairs: Parser[Map[String, String]] = (
+            pairs ~ newline ~ pair    ^^ { (map, _, tuple) => map + tuple }
+          | pair                      ^^ { Map(_) }
+        )
+        
+        private lazy val pair = id ~ "=" ~ data    ^^ { (key, _, value) => key -> value }
+        
+        private val id = """[^\s\[\]\.]+"""r
+        private val data = """([^\n\r\\]|\\.)*"""r
+        private val newline = """(\n\r|\r\n|\n|\r)"""r
+      }
+      
+      val input = """
+[core]
+    repositoryformatversion = 0
+    filemode = true
+    bare = false
+    logallrefupdates = true
+    ignorecase = true
+[remote]
+    url = git@github.com:djspiewak/gll-combinators.git
+    fetch = +refs/heads/*:refs/remotes/origin/*
+"""
+      
+      ConfigParser.parser(input) must beLike {
+        case Success(map1, _) :: Success(map2, _) :: Nil => {
+          if (map1 contains "core.remote.url") {
+            map1 must haveKey("core.filemode")
+            map1 must haveKey("core.remote.fetch")
+            map1 mustNot haveKey("remote.url")
+            
+            map2 must haveKey("remote.url")
+            map2 must haveKey("core.filemode")
+            map2 mustNot haveKey("core.remote.fetch")
+          } else {
+            map1 must haveKey("remote.url")
+            map1 must haveKey("core.filemode")
+            map1 mustNot haveKey("core.remote.fetch")
+            
+            map2 must haveKey("core.filemode")
+            map2 must haveKey("core.remote.fetch")
+            map2 mustNot haveKey("remote.url")
+          }
+          
+          true
+        }
+        
+        case _ => false
+      }
+    }
+    
     "compute FIRST for nested left-recursion" in {
       object ComplexParser extends RegexParsers {
         lazy val exp: Parser[Any] = (
