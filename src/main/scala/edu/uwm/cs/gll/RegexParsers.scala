@@ -47,6 +47,9 @@ trait RegexParsers extends Parsers {
     s.drop(whitespace findPrefixOf s map { _.length } getOrElse 0)
   
   case class RegexParser(private val regex: Regex) extends TerminalParser[String] {
+    if (regex == null)
+      throw new NullPointerException("Cannot parse a null regular expression")
+    
     def computeFirst(s: Set[Parser[Any]]) = Some(UniversalOptCharSet)
     
     def parse(in: LineStream) = {
