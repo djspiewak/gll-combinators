@@ -53,7 +53,7 @@ object ConfigParser extends common.Example[Map[String, String]] with RegexParser
   
   override val whitespace = """[ \t]+"""r  // process newlines separately
   
-  val parser = config <~ newline.*     // allow trailing whitespace
+  lazy val parser = config <~ newline.*     // allow trailing whitespace
   
   private val config = (pairs <~ newline).? ~ sections ^^ {
     case (Some(map), maps) => map ++ maps
