@@ -2,6 +2,7 @@ import edu.uwm.cs.gll._
 import edu.uwm.cs.util._
 
 import org.specs._
+import runner.JUnit4
 import org.scalacheck._
 
 object CompoundSpecs extends Specification with Parsers with ScalaCheck {
@@ -480,3 +481,5 @@ object CompoundSpecs extends Specification with Parsers with ScalaCheck {
     }
   }
 }
+
+class CompoundSpecs extends JUnit4(CompoundSpecs)
