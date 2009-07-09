@@ -55,18 +55,17 @@ object ConfigParser extends common.Example[Map[String, String]] with RegexParser
   
   lazy val parser = config <~ newline.*     // allow trailing whitespace
   
-  private val config = (pairs <~ newline).? ~ sections ^^ {
-    case (Some(map), maps) => map ++ maps
-    case (None, maps) => maps
+  private lazy val config = (pairs <~ newline).? ~ sections.? ^^ {
+    case (Some(map), maps) => map ++ maps.getOrElse(Map())
+    case (None, maps) => maps getOrElse Map()
   }
   
   private lazy val sections: Parser[Map[String, String]] = (
-      sections ~ newline ~ section  ^^ { (map1, _, map2) => map1 ++ map2 }
+      sections ~ newline.+ ~ section  ^^ { (map1, _, map2) => map1 ++ map2 }
     | section
-    | ""                            ^^^ Map()
   )
   
-  private val section = ("[" ~> id <~ "]") ~ newline ~ config ^^ { (id, _, map) =>
+  private lazy val section = ("[" ~> id <~ "]") ~ newline ~ config ^^ { (id, _, map) =>
     val back = for ((key, value) <- map) yield (id + '.' + key) -> value
     back.foldLeft(Map[String, String]()) { _ + _ }
   }
@@ -76,9 +75,9 @@ object ConfigParser extends common.Example[Map[String, String]] with RegexParser
     | pair                      ^^ { Map(_) }
   )
   
-  private val pair = id ~ "=" ~ data    ^^ { (key, _, value) => key -> value }
+  private lazy val pair = id ~ "=" ~ data    ^^ { (key, _, value) => key -> value }
   
-  private val id = """[^\s]+"""r
+  private val id = """[^\s\[\]=]+"""r
   
   private val data = """([^\n\r\\]|\\.)*"""r
   
