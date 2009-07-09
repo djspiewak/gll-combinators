@@ -53,33 +53,39 @@ object ConfigParser extends common.Example[Map[String, String]] with RegexParser
   
   override val whitespace = """[ \t]+"""r  // process newlines separately
   
-  lazy val parser = config <~ newline.*     // allow trailing whitespace
+  lazy val parser = config <~ newlines     // allow trailing whitespace
   
-  private lazy val config = (pairs <~ newline).? ~ sections.? ^^ {
-    case (Some(map), maps) => map ++ maps.getOrElse(Map())
-    case (None, maps) => maps getOrElse Map()
-  }
-  
-  private lazy val sections: Parser[Map[String, String]] = (
-      sections ~ newline.+ ~ section  ^^ { (map1, _, map2) => map1 ++ map2 }
-    | section
+  private lazy val config: Parser[Map[String, String]] = (
+      pairs ~ newlines ~ sections ^^ combineMaps
+    | pairs                       
+    | sections                    
+    | ""                          ^^^ Map()
   )
   
-  private lazy val section = ("[" ~> id <~ "]") ~ newline ~ config ^^ { (id, _, map) =>
+  private lazy val sections: Parser[Map[String, String]] = (
+      sections ~ newlines ~ section  ^^ combineMaps
+    | section                         
+  )
+  
+  private lazy val section = ("[" ~> id <~ "]") ~ newlines ~ config ^^ { (id, _, map) =>
     val back = for ((key, value) <- map) yield (id + '.' + key) -> value
     back.foldLeft(Map[String, String]()) { _ + _ }
   }
   
   private lazy val pairs: Parser[Map[String, String]] = (
-      pairs ~ newline ~ pair    ^^ { (map, _, tuple) => map + tuple }
-    | pair                      ^^ { Map(_) }
+      pairs ~ newlines ~ pair ^^ { (map, _, pair) => map + pair }
+    | pair                    ^^ { Map(_) }
   )
   
-  private lazy val pair = id ~ "=" ~ data    ^^ { (key, _, value) => key -> value }
+  private lazy val pair = id ~ "=" ~ data ^^ { (key, _, value) => key -> value }
   
   private val id = """[^\s\[\]=]+"""r
   
   private val data = """([^\n\r\\]|\\.)*"""r
   
-  private val newline = """(\n\r|\r\n|\n|\r)"""r    // handles the pain of cross-platform line breaks
+  private val newlines = """([ \t]*(\n\r|\r\n|\n|\r))+"""r    // handles the pain of cross-platform line breaks
+  
+  // %%
+  
+  private def combineMaps(map1: Map[String, String], s: Any, map2: Map[String, String]) = map1 ++ map2
 }
