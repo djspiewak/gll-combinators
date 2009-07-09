@@ -4,7 +4,6 @@ import scala.util.matching.Regex
 
 import util._
 
-// TODO need to handle trailing whitespace (somehow)
 trait RegexParsers extends Parsers {
   protected val whitespace = """\s+"""r
   protected val skipWhitespace = true
