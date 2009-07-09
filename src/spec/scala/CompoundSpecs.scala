@@ -236,21 +236,19 @@ object CompoundSpecs extends Specification with Parsers with ScalaCheck {
         
         private lazy val pair = id ~ "=" ~ data    ^^ { (key, _, value) => key -> value }
         
-        private val id = """[^\s\[\]\.]+"""r
-        private val data = """([^\n\r\\]|\\.)*"""r
+        private val id = """\w+"""r
+        private val data = """[^\s]+"""r
         private val newline = """(\n\r|\r\n|\n|\r)"""r
       }
       
       val input = """
 [core]
-    repositoryformatversion = 0
+    version = 0
     filemode = true
-    bare = false
-    logallrefupdates = true
-    ignorecase = true
+
 [remote]
-    url = git@github.com:djspiewak/gll-combinators.git
-    fetch = +refs/heads/*:refs/remotes/origin/*
+    url = hero
+    fetch = boo
 """
       
       ConfigParser.parser(input) must beLike {
