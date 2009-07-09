@@ -27,6 +27,10 @@ object RegexSpecs extends Specification with ScalaCheck with RegexParsers {
       }
     }
     
+    "gracefully error on null regexp" in {
+      regex(null) must throwA(new NullPointerException("Cannot parse a null regular expression"))
+    }
+    
     "produce 'expected' error message" in {
       val p: Parser[String] = """(\d{1,3}\.){3}\d{1,3}"""r
       
