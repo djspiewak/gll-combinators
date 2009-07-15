@@ -1,7 +1,5 @@
 require 'buildr/scala'
 
-repositories.remote << 'http://repo1.maven.org/maven2'
-
 Project.local_task :pdf
 Project.local_task :html
 
