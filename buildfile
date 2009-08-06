@@ -9,7 +9,8 @@ define 'gll-combinators' do
   
   test.using :specs
   test.exclude 'AllSpecs'
-
+  
+  doc.using :vscaladoc
   package
 
   file 'target/doc/readme.tex' => [file('README.rst')] do |f|
