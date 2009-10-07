@@ -296,6 +296,31 @@ trait Parsers {
     
     def +? = (this+)?
     
+    /**
+     * WARNING: may cause non-termination if used recursively.  Really
+     * should be restricted to {@link TerminalParser}.
+     */
+    def \(not: Parser[Any]): Parser[R] = new NonTerminalParser[R] {   // TODO
+      def computeFirst(seen: Set[Parser[Any]]) = self.computeFirst(seen)
+      
+      def queue(t: Trampoline, in: LineStream)(f: Result[R]=>Unit) {
+        self.queue(t, in) {
+          case s @ Success(res1, tail) => {
+            val sub = not(in)
+            
+            if (sub exists { case Success(_, `tail`) => true; case _ => false })
+              f(Failure("Expected '%s' and not '%s' in '%s'".format(self, not, in.line), in))
+            else
+              f(s)
+          }
+          
+          case r: Failure => f(r)
+        }
+      }
+      
+      override def toString = "(%s \\ %s)".format(self, not)
+    }
+    
     def ^^^[R2](v: =>R2) = map { _ => v }
   }
   
@@ -355,6 +380,23 @@ trait Parsers {
       }
       
       case other => super.~(other)
+    }
+    
+    override def \(not: Parser[Any]) = new TerminalParser[R] {
+      def computeFirst(s: Set[Parser[Any]]) = self.computeFirst(s)
+      
+      def parse(in: LineStream) = self.parse(in) match {
+        case s @ Success(res1, tail) => {
+          val sub = not(in)
+          
+          if (sub exists { case Success(_, `tail`) => true; case _ => false })
+            Failure("Expected '%s' and not '%s' in '%s'".format(self, not, in.line), in)
+          else
+            s
+        }
+        
+        case f: Failure => f
+      }
     }
     
     def mapWithTail[R2](f: LineStream=>R=>R2): Parser[R2] = new MappedParser[R, R2](self, f) with TerminalParser[R2] {
