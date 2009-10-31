@@ -8,7 +8,7 @@ trait RegexParsers extends Parsers {
   protected val whitespace = """\s+"""r
   protected val skipWhitespace = true
   
-  override implicit def literal(str: String): Parser[String] = {
+  override implicit def literal(str: String): LiteralParser = {
     if (skipWhitespace) {
       new LiteralParser(str) {
         override def computeFirst(seen: Set[Parser[Any]]) = Some(UniversalOptCharSet)    // because of whitespace
@@ -19,7 +19,7 @@ trait RegexParsers extends Parsers {
     } else super.literal(str)
   }
   
-  implicit def regex(r: Regex): Parser[String] = {
+  implicit def regex(r: Regex): RegexParser = {
     if (skipWhitespace) {
       new RegexParser(r) {
         override def computeFirst(seen: Set[Parser[Any]]) = Some(UniversalOptCharSet)
@@ -29,7 +29,17 @@ trait RegexParsers extends Parsers {
     } else new RegexParser(r)
   }
   
-  implicit def disjunctiveRegex(left: Regex) = new RichParser(regex(left))
+  override implicit def disjunctiveLiterals(left: String) = new RichParser(literal(left)) {
+    def |(right: Regex) = new RegexParser(new Regex("(" + escapeRegex(left) + ")|(" + right + ")"))
+    
+    def |(right: String) = new RegexParser(new Regex("(" + escapeRegex(left) + ")|(" + escapeRegex(right) + ")"))
+  }
+  
+  implicit def disjunctiveRegex(left: Regex) = new RichParser(regex(left)) {
+    def |(right: Regex) = new RegexParser(new Regex("(" + left + ")|(" + right + ")"))
+    
+    def |(right: String) = new RegexParser(new Regex("(" + left + ")|(" + escapeRegex(right) + ")"))
+  }
   
   implicit def funRegexSyntax(p: Regex) = new RichSyntax1(regex(p))
   
@@ -40,6 +50,17 @@ trait RegexParsers extends Parsers {
       tail
     
     super.processTail(newTail)
+  }
+  
+  private def escapeRegex(str: String) = {
+    val specialChars = Set('[', ']', '{', '}', '\\', '|', '*', '+', '?', '^', '$', '(', ')')
+    
+    str.toCharArray.foldLeft("") { (str, c) =>
+      if (specialChars contains c)
+        str + '\\' + c
+      else
+        str + c
+    }
   }
   
   private def handleWhitespace(s: LineStream) =

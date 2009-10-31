@@ -11,7 +11,7 @@ import Global._
 trait Parsers {
   private val TAIL_ERROR_PATTERN = "Unexpected trailing characters: '%s'"
   
-  implicit def literal(str: String): Parser[String] = new LiteralParser(str)
+  implicit def literal(str: String) = new LiteralParser(str)
   
   def opt[A](p: Parser[A]) = p?
   
@@ -296,11 +296,7 @@ trait Parsers {
     
     def +? = (this+)?
     
-    /**
-     * WARNING: may cause non-termination if used recursively.  Really
-     * should be restricted to {@link TerminalParser}.
-     */
-    def \(not: Parser[Any]): Parser[R] = new NonTerminalParser[R] {   // TODO
+    def \(not: TerminalParser[Any]): Parser[R] = new NonTerminalParser[R] {
       def computeFirst(seen: Set[Parser[Any]]) = self.computeFirst(seen)
       
       def queue(t: Trampoline, in: LineStream)(f: Result[R]=>Unit) {
@@ -382,7 +378,7 @@ trait Parsers {
       case other => super.~(other)
     }
     
-    override def \(not: Parser[Any]) = new TerminalParser[R] {
+    override def \(not: TerminalParser[Any]) = new TerminalParser[R] {
       def computeFirst(s: Set[Parser[Any]]) = self.computeFirst(s)
       
       def parse(in: LineStream) = self.parse(in) match {
