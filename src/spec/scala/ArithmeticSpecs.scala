@@ -10,9 +10,11 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
     "compute FIRST set" in {
       val first = expr.first
       
-      if (first.size != 0)
-        first must containAll(Set('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-'))
-      else
+      if (first.size != 0) {
+        Set('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-') forall { c =>
+          first contains c mustBe true
+        }
+      } else
         first mustEqual Set()
     }
     
