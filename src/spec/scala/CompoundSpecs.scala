@@ -337,13 +337,6 @@ object CompoundSpecs extends Specification with Parsers with ScalaCheck {
         case Success("test", LineStream()) :: Nil => true
         case _ => false
       }
-      
-      p2("ing") must beLike {
-        case Failure("Expected 'test' got 'ing'", LineStream(tail @ _*)) :: Nil =>
-          tail.mkString mustEqual "ing"
-        
-        case _ => false
-      }
     }
   }
   
