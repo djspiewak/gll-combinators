@@ -305,7 +305,7 @@ trait Parsers {
             val sub = not(in)
             
             if (sub exists { case Success(_, `tail`) => true; case _ => false })
-              f(Failure("Expected '%s' and not '%s' in '%s'".format(self, not, in.line), in))
+              f(Failure("Expected %s and not %s in '%s'".format(self, not, in.line), in))
             else
               f(s)
           }
@@ -386,7 +386,7 @@ trait Parsers {
           val sub = not(in)
           
           if (sub exists { case Success(_, `tail`) => true; case _ => false })
-            Failure("Expected '%s' and not '%s' in '%s'".format(self, not, in.line), in)
+            Failure("Expected %s and not %s in '%s'".format(self, not, in.line), in)
           else
             s
         }
