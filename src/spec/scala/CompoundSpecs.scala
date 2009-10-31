@@ -325,7 +325,9 @@ object CompoundSpecs extends Specification with Parsers with ScalaCheck {
       val p1 = "test" \ "test"
       
       p1("test") must beLike {
-        case Failure("Expected 'test' and not 'test' in 'test'", LineStream("test")) :: Nil => true
+        case Failure("Expected 'test' and not 'test' in 'test'", LineStream(tail @ _*)) :: Nil => 
+          tail.mkString mustEqual "test"
+        
         case _ => false
       }
       
@@ -337,7 +339,9 @@ object CompoundSpecs extends Specification with Parsers with ScalaCheck {
       }
       
       p2("ing") must beLike {
-        case Failure("Expected 'test' got 'ing'", LineStream("ing")) :: Nil => true
+        case Failure("Expected 'test' got 'ing'", LineStream(tail @ _*)) :: Nil =>
+          tail.mkString mustEqual "ing"
+        
         case _ => false
       }
     }
@@ -346,7 +350,9 @@ object CompoundSpecs extends Specification with Parsers with ScalaCheck {
       val p1 = "test" \ ("test" | "ing")
       
       p1("test") must beLike {
-        case Failure("Expected 'test' and not '(test|ing)' in 'test'", LineStream("test")) :: Nil => true
+        case Failure("Expected 'test' and not '(test|ing)' in 'test'", LineStream(tail @ _*)) :: Nil =>
+          tail.mkString mustEqual "test"
+        
         case _ => false
       }
       
@@ -358,12 +364,16 @@ object CompoundSpecs extends Specification with Parsers with ScalaCheck {
       }
       
       p2("ing") must beLike {
-        case Failure("Expected 'test' got 'ing'", LineStream("ing")) :: Nil => true
+        case Failure("Expected 'test' got 'ing'", LineStream(tail @ _*)) :: Nil =>
+          tail.mkString mustEqual "ing"
+        
         case _ => false
       }
       
       p2("blah") must beLike {
-        case Failure("Expected 'test' got 'blah'", LineStream("blah")) :: Nil => true
+        case Failure("Expected 'test' got 'blah'", LineStream(tail @ _*)) :: Nil =>
+          tail mustEqual "blah"
+        
         case _ => false
       }
     }
