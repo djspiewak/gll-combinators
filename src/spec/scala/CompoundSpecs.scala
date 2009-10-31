@@ -345,38 +345,6 @@ object CompoundSpecs extends Specification with Parsers with ScalaCheck {
         case _ => false
       }
     }
-    
-    "negate using a non-terminal parser" in {
-      val p1 = "test" \ ("test" | "ing")
-      
-      p1("test") must beLike {
-        case Failure("Expected 'test' and not '(test|ing)' in 'test'", LineStream(tail @ _*)) :: Nil =>
-          tail.mkString mustEqual "test"
-        
-        case _ => false
-      }
-      
-      val p2 = "test" \ ("blah" | "ing")
-      
-      p2("test") must beLike {
-        case Success("test", LineStream()) :: Nil => true
-        case _ => false
-      }
-      
-      p2("ing") must beLike {
-        case Failure("Expected 'test' got 'ing'", LineStream(tail @ _*)) :: Nil =>
-          tail.mkString mustEqual "ing"
-        
-        case _ => false
-      }
-      
-      p2("blah") must beLike {
-        case Failure("Expected 'test' got 'blah'", LineStream(tail @ _*)) :: Nil =>
-          tail mustEqual "blah"
-        
-        case _ => false
-      }
-    }
   }
   
   "repeated non-terminal parsers" should {
