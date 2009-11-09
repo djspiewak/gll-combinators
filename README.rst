@@ -46,7 +46,7 @@ incompatible with the combinator model due to their highly-unintuitive control
 flow.  In GLL parsing, the control flow follows that of the grammar, as it does
 in traditional parser combinators or any other form of recursive-descent.
 
-.. _`GLL parsing algorithm`: http://ldta.info/ldta2009proceedings.pdf
+.. _`GLL parsing algorithm`: http://ldta.info/2009/ldta2009proceedings.pdf
 .. _recursive-descent parsing: http://en.wikipedia.org/wiki/Recursive_descent_parser
 
 
@@ -320,4 +320,4 @@ left-recursion, where the left-recursive production has a nullable non-terminal
 (one which goes to the empty string) as its first token, is not supported by any
 of the mainstream LR variants, including the ever-popular LALR).
 
-.. _the original paper: http://ldta.info/ldta2009proceedings.pdf
+.. _the original paper: http://ldta.info/2009/ldta2009proceedings.pdf
