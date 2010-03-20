@@ -3,6 +3,17 @@ ENV['SCALA_HOME'] = ENV['SCALA28_HOME']
 require 'buildr/scala'
 
 repositories.remote << 'http://repo1.maven.org/maven2'
+repositories.remote << 'http://scala-tools.org/repo-snapshots'
+
+
+Buildr::Scala::Specs.dependencies.delete_if do |str| 
+  str =~ /specs/ ||
+    str =~ /scalacheck/
+end
+
+Buildr::Scala::Specs.dependencies << 'org.scala-tools.testing:specs_2.8.0.Beta1:jar:1.6.4-SNAPSHOT'
+Buildr::Scala::Specs.dependencies << 'org.scala-tools.testing:scalacheck_2.8.0.Beta1:jar:1.7-SNAPSHOT'
+
 
 Project.local_task :pdf
 Project.local_task :html
