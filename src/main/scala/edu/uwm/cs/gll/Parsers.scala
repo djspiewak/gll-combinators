@@ -792,7 +792,7 @@ trait Parsers {
           done += (s -> new mutable.HashSet[Parser[Any]])
         
         if (!done(s).contains(p)) {
-          queue += tuple
+          queue.push(tuple)
           done(s) += p
           
           trace("Added: " + tuple)
