@@ -1,9 +1,13 @@
 package edu.uwm.cs.util
 
-class ComplementarySet[A](private val without: Set[A]) extends collection.immutable.Set[A] {
+import scala.collection.SetLike
+
+class ComplementarySet[A](private val without: Set[A]) extends Set[A] with SetLike[A, ComplementarySet[A]] {
   override val size = Math.MAX_INT     // should be infinite
   
   def this() = this(Set())
+  
+  override def empty = new ComplementarySet[A](Set())
   
   def contains(e: A) = !without.contains(e)
   
@@ -13,7 +17,9 @@ class ComplementarySet[A](private val without: Set[A]) extends collection.immuta
   
   override def forall(f: A=>Boolean) = false
   
-  def **(that: Set[A]) = new ComplementarySet(that -- without)
+  def &(that: Set[A]): ComplementarySet[A] = this ** that
+  
+  def **(that: Set[A]): ComplementarySet[A] = new ComplementarySet(that -- without)
   
   def +(e: A) = {
     if (without contains e)
@@ -24,16 +30,20 @@ class ComplementarySet[A](private val without: Set[A]) extends collection.immuta
   
   def -(e: A) = new ComplementarySet(without + e)
   
-  def ++(other: Iterable[A]) = other match {
+  override def ++(other: Iterator[A]) = new ComplementarySet(without -- other)
+  
+  override def ++(other: Traversable[A]) = other match {
     case that: ComplementarySet[A] => new ComplementarySet(this.without ** that.without)
     
-    case _ => without -- other
+    case _ => new ComplementarySet(without -- other)
   }
   
-  def --(other: Iterable[A]) = other match {
+  override def --(other: Iterator[A]) = new ComplementarySet(without ++ other)
+  
+  override def --(other: Traversable[A]) = other match {
     case that: ComplementarySet[A] => new ComplementarySet(this.without ++ that.without)
     
-    case _ => without ++ other
+    case _ => new ComplementarySet(without ++ other)
   }
   
   def subsetOf(other: Set[A]) = other match {
