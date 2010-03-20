@@ -55,7 +55,7 @@ trait RegexParsers extends Parsers {
   private def escapeRegex(str: String) = {
     val specialChars = Set('[', ']', '{', '}', '\\', '|', '*', '+', '?', '^', '$', '(', ')')
     
-    str.toCharArray.foldLeft("") { (str, c) =>
+    augmentString(str).foldLeft("") { (str, c) =>
       if (specialChars contains c)
         str + '\\' + c
       else
