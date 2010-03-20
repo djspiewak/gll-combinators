@@ -98,10 +98,13 @@ object LineStream {
     def gen(num: Int): LineStream = {
       if (lines.hasNext) {
         val line = lines.next
-        val trimmed = line.trim
         
-        val init = new LineCons(line(line.length - 1), gen(num + 1), trimmed, num)
-        line.substring(0, line.length - 1).foldRight(init) { new LineCons(_, _, trimmed, num) }
+        val init = if (lines.hasNext)
+          new LineCons('\n', gen(num + 1), line, num)
+        else
+          LineNil
+        
+        line.foldRight(init) { new LineCons(_, _, line, num) }
       } else LineNil
     }
     
