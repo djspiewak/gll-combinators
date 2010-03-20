@@ -29,17 +29,11 @@ trait RegexParsers extends Parsers {
     } else new RegexParser(r)
   }
   
-  override implicit def disjunctiveLiterals(left: String) = new RichParser(literal(left)) {
-    def |(right: Regex) = new RegexParser(new Regex("(" + escapeRegex(left) + ")|(" + right + ")"))
-    
-    def |(right: String) = new RegexParser(new Regex("(" + escapeRegex(left) + ")|(" + escapeRegex(right) + ")"))
-  }
+  override implicit def disjunctiveLiterals(left: String): RichRegexParser =
+    new RichRegexParser(regex(new Regex(escapeRegex(left))))
   
-  implicit def disjunctiveRegex(left: Regex) = new RichParser(regex(left)) {
-    def |(right: Regex) = new RegexParser(new Regex("(" + left + ")|(" + right + ")"))
-    
-    def |(right: String) = new RegexParser(new Regex("(" + left + ")|(" + escapeRegex(right) + ")"))
-  }
+  implicit def disjunctiveRegex(left: Regex): RichRegexParser =
+    new RichRegexParser(left)
   
   implicit def funRegexSyntax(p: Regex) = new RichSyntax1(regex(p))
   
@@ -65,6 +59,13 @@ trait RegexParsers extends Parsers {
   
   private def handleWhitespace(s: LineStream) =
     s.drop(whitespace findPrefixOf s map { _.length } getOrElse 0)
+  
+  
+  class RichRegexParser(left: RegexParser) extends RichParser(left) {
+    def |(right: Regex) = new RegexParser(new Regex("(" + left + ")|(" + right + ")"))
+    
+    def |(right: String) = new RegexParser(new Regex("(" + left + ")|(" + escapeRegex(right) + ")"))
+  }
   
   case class RegexParser(private val regex: Regex) extends TerminalParser[String] {
     if (regex == null)
