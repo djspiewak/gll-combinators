@@ -1,37 +1,16 @@
 package edu.uwm.cs.gll
 
 import java.io.PrintStream
+
+import scala.collection.LinearSeq
 import scala.io.Source
 
 /**
  * A lazy character stream with line awareness.  This also provides
  * amortized constant-time {@link CharSequence} access.
  */
-sealed abstract class LineStream(val line: String, val lineNum: Int) extends Seq[Char] with CharSequence { outer =>
-  def head: Char
-  
-  def tail: LineStream
-  
-  def elements = new Iterator[Char] {
-    var cur = outer
-    
-    def hasNext = !cur.isEmpty
-    
-    def next = {
-      val back = cur.head
-      cur = cur.tail
-      back
-    }
-  }
-  
-  def apply(i: Int) = {
-    if ((i > 0 && isEmpty) || i < 0)
-      throw new IndexOutOfBoundsException
-    else if (i == 0)      // trivial case
-      head
-    else
-      tail(i - 1)
-  }
+sealed abstract class LineStream(val line: String, val lineNum: Int) extends LinearSeq[Char] with CharSequence { outer =>
+  override def tail: LineStream = error("yeah, this is annoying")
   
   def charAt(i: Int) = apply(i)
   
@@ -113,7 +92,7 @@ object LineStream {
   
   def apply(str: String): LineStream = apply(Source fromString str)
   
-  def apply(src: Source): LineStream = apply(src.getLines)
+  def apply(src: Source): LineStream = apply(src.getLines())
   
   def apply(lines: Iterator[String]): LineStream = {
     def gen(num: Int): LineStream = {
@@ -132,19 +111,20 @@ object LineStream {
   def unapplySeq(str: LineStream): Option[Seq[Char]] = Some(str)
 }
 
-class LineCons(val head: Char, _tail: =>LineStream, line: String, lineNum: Int) extends LineStream(line, lineNum) {
-  lazy val tail = _tail
+class LineCons(override val head: Char, _tail: =>LineStream, line: String, lineNum: Int) extends LineStream(line, lineNum) {
+  override lazy val tail = _tail
   
-  lazy val length = 1 + tail.length
+  override lazy val length = 1 + tail.length
   
   override val isEmpty = false
 }
 
 object LineNil extends LineStream("", 1) {
-  val length = 0
+  override val length = 0
+  
   override val isEmpty = true
   
-  def head = throw new RuntimeException("Cannot get the head of an empty LineStream")
+  override def head = throw new RuntimeException("Cannot get the head of an empty LineStream")
   
-  def tail = throw new RuntimeException("Cannot get the tail of an empty LineStream")
+  override def tail = throw new RuntimeException("Cannot get the tail of an empty LineStream")
 }

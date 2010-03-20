@@ -1,11 +1,13 @@
 package edu.uwm.cs.util
 
 class ComplementarySet[A](private val without: Set[A]) extends collection.immutable.Set[A] {
-  val size = Math.MAX_INT     // should be infinite
+  override val size = Math.MAX_INT     // should be infinite
   
   def this() = this(Set())
   
   def contains(e: A) = !without.contains(e)
+  
+  def iterator = throw new AssertionError("Cannot iterate over a set complement")
   
   override def exists(f: A=>Boolean) = !without.exists(f)
   
@@ -22,13 +24,13 @@ class ComplementarySet[A](private val without: Set[A]) extends collection.immuta
   
   def -(e: A) = new ComplementarySet(without + e)
   
-  override def ++(other: Iterable[A]) = other match {
+  def ++(other: Iterable[A]) = other match {
     case that: ComplementarySet[A] => new ComplementarySet(this.without ** that.without)
     
     case _ => without -- other
   }
   
-  override def --(other: Iterable[A]) = other match {
+  def --(other: Iterable[A]) = other match {
     case that: ComplementarySet[A] => new ComplementarySet(this.without ++ that.without)
     
     case _ => without ++ other
@@ -41,7 +43,7 @@ class ComplementarySet[A](private val without: Set[A]) extends collection.immuta
   
   def empty[A] = Set[A]()
   
-  def elements = throw new AssertionError("Cannot enumerate the complementary set")
+  override def elements = throw new AssertionError("Cannot enumerate the complementary set")
   
   override def toString = "ComplementarySet(%s)".format(without)
   
