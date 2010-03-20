@@ -90,7 +90,17 @@ object LineStream {
   
   def apply(chars: Char*): LineStream = apply(new String(chars.toArray))
   
-  def apply(str: String): LineStream = apply(Source fromString str)
+  def apply(str: String): LineStream = {
+    val sep = System getProperty "line.separator"
+    val src = Source fromString str
+    
+    val add = if (str.length > 0 && str.substring(str.length - sep.length, str.length) == sep)
+      Iterator("")
+    else
+      Iterator.empty
+    
+    apply(src.getLines(sep) ++ add)
+  }
   
   def apply(src: Source): LineStream = apply(src.getLines())
   
