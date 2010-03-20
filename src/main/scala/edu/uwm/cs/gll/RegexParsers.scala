@@ -1,8 +1,8 @@
 package edu.uwm.cs.gll
 
-import scala.util.matching.Regex
+import edu.uwm.cs.util._
 
-import util._
+import scala.util.matching.Regex
 
 trait RegexParsers extends Parsers {
   protected val whitespace = """\s+"""r

@@ -3,7 +3,7 @@ package edu.uwm.cs.gll
 import scala.collection.mutable
 import mutable.{Buffer, ListBuffer}
 
-import util._
+import edu.uwm.cs.util._
 
 import Global._
 
