@@ -89,9 +89,9 @@ object TerminalSpecs extends Specification with ScalaCheck with Parsers {
       
       val prop = forAll { s: String =>
         if (s.length == 0)
-          literal(s).first mustEqual UniversalCharSet
+          literal(s).first == UniversalCharSet     // TODO file bug report for non-working specs matchers
         else
-          literal(s).first mustEqual Set(s charAt 0)
+          literal(s).first == Set(s charAt 0)
       }
       
       prop must pass
@@ -199,16 +199,16 @@ object TerminalSpecs extends Specification with ScalaCheck with Parsers {
       import edu.uwm.cs.util.UniversalCharSet
       
       val prop = forAll { strs: List[String] =>
-        strs.length > 0 ==> {
+        (strs.length > 0 && (strs exists { _.length > 0 })) ==> {
           val p = strs.map(literal).reduceLeft[Parser[Any]] { _ ~ _ }
           
           val composite = strs.mkString
           val first = if (composite.length == 0) UniversalCharSet else Set(composite charAt 0)
           
           if (p.first.size == 0 && first.size == 0)
-            p.first.size mustBe first.size      // tautology
+            true
           else
-            p.first mustEqual first
+            p.first == first    // TODO file bug report
         }
       }
       
