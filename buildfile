@@ -15,7 +15,9 @@ define 'gll-combinators' do
   package
 
   file 'target/doc/readme.tex' => [file('README.rst')] do |f|
-    Dir.mkdir 'target/doc' unless File.exists? 'target/doc'
+    info 'Generating readme.tex'
+    
+    mkdir_p _(:target, :doc) unless File.exists? _(:target, :doc)
 
     latex = `rst2latex.py --use-verbatim-when-possible --use-latex-footnotes --use-latex-docinfo README.rst`
 
@@ -24,7 +26,8 @@ define 'gll-combinators' do
     end
   end
   
-  pdf_task = file 'target/readme.pdf' => [file('target/doc/readme.tex')] do |f|
+  pdf = file 'target/readme.pdf' => [file('target/doc/readme.tex')] do |f|
+    info 'Compiling readme.tex into PDF'
     Dir.chdir _(:target, :doc) do
       `latex readme`
       `pdflatex readme`
@@ -33,8 +36,9 @@ define 'gll-combinators' do
     end
   end
 
-  html_task = file 'target/readme.html' => ['README.rst'] do |f|
-    Dir.mkdir File.dirname(f.to_s) unless File.exists? File.dirname(f.to_s)
+  html = file 'target/readme.html' => ['README.rst'] do |f|
+    info 'Generating readme.html'
+    mkdir File.dirname(f.to_s) unless File.exists? File.dirname(f.to_s)
 
     html = `rst2html.py #{_('README.rst')}`
     File.open(f.to_s, 'w') do |file|
@@ -42,7 +46,7 @@ define 'gll-combinators' do
     end
   end
   
-  task :pdf => pdf_task
-  task :html => html_task
+  task :pdf => pdf
+  task :html => html
 end
 
