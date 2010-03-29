@@ -2,6 +2,8 @@ require 'buildr/scala'
 
 repositories.remote << 'http://repo1.maven.org/maven2'
 
+Buildr.settings.build['scala.check'] = '1.6'
+
 Project.local_task :pdf
 Project.local_task :html
 
