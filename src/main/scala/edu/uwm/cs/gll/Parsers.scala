@@ -423,8 +423,6 @@ trait Parsers {
       var failures = Set[Failure]()
       
       queue(t, in) {
-        case s @ Success(_, Stream()) => successes += s
-        
         case Success(res, tail) => {
           processTail(tail) match {
             case Some(tail) => successes += Success(res, tail)
