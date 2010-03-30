@@ -419,25 +419,44 @@ trait Parsers {
     final def apply(in: LineStream) = {
       val t = new Trampoline
       
-      var successes = Set[Success[R]]()
-      var failures = Set[Failure]()
+      val successes = mutable.Set[Success[R]]()
+      val failures = mutable.Set[Failure]()
+      
+      var recognized = false
+      
+      def parse(): List[Result[R]] = {
+        if (t.hasNext) {
+          t.step()
+          
+          if (successes.isEmpty) {
+            parse()
+          } else {
+            val results = successes.toList
+            successes.clear()
+            results ::: parse()
+          }
+        } else {
+          val results = if (recognized) successes else failures
+          results.toList
+        }
+      }
       
       queue(t, in) {
         case Success(res, tail) => {
           processTail(tail) match {
-            case Some(tail) => successes += Success(res, tail)
+            case Some(tail) => {
+              recognized = true
+              successes += Success(res, tail)
+            }
+            
             case None => failures += Failure(TAIL_ERROR_PATTERN.format(canonicalize(tail.mkString)), tail)
           }
         }
         
         case f: Failure => failures += f
       }
-      t.run()
       
-      if (successes.isEmpty)
-        failures.toList
-      else
-        successes.toList
+      parse()
     }
     
     def mapWithTail[R2](f1: LineStream => R => R2): Parser[R2] = new MappedParser[R, R2](self, f1) with NonTerminalParser[R2] {
@@ -737,33 +756,39 @@ trait Parsers {
     
     // L_0
     def run() {
-      while (!queue.isEmpty) {
-        val (p, s) = remove()
-        
-        p.queue(this, s) { res =>
-          if (!popped.contains(s))
-            popped += (s -> HOMap[Parser, SSet]())
-        
-          if (!popped(s).contains(p))
-            popped(s) += (p -> new mutable.HashSet[Success[Any]])
-        
-          res match {
-            case succ: Success[Any] => {
-              popped(s)(p) += succ
-              tracef("Saved: %s *=> %s%n", (p, s), succ)
-            }
-            
-            case _: Failure => ()
+      while (hasNext) {
+        step()
+      }
+    }
+    
+    def hasNext = !queue.isEmpty
+    
+    def step() {
+      val (p, s) = remove()
+      
+      p.queue(this, s) { res =>
+        if (!popped.contains(s))
+          popped += (s -> HOMap[Parser, SSet]())
+      
+        if (!popped(s).contains(p))
+          popped(s) += (p -> new mutable.HashSet[Success[Any]])
+      
+        res match {
+          case succ: Success[Any] => {
+            popped(s)(p) += succ
+            tracef("Saved: %s *=> %s%n", (p, s), succ)
           }
-        
-          if (!saved.contains(res))
-            saved += (res -> new mutable.HashSet[Result[Any] => Unit])
           
-          for (f <- backlinks(s)(p)) {
-            if (!saved(res).contains(f)) {
-              saved(res) += f
-              f(res)
-            }
+          case _: Failure => ()
+        }
+      
+        if (!saved.contains(res))
+          saved += (res -> new mutable.HashSet[Result[Any] => Unit])
+        
+        for (f <- backlinks(s)(p)) {
+          if (!saved(res).contains(f)) {
+            saved(res) += f
+            f(res)
           }
         }
       }
