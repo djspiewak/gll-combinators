@@ -5,6 +5,7 @@ import org.scalacheck._
 
 object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
   import Prop._
+  import StreamUtils._
   
   "arithmetic grammar" should {
     "compute FIRST set" in {
@@ -22,7 +23,7 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
       val prop = forAll { x: Int =>
         (Math.abs(x.toLong) < Math.MAX_INT) ==> {
           expr(x.toString) must beLike {
-            case Success(e, LineStream()) :: Nil => e.solve == x
+            case Success(e, LineStream()) #:: SNil => e.solve == x
             case _ => false
           }
         }
@@ -50,7 +51,7 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
             }
           } else {
             res must beLike {
-              case Success(e, LineStream()) :: Nil => e.solve == x + y
+              case Success(e, LineStream()) #:: SNil => e.solve == x + y
               case _ => false
             }
           }
@@ -79,7 +80,7 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
             }
           } else {
             res must beLike {
-              case Success(e, LineStream()) :: Nil => e.solve == x - y
+              case Success(e, LineStream()) #:: SNil => e.solve == x - y
               case _ => false
             }
           }
@@ -108,7 +109,7 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
             }
           } else {
             res must beLike {
-              case Success(e, LineStream()) :: Nil => e.solve == x * y
+              case Success(e, LineStream()) #:: SNil => e.solve == x * y
               case _ => false
             }
           }
@@ -137,7 +138,7 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
             }
           } else {
             res must beLike {
-              case Success(e, LineStream()) :: Nil => e.solve == x / y
+              case Success(e, LineStream()) #:: SNil => e.solve == x / y
               case _ => false
             }
           }
@@ -176,7 +177,7 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
         case r => fail("%s does not match the expected pattern".format(r))
       }
       
-      res.sort { _ < _ } mustEqual List(-55, -29)
+      (res sort { _ < _ } toList) mustEqual List(-55, -29)
     }
   }
   

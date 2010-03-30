@@ -22,7 +22,7 @@ in the following way::
     
     expr("((()))")
     
-This will return a value of type ``List[Result[Any]]``.  The ``Result[A]`` ADT is
+This will return a value of type ``Stream[Result[Any]]``.  The ``Result[A]`` ADT is
 defined as one of the following (for some type ``A``):
 
 * ``Success[A]`` -- Represents a successful parse and contains the resulting value.
@@ -31,8 +31,8 @@ defined as one of the following (for some type ``A``):
   consumed).
 
 If any result is successful (i.e. an instance of ``Success[A]``), then no failures
-will be returned.  Thus, the ``List`` returned will be completely homogeneous,
-containing *either* ``Success`` or ``Failure``, but not both.  A ``List`` is
+will be returned.  Thus, the ``Stream`` returned will be completely homogeneous,
+containing *either* ``Success`` or ``Failure``, but not both.  A ``Stream`` is
 returned rather than a single value to allow for ambiguity in the grammar (see
 below).
 
@@ -164,9 +164,9 @@ way::
     
     val results = expr("-1 + 2 * 3")
     
-The ``results`` value will contain the following ``List`` [#]_::
+The ``results`` value will contain the following ``Stream`` [#]_::
     
-    List(Success(-7,), Success(5,), Success(-9,), Success(3,))
+    Stream(Success(-7,), Success(5,), Success(-9,), Success(3,))
     
 These results represent all of the different values which can be produced by
 following the grammar while parsing the input string "``1 + 2 * -3 + 4``".  The
@@ -217,6 +217,29 @@ would refer you to `this paper by Masaru Tomita`_, original creator of GLR and
 inventor of the graph-structured stack.  Suffice it to say that the GSS makes it
 possible for the GLL combinators framework to parse *any* grammar in *O(n^3)*
 time.  This is even better than GLR, which is *O(n^4)* in the worst case.
+    
+Note that ``Stream`` is used as a result type (rather than ``List``) to allow
+users to retrieve only the results which they actually need.  Technically, generalized
+*parsing* has an exponential lower-bound due to the fact that a parser may need
+to return an exponential number of results.  The *O(n^3)* performance guarantee
+offered by GLL is only valid when GLL is being used as a recognizer with a single
+result value for all parse trails.  To get around this problem, the parse process
+will run *only* until it reaches the first successful value (or runs out of
+possible parse trails to attempt).  Once it hits this first success, it bundles
+up the ``Result[A]`` along with a thunk_ representing the remainder of the parse.
+If you only require a single result, then the remainder of the parse can
+be discarded, resulting in truly *O(n^3)* performance in the worst case (likely
+much faster).  If you need *all* possible results, then you are free to enumerate
+the entire result ``Stream``, forcing the parse to return all possible values.
+
+Please note that Scala's ``Stream`` implementation is highly prone to memory
+leaks.  For example, even if you have already traversed the entire ``Stream``
+(and thus completed the parse), the data structure will continue to maintain a
+reference to the transient data structures used during the GLL parse process.
+It is recommended that you allow the result ``Stream`` to go out of scope as
+quickly as possible.  If you need to retain a list of results for any amount of
+time, you should use the ``toList`` method to copy the ``Stream`` into a ``List``,
+rather than simply saving a reference to the ``Stream``.
 
 .. [#] The "extra" comma in the ``Success`` constructors is not a typo, it
        indicates that the entire stream was consumed by the parse.  Without some
@@ -228,6 +251,7 @@ time.  This is even better than GLR, which is *O(n^4)* in the worst case.
 .. _PEGs: http://en.wikipedia.org/wiki/Parsing_expression_grammar
 .. _graph-structured stack: http://en.wikipedia.org/wiki/Graph-structured_stack
 .. _this paper by Masaru Tomita: http://acl.ldc.upenn.edu/P/P88/P88-1031.pdf
+.. _thunk: http://en.wikipedia.org/wiki/Thunk#Thunk_as_delayed_computation
 
 
 Performance

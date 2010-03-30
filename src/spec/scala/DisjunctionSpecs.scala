@@ -5,6 +5,7 @@ import org.scalacheck._
 
 object DisjunctionSpecs extends Specification with Parsers with ScalaCheck {
   import Prop._
+  import StreamUtils._
   
   "disjunctive parser" should {
     "detect LL(1) grammar" in {
@@ -79,12 +80,12 @@ object DisjunctionSpecs extends Specification with Parsers with ScalaCheck {
         val p = "daniel" | "chris"
         
         p("daniel") must beLike {
-          case Success("daniel", LineStream()) :: Nil => true
+          case Success("daniel", LineStream()) #:: SNil => true
           case _ => false
         }
         
         p("chris") must beLike {
-          case Success("chris", LineStream()) :: Nil => true
+          case Success("chris", LineStream()) #:: SNil => true
           case _ => false
         }
       }
@@ -93,7 +94,7 @@ object DisjunctionSpecs extends Specification with Parsers with ScalaCheck {
         val p = "" | ""
         
         p("") must beLike {
-          case Success("", LineStream()) :: Nil => true
+          case Success("", LineStream()) #:: SNil => true
           case _ => false
         }
       }
@@ -103,12 +104,12 @@ object DisjunctionSpecs extends Specification with Parsers with ScalaCheck {
       val p = "daniel" | "chris"
       
       p(LineStream('j')) must beLike {
-        case Failure("Unexpected value in stream: 'j'", LineStream('j')) :: Nil => true
+        case Failure("Unexpected value in stream: 'j'", LineStream('j')) #:: SNil => true
         case _ => false
       }
       
       p(LineStream()) must beLike {
-        case Failure("Unexpected end of stream", LineStream()) :: Nil => true
+        case Failure("Unexpected end of stream", LineStream()) #:: SNil => true
         case _ => false
       }
     }
@@ -117,12 +118,12 @@ object DisjunctionSpecs extends Specification with Parsers with ScalaCheck {
       val p = "daniel" | "danielle"
       
       p(LineStream('j')) must beLike {
-        case Failure("Unexpected value in stream: 'j'", LineStream('j')) :: Nil => true
+        case Failure("Unexpected value in stream: 'j'", LineStream('j')) #:: SNil => true
         case _ => false
       }
       
       p(LineStream()) must beLike {
-        case Failure("Unexpected end of stream", LineStream()) :: Nil => true
+        case Failure("Unexpected end of stream", LineStream()) #:: SNil => true
         case _ => false
       }
     }
@@ -131,12 +132,12 @@ object DisjunctionSpecs extends Specification with Parsers with ScalaCheck {
       val p = "daniel" | "chris"
       
       p("dan") must beLike {
-        case Failure("Unexpected end of stream (expected 'daniel')", LineStream('d', 'a', 'n')) :: Nil => true
+        case Failure("Unexpected end of stream (expected 'daniel')", LineStream('d', 'a', 'n')) #:: SNil => true
         case _ => false
       }
       
       p("dancin") must beLike {
-        case Failure("Expected 'daniel' got 'dancin'", LineStream('d', 'a', 'n', 'c', 'i', 'n')) :: Nil => true
+        case Failure("Expected 'daniel' got 'dancin'", LineStream('d', 'a', 'n', 'c', 'i', 'n')) #:: SNil => true
         case _ => false
       }
     }
@@ -145,7 +146,7 @@ object DisjunctionSpecs extends Specification with Parsers with ScalaCheck {
       val p = literal("") | literal("")
       
       p("\n") must beLike {
-        case Failure("Unexpected trailing characters: '\\n'", LineStream('\n')) :: Nil => true
+        case Failure("Unexpected trailing characters: '\\n'", LineStream('\n')) #:: SNil => true
         case _ => false
       }
     }
@@ -204,7 +205,7 @@ object DisjunctionSpecs extends Specification with Parsers with ScalaCheck {
       def check(p: Parser[Any], data: String*) = {
         for (str <- data) {
           p(str) must beLike {
-            case Success(`str`, LineStream()) :: Nil => true
+            case Success(`str`, LineStream()) #:: SNil => true
             case _ => false
           }
         }
@@ -292,12 +293,12 @@ object DisjunctionSpecs extends Specification with Parsers with ScalaCheck {
           ) ^^ f
           
           p(left) must beLike {
-            case Success(v, LineStream()) :: Nil => v == f(left)
+            case Success(v, LineStream()) #:: SNil => v == f(left)
             case _ => false
           }
           
           p(right) must beLike {
-            case Success(v, LineStream()) :: Nil => v == f(right)
+            case Success(v, LineStream()) #:: SNil => v == f(right)
             case _ => false
           }
         }
@@ -322,7 +323,7 @@ object DisjunctionSpecs extends Specification with Parsers with ScalaCheck {
       val p = p1 ~ "\n" ~> p2
       
       p("foo\nbaz") must beLike {
-        case Success("baz", LineStream()) :: Nil => true
+        case Success("baz", LineStream()) #:: SNil => true
         case _ => false
       }
       
@@ -340,7 +341,7 @@ object DisjunctionSpecs extends Specification with Parsers with ScalaCheck {
       
       
       p("foo\nbin") must beLike {
-        case Success("bin", LineStream()) :: Nil => true
+        case Success("bin", LineStream()) #:: SNil => true
         case _ => false
       }
       
@@ -357,7 +358,7 @@ object DisjunctionSpecs extends Specification with Parsers with ScalaCheck {
       in2.toString mustEqual "bin"
       
       p("bar\nbaz") must beLike {
-        case Success("baz", LineStream()) :: Nil => true
+        case Success("baz", LineStream()) #:: SNil => true
         case _ => false
       }
       
@@ -374,7 +375,7 @@ object DisjunctionSpecs extends Specification with Parsers with ScalaCheck {
       in2.toString mustEqual "baz"
       
       p("bar\nbin") must beLike {
-        case Success("bin", LineStream()) :: Nil => true
+        case Success("bin", LineStream()) #:: SNil => true
         case _ => false
       }
       

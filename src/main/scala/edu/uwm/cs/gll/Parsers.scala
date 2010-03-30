@@ -184,7 +184,7 @@ trait Parsers {
   
   //////////////////////////////////////////////////////////////////////////////
   
-  sealed trait Parser[+R] extends (LineStream => List[Result[R]]) { self =>
+  sealed trait Parser[+R] extends (LineStream => Stream[Result[R]]) { self =>
     val terminal: Boolean
     
     lazy val first = {
@@ -206,7 +206,7 @@ trait Parsers {
     
     // syntax
     
-    def apply(str: String): List[Result[R]] = apply(LineStream(str))
+    def apply(str: String): Stream[Result[R]] = apply(LineStream(str))
     
     def map[R2](f: R => R2) = mapWithTail { _ => f }
     
@@ -323,7 +323,7 @@ trait Parsers {
   trait TerminalParser[+R] extends Parser[R] { self =>
     final val terminal = true
     
-    final def apply(in: LineStream) = List(parse(in) match {
+    final def apply(in: LineStream) = Stream(parse(in) match {
       case Success(res, tail) => processTail(tail) match {
         case Some(tail) => Success(res, tail)
         case None => Failure(TAIL_ERROR_PATTERN.format(canonicalize(tail.mkString)), tail)
@@ -424,7 +424,7 @@ trait Parsers {
       
       var recognized = false
       
-      def parse(): List[Result[R]] = {
+      def parse(): Stream[Result[R]] = {
         if (t.hasNext) {
           t.step()
           
@@ -433,11 +433,11 @@ trait Parsers {
           } else {
             val results = successes.toList
             successes.clear()
-            results ::: parse()
+            results.toStream append parse()
           }
         } else {
           val results = if (recognized) successes else failures
-          results.toList
+          results.toStream
         }
       }
       
