@@ -278,9 +278,7 @@ grammar::
 It takes roughly 18 seconds to run this grammar against an input consisting of
 the letter ``b`` repeated 100 times.  If we increase that number to 300, the
 parser will actually exhaust the available heap space in the default JVM
-configuration.  This is not really surprising, consider that this grammar defines
-an exponential number of parse trails, all of which must be followed and reduced
-by the GLL parser.
+configuration.
 
 With that said, there are very few grammar/input combinations which push the
 framework to its limit.  In fact, for grammars which are LL(1)_, the GLL Combinators
