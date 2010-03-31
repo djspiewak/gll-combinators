@@ -15,7 +15,7 @@ trait Example[A] extends Parsers {
       if (results exists { _.isInstanceOf[Success[A]] }) {
         handleSuccesses(for (Success(tree, _) <- results) yield tree)
       } else {
-        val sorted = results sort { _.tail.length < _.tail.length }
+        val sorted = results.toList sort { _.tail.length < _.tail.length }
         val length = sorted.head.tail.length
         
         for (Failure(msg, tail) <- sorted takeWhile { _.tail.length == length }) {
@@ -30,5 +30,5 @@ trait Example[A] extends Parsers {
   
   def parser: Parser[A]
   
-  def handleSuccesses(forest: List[A])
+  def handleSuccesses(forest: Stream[A])
 }

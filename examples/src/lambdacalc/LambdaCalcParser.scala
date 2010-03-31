@@ -35,7 +35,7 @@ object LambdaCalcParser extends common.Example[(List[Alias], Expr)] with RegexPa
   
   def parser = aliases
   
-  def handleSuccesses(forest: List[(List[Alias], Expr)]) {
+  def handleSuccesses(forest: Stream[(List[Alias], Expr)]) {
     val errors = mutable.Set[String]()
         
     val status = for ((tree, expr) <- forest) yield {
