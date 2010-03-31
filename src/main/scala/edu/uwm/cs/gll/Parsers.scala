@@ -202,7 +202,7 @@ trait Parsers {
      */
     def computeFirst(seen: Set[Parser[Any]]): Option[Set[Option[Char]]]
     
-    def queue(t: Trampoline, in: LineStream)(f: Result[R] => Unit)
+    def chain(t: Trampoline, in: LineStream)(f: Result[R] => Unit)
     
     // syntax
     
@@ -215,9 +215,9 @@ trait Parsers {
     def flatMap[R2](f1: R => Parser[R2]): Parser[R2] = new NonTerminalParser[R2] {
       def computeFirst(seen: Set[Parser[Any]]) = self.computeFirst(seen + this)
       
-      def queue(t: Trampoline, in: LineStream)(f2: Result[R2] => Unit) {
-        self.queue(t, in) {
-          case Success(res1, tail) => f1(res1).queue(t, tail)(f2)
+      def chain(t: Trampoline, in: LineStream)(f2: Result[R2] => Unit) {
+        self.chain(t, in) {
+          case Success(res1, tail) => f1(res1).chain(t, tail)(f2)
           case f: Failure => f2(f)
         }
       }
@@ -226,8 +226,8 @@ trait Parsers {
     def filter(f: R => Boolean): Parser[R] = new NonTerminalParser[R] {
       def computeFirst(seen: Set[Parser[Any]]) = self.computeFirst(seen + this)
       
-      def queue(t: Trampoline, in: LineStream)(f2: Result[R] => Unit) {
-        self.queue(t, in) {
+      def chain(t: Trampoline, in: LineStream)(f2: Result[R] => Unit) {
+        self.chain(t, in) {
           case s @ Success(res, _) => {
             if (f(res))
               f2(s)
@@ -257,7 +257,7 @@ trait Parsers {
     def +(): Parser[List[R]] = new NonTerminalParser[List[R]] {
       def computeFirst(seen: Set[Parser[Any]]) = self.computeFirst(seen + this)
       
-      def queue(t: Trampoline, in: LineStream)(f: Result[List[R]] => Unit) {
+      def chain(t: Trampoline, in: LineStream)(f: Result[List[R]] => Unit) {
         t.add(self, in) {
           case Success(res1, tail) => {
             f(Success(res1 :: Nil, tail))
@@ -282,7 +282,7 @@ trait Parsers {
     def ?(): Parser[Option[R]] = new NonTerminalParser[Option[R]] {
       def computeFirst(seen: Set[Parser[Any]]) = None
       
-      def queue(t: Trampoline, in: LineStream)(f: Result[Option[R]] => Unit) {
+      def chain(t: Trampoline, in: LineStream)(f: Result[Option[R]] => Unit) {
         f(Success(None, in))
         
         t.add(self, in) {
@@ -299,8 +299,8 @@ trait Parsers {
     def \(not: TerminalParser[Any]): Parser[R] = new NonTerminalParser[R] {
       def computeFirst(seen: Set[Parser[Any]]) = self.computeFirst(seen)
       
-      def queue(t: Trampoline, in: LineStream)(f: Result[R] => Unit) {
-        self.queue(t, in) {
+      def chain(t: Trampoline, in: LineStream)(f: Result[R] => Unit) {
+        self.chain(t, in) {
           case s @ Success(res1, tail) => {
             val sub = not(in)
             
@@ -335,7 +335,7 @@ trait Parsers {
     /**
      * For terminal parsing, this just delegates back to apply()
      */
-    def queue(t: Trampoline, in: LineStream)(f: Result[R] => Unit) {
+    def chain(t: Trampoline, in: LineStream)(f: Result[R] => Unit) {
       f(parse(in))
     }
     
@@ -441,7 +441,7 @@ trait Parsers {
         }
       }
       
-      queue(t, in) {
+      chain(t, in) {
         case Success(res, tail) => {
           processTail(tail) match {
             case Some(tail) => {
@@ -460,8 +460,8 @@ trait Parsers {
     }
     
     def mapWithTail[R2](f1: LineStream => R => R2): Parser[R2] = new MappedParser[R, R2](self, f1) with NonTerminalParser[R2] {
-      def queue(t: Trampoline, in: LineStream)(f2: Result[R2] => Unit) {
-        self.queue(t, in) { 
+      def chain(t: Trampoline, in: LineStream)(f2: Result[R2] => Unit) {
+        self.chain(t, in) { 
           case Success(res, tail) => f2(Success(f1(in)(res), tail))
           case f: Failure => f2(f)
         }
@@ -562,10 +562,10 @@ trait Parsers {
       }
     }
     
-    def queue(t: Trampoline, in: LineStream)(f: Result[A ~ B] => Unit) {
-      left.queue(t, in) {
+    def chain(t: Trampoline, in: LineStream)(f: Result[A ~ B] => Unit) {
+      left.chain(t, in) {
         case Success(res1, tail) => {
-          right.queue(t, tail) {
+          right.chain(t, tail) {
             case Success(res2, tail) => f(Success(new ~(res1, res2), tail))
             
             case res: Failure => f(res)
@@ -653,7 +653,7 @@ trait Parsers {
       }
     }
     
-    def queue(t: Trampoline, in: LineStream)(f: Result[A] => Unit) {
+    def chain(t: Trampoline, in: LineStream)(f: Result[A] => Unit) {
       val UNEXPECTED_PATTERN = "Unexpected value in stream: '"
       
       if (isLL1) {        // graceful degrade to LL(1)
@@ -663,14 +663,14 @@ trait Parsers {
           f(Failure("Unexpected end of stream", in))
         } else {
           predict get in.head match {
-            case Some(p) => p.queue(t, in)(f)
+            case Some(p) => p.chain(t, in)(f)
             
             case None => f(Failure(UNEXPECTED_PATTERN + in.head + "'", in))
           }
         }
       } else {
         val thunk = new ThunkParser(this) {
-          def queue(t: Trampoline, in: LineStream)(f: Result[A] => Unit) {
+          def chain(t: Trampoline, in: LineStream)(f: Result[A] => Unit) {
             var predicted = false
             val results = mutable.Set[Result[A]]()    // merge results
             
@@ -766,7 +766,7 @@ trait Parsers {
     def step() {
       val (p, s) = remove()
       
-      p.queue(this, s) { res =>
+      p.chain(this, s) { res =>
         if (!popped.contains(s))
           popped += (s -> HOMap[Parser, SSet]())
       
