@@ -1,23 +1,23 @@
 package edu.uwm.cs.gll.ast
 
-trait Filter extends (Node => Boolean) { self =>
+trait Filter[-A] extends (A => Boolean) { self =>
   
-  def apply(n: Node): Boolean
+  def apply(n: A): Boolean
   
-  def unary_!(): Filter = new Filter {
-    def apply(n: Node) = !self(n)
+  def unary_!(): Filter[A] = new Filter[A] {
+    def apply(n: A) = !self(n)
   }
   
-  def &(other: Filter): Filter = new Filter {
-    def apply(n: Node) = self(n) && other(n)
+  def &[B <: A](other: Filter[B]): Filter[B] = new Filter[B] {
+    def apply(n: B) = self(n) && other(n)
   }
   
-  def |(other: Filter): Filter = new Filter {
-    def apply(n: Node) = self(n) || other(n)
+  def |[B <: A](other: Filter[B]): Filter[B] = new Filter[B] {
+    def apply(n: B) = self(n) || other(n)
   }
 }
 
-private[ast] class AssocFilter(sym: Symbol, isLeft: Boolean) extends Filter {
+private[ast] class AssocFilter(sym: Symbol, isLeft: Boolean) extends Filter[Node] {
   def apply(n: Node): Boolean = n match {
     case n: BinaryNode if n.label == sym => {
       val valid = (if (isLeft) n.right.label else n.left.label) != sym
@@ -28,7 +28,7 @@ private[ast] class AssocFilter(sym: Symbol, isLeft: Boolean) extends Filter {
   }
 }
 
-private[ast] class PrecedenceFilter(order: Seq[Symbol]) extends Filter {
+private[ast] class PrecedenceFilter(order: Seq[Symbol]) extends Filter[Node] {
   val forbidden = {
     val sets = for (i <- 0 until order.length) 
       yield (order(i) -> Set(order drop (i + 1): _*))
@@ -47,26 +47,26 @@ private[ast] class PrecedenceFilter(order: Seq[Symbol]) extends Filter {
 }
 
 object Filters {
-  def prec(order: Symbol*): Filter = new PrecedenceFilter(order)
+  def prec(order: Symbol*): Filter[Node] = new PrecedenceFilter(order)
   
-  implicit def liftFilter[A <: Node](f: Filter)(str: Stream[Result[A]]): Stream[Result[A]] = {
+  implicit def liftFilter[A](f: Filter[A])(str: Stream[Result[A]]): Stream[Result[A]] = {
     str filter {
       case Success(node, _) => f(node)
       case _ => true
     }
   }
   
-  implicit def liftPredicate(pred: Node => Boolean): Filter = new Filter {
-    def apply(n: Node) = pred(n)
+  implicit def liftPredicate[A](pred: A => Boolean): Filter[A] = new Filter[A] {
+    def apply(n: A) = pred(n)
   }
   
   implicit def symbolSyntax(sym: Symbol): RichSymbol = new RichSymbol(sym)
   
   class RichSymbol(sym: Symbol) {
-    def <(): Filter = new AssocFilter(sym, true)
+    def <(): Filter[Node] = new AssocFilter(sym, true)
     
-    def <>(): Filter = (this <) & (this >)
+    def <>(): Filter[Node] = (this <) & (this >)
     
-    def >(): Filter = new AssocFilter(sym, false)
+    def >(): Filter[Node] = new AssocFilter(sym, false)
   }
 }
