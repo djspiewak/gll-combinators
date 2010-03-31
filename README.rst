@@ -280,7 +280,15 @@ the letter ``b`` repeated 100 times.  If we increase that number to 300, the
 parser will actually exhaust the available heap space in the default JVM
 configuration.
 
-With that said, there are very few grammar/input combinations which push the
+The actual performance on the ``s`` grammar is demonstrated by the following
+graph (plotted on a cubic scale).  The gray line is *y = kx^3* (for some constant
+*k*).  The blue line was determined emperically from progressively longer runs
+(starting at strings of length 10 and increasing to length 100) on the ``s``
+parser shown above.  The *y* axis represents time in milliseconds.
+
+.. image:: performance.jpg
+
+With all this said, there are very few grammar/input combinations which push the
 framework to its limit.  In fact, for grammars which are LL(1)_, the GLL Combinators
 framework should actually be *faster* than traditional parser combinators.  For
 example::

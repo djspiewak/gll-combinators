@@ -27,8 +27,12 @@ define 'gll-combinators' do
       file.puts latex
     end
   end
+
+  file 'target/performance.jpg' => ['performance.jpg'] do |f|
+    cp 'performance.jpg', f.to_s
+  end
   
-  pdf = file 'target/readme.pdf' => [file('target/doc/readme.tex')] do |f|
+  pdf = file 'target/readme.pdf' => [file('target/doc/readme.tex'), file('target/performance.jpg')] do |f|
     info 'Compiling readme.tex into PDF'
     Dir.chdir _(:target, :doc) do
       `latex readme`
@@ -38,7 +42,7 @@ define 'gll-combinators' do
     end
   end
 
-  html = file 'target/readme.html' => ['README.rst'] do |f|
+  html = file 'target/readme.html' => ['README.rst', file('target/performance.jpg')] do |f|
     info 'Generating readme.html'
     mkdir File.dirname(f.to_s) unless File.exists? File.dirname(f.to_s)
 
