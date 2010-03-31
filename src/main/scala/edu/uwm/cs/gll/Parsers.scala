@@ -75,116 +75,116 @@ trait Parsers {
   // map syntax
   
   class RichSyntax1[A](p: Parser[A]) {
-    def ^^[R](f: A=>R) = ^# { _ => f }
+    def ^^[R](f: A => R) = ^# { _ => f }
     
-    def ^#[R](f: LineStream=>A=>R) = p mapWithTail f
+    def ^#[R](f: LineStream => A => R) = p mapWithTail f
   }
   
   class RichSyntax2[A, B](p: Parser[A ~ B]) {
-    def ^^[R](f: (A, B)=>R) = ^# { _ => f }
+    def ^^[R](f: (A, B) => R) = ^# { _ => f }
     
-    def ^#[R](fun: LineStream=>(A, B)=>R) = p mapWithTail { in => { case a ~ b => fun(in)(a, b) } }
+    def ^#[R](fun: LineStream => (A, B) => R) = p mapWithTail { in => { case a ~ b => fun(in)(a, b) } }
   }
   
   class RichSyntax3l[A, B, C](p: Parser[A ~ B ~ C]) {
-    def ^^[R](f: (A, B, C)=>R) = ^# { _ => f }
+    def ^^[R](f: (A, B, C) => R) = ^# { _ => f }
     
-    def ^#[R](fun: LineStream=>(A, B, C)=>R) = p mapWithTail { in => { case a ~ b ~ c => fun(in)(a, b, c) } }
+    def ^#[R](fun: LineStream => (A, B, C) => R) = p mapWithTail { in => { case a ~ b ~ c => fun(in)(a, b, c) } }
   }
   
   class RichSyntax3r[A, B, C](p: Parser[~[A, B ~ C]]) {
-    def ^^[R](f: (A, B, C)=>R) = ^# { _ => f }
+    def ^^[R](f: (A, B, C) => R) = ^# { _ => f }
     
-    def ^#[R](fun: LineStream=>(A, B, C)=>R) = p mapWithTail { in => { case a ~ (b ~ c) => fun(in)(a, b, c) } }
+    def ^#[R](fun: LineStream => (A, B, C) => R) = p mapWithTail { in => { case a ~ (b ~ c) => fun(in)(a, b, c) } }
   }
   
   class RichSyntax4ll[A, B, C, D](p: Parser[A ~ B ~ C ~ D]) {
-    def ^^[R](f: (A, B, C, D)=>R) = ^# { _ => f }
+    def ^^[R](f: (A, B, C, D) => R) = ^# { _ => f }
     
-    def ^#[R](fun: LineStream=>(A, B, C, D)=>R) = p mapWithTail { in => { case a ~ b ~ c ~ d => fun(in)(a, b, c, d) } }
+    def ^#[R](fun: LineStream => (A, B, C, D) => R) = p mapWithTail { in => { case a ~ b ~ c ~ d => fun(in)(a, b, c, d) } }
   }
   
   class RichSyntax4lr[A, B, C, D](p: Parser[~[A, B ~ C] ~ D]) {
-    def ^^[R](f: (A, B, C, D)=>R) = ^# { _ => f }
+    def ^^[R](f: (A, B, C, D) => R) = ^# { _ => f }
     
-    def ^#[R](fun: LineStream=>(A, B, C, D)=>R) = p mapWithTail { in => { case a ~ (b ~ c) ~ d => fun(in)(a, b, c, d) } }
+    def ^#[R](fun: LineStream => (A, B, C, D) => R) = p mapWithTail { in => { case a ~ (b ~ c) ~ d => fun(in)(a, b, c, d) } }
   }
   
   class RichSyntax4rl[A, B, C, D](p: Parser[~[A, B ~ C ~ D]]) {
-    def ^^[R](f: (A, B, C, D)=>R) = ^# { _ => f }
+    def ^^[R](f: (A, B, C, D) => R) = ^# { _ => f }
     
-    def ^#[R](fun: LineStream=>(A, B, C, D)=>R) = p mapWithTail { in => { case a ~ ((b ~ c) ~ d) => fun(in)(a, b, c, d) } }
+    def ^#[R](fun: LineStream => (A, B, C, D) => R) = p mapWithTail { in => { case a ~ ((b ~ c) ~ d) => fun(in)(a, b, c, d) } }
   }
   
   class RichSyntax4rr[A, B, C, D](p: Parser[~[A, ~[B, C ~ D]]]) {
-    def ^^[R](f: (A, B, C, D)=>R) = ^# { _ => f }
+    def ^^[R](f: (A, B, C, D) => R) = ^# { _ => f }
     
-    def ^#[R](fun: LineStream=>(A, B, C, D)=>R) = p mapWithTail { in => { case a ~ (b ~ (c ~ d)) => fun(in)(a, b, c, d) } }
+    def ^#[R](fun: LineStream => (A, B, C, D) => R) = p mapWithTail { in => { case a ~ (b ~ (c ~ d)) => fun(in)(a, b, c, d) } }
   }
   
   class RichSyntax5lll[A, B, C, D, E](p: Parser[A ~ B ~ C ~ D ~ E]) {
-    def ^^[R](f: (A, B, C, D, E)=>R) = ^# { _ => f }
+    def ^^[R](f: (A, B, C, D, E) => R) = ^# { _ => f }
     
-    def ^#[R](fun: LineStream=>(A, B, C, D, E)=>R) = p mapWithTail { in => { case a ~ b ~ c ~ d ~ e => fun(in)(a, b, c, d, e) } }
+    def ^#[R](fun: LineStream => (A, B, C, D, E) => R) = p mapWithTail { in => { case a ~ b ~ c ~ d ~ e => fun(in)(a, b, c, d, e) } }
   }
   
   class RichSyntax5llr[A, B, C, D, E](p: Parser[~[A, B ~ C] ~ D ~ E]) {
-    def ^^[R](f: (A, B, C, D, E)=>R) = ^# { _ => f }
+    def ^^[R](f: (A, B, C, D, E) => R) = ^# { _ => f }
     
-    def ^#[R](fun: LineStream=>(A, B, C, D, E)=>R) = p mapWithTail { in => { case (a ~ (b ~ c)) ~ d ~ e => fun(in)(a, b, c, d, e) } }
+    def ^#[R](fun: LineStream => (A, B, C, D, E) => R) = p mapWithTail { in => { case (a ~ (b ~ c)) ~ d ~ e => fun(in)(a, b, c, d, e) } }
   }
   
   class RichSyntax5lrl[A, B, C, D, E](p: Parser[~[A, B ~ C ~ D] ~ E]) {
-    def ^^[R](f: (A, B, C, D, E)=>R) = ^# { _ => f }
+    def ^^[R](f: (A, B, C, D, E) => R) = ^# { _ => f }
     
-    def ^#[R](fun: LineStream=>(A, B, C, D, E)=>R) = p mapWithTail { in => { case (a ~ (b ~ c ~ d)) ~ e => fun(in)(a, b, c, d, e) } }
+    def ^#[R](fun: LineStream => (A, B, C, D, E) => R) = p mapWithTail { in => { case (a ~ (b ~ c ~ d)) ~ e => fun(in)(a, b, c, d, e) } }
   }
   
   class RichSyntax5lrr[A, B, C, D, E](p: Parser[~[A, ~[B, C ~ D]] ~ E]) {
-    def ^^[R](f: (A, B, C, D, E)=>R) = ^# { _ => f }
+    def ^^[R](f: (A, B, C, D, E) => R) = ^# { _ => f }
     
-    def ^#[R](fun: LineStream=>(A, B, C, D, E)=>R) = p mapWithTail { in => { case (a ~ (b ~ (c ~ d))) ~ e => fun(in)(a, b, c, d, e) } }
+    def ^#[R](fun: LineStream => (A, B, C, D, E) => R) = p mapWithTail { in => { case (a ~ (b ~ (c ~ d))) ~ e => fun(in)(a, b, c, d, e) } }
   }
   
   class RichSyntax5rll[A, B, C, D, E](p: Parser[~[A ~ B, C ~ D ~ E]]) {
-    def ^^[R](f: (A, B, C, D, E)=>R) = ^# { _ => f }
+    def ^^[R](f: (A, B, C, D, E) => R) = ^# { _ => f }
     
-    def ^#[R](fun: LineStream=>(A, B, C, D, E)=>R) = p mapWithTail { in => { case (a ~ b) ~ (c ~ d ~ e) => fun(in)(a, b, c, d, e) } }
+    def ^#[R](fun: LineStream => (A, B, C, D, E) => R) = p mapWithTail { in => { case (a ~ b) ~ (c ~ d ~ e) => fun(in)(a, b, c, d, e) } }
   }
   
   class RichSyntax5rlr[A, B, C, D, E](p: Parser[~[A ~ B, ~[C, D ~ E]]]) {
-    def ^^[R](f: (A, B, C, D, E)=>R) = ^# { _ => f }
+    def ^^[R](f: (A, B, C, D, E) => R) = ^# { _ => f }
     
-    def ^#[R](fun: LineStream=>(A, B, C, D, E)=>R) = p mapWithTail { in => { case (a ~ b) ~ (c ~ (d ~ e)) => fun(in)(a, b, c, d, e) } }
+    def ^#[R](fun: LineStream => (A, B, C, D, E) => R) = p mapWithTail { in => { case (a ~ b) ~ (c ~ (d ~ e)) => fun(in)(a, b, c, d, e) } }
   }
   
   class RichSyntax5rrl[A, B, C, D, E](p: Parser[~[A, ~[B, C ~ D ~ E]]]) {
-    def ^^[R](f: (A, B, C, D, E)=>R) = ^# { _ => f }
+    def ^^[R](f: (A, B, C, D, E) => R) = ^# { _ => f }
     
-    def ^#[R](fun: LineStream=>(A, B, C, D, E)=>R) = p mapWithTail { in => { case a ~ (b ~ (c ~ d ~ e)) => fun(in)(a, b, c, d, e) } }
+    def ^#[R](fun: LineStream => (A, B, C, D, E) => R) = p mapWithTail { in => { case a ~ (b ~ (c ~ d ~ e)) => fun(in)(a, b, c, d, e) } }
   }
   
   class RichSyntax5rrr[A, B, C, D, E](p: Parser[~[A, ~[B, ~[C, D ~ E]]]]) {
-    def ^^[R](f: (A, B, C, D, E)=>R) = ^# { _ => f }
+    def ^^[R](f: (A, B, C, D, E) => R) = ^# { _ => f }
     
-    def ^#[R](fun: LineStream=>(A, B, C, D, E)=>R) = p mapWithTail { in => { case a ~ (b ~ (c ~ (d ~ e))) => fun(in)(a, b, c, d, e) } }
+    def ^#[R](fun: LineStream => (A, B, C, D, E) => R) = p mapWithTail { in => { case a ~ (b ~ (c ~ (d ~ e))) => fun(in)(a, b, c, d, e) } }
   }
   
   class RichSyntax6[A, B, C, D, E, F](p: Parser[A ~ B ~ C ~ D ~ E ~ F]) {
-    def ^^[R](f: (A, B, C, D, E, F)=>R) = ^# { _ => f }
+    def ^^[R](f: (A, B, C, D, E, F) => R) = ^# { _ => f }
     
-    def ^#[R](fun: LineStream=>(A, B, C, D, E, F)=>R) = p mapWithTail { in => { case a ~ b ~ c ~ d ~ e ~ f => fun(in)(a, b, c, d, e, f) } }
+    def ^#[R](fun: LineStream => (A, B, C, D, E, F) => R) = p mapWithTail { in => { case a ~ b ~ c ~ d ~ e ~ f => fun(in)(a, b, c, d, e, f) } }
   }
   
   class RichSyntax7[A, B, C, D, E, F, G](p: Parser[A ~ B ~ C ~ D ~ E ~ F ~ G]) {
-    def ^^[R](f: (A, B, C, D, E, F, G)=>R) = ^# { _ => f }
+    def ^^[R](f: (A, B, C, D, E, F, G) => R) = ^# { _ => f }
     
-    def ^#[R](fun: LineStream=>(A, B, C, D, E, F, G)=>R) = p mapWithTail { in => { case a ~ b ~ c ~ d ~ e ~ f ~ g => fun(in)(a, b, c, d, e, f, g) } }
+    def ^#[R](fun: LineStream => (A, B, C, D, E, F, G) => R) = p mapWithTail { in => { case a ~ b ~ c ~ d ~ e ~ f ~ g => fun(in)(a, b, c, d, e, f, g) } }
   }
   
   //////////////////////////////////////////////////////////////////////////////
   
-  sealed trait Parser[+R] extends (LineStream=>List[Result[R]]) { self =>
+  sealed trait Parser[+R] extends (LineStream => Stream[Result[R]]) { self =>
     val terminal: Boolean
     
     lazy val first = {
@@ -202,20 +202,20 @@ trait Parsers {
      */
     def computeFirst(seen: Set[Parser[Any]]): Option[Set[Option[Char]]]
     
-    def queue(t: Trampoline, in: LineStream)(f: Result[R]=>Unit)
+    def queue(t: Trampoline, in: LineStream)(f: Result[R] => Unit)
     
     // syntax
     
-    def apply(str: String): List[Result[R]] = apply(LineStream(str))
+    def apply(str: String): Stream[Result[R]] = apply(LineStream(str))
     
-    def map[R2](f: R=>R2) = mapWithTail { _ => f }
+    def map[R2](f: R => R2) = mapWithTail { _ => f }
     
-    def mapWithTail[R2](f: LineStream=>R=>R2): Parser[R2]
+    def mapWithTail[R2](f: LineStream => R => R2): Parser[R2]
     
-    def flatMap[R2](f1: R=>Parser[R2]): Parser[R2] = new NonTerminalParser[R2] {
+    def flatMap[R2](f1: R => Parser[R2]): Parser[R2] = new NonTerminalParser[R2] {
       def computeFirst(seen: Set[Parser[Any]]) = self.computeFirst(seen + this)
       
-      def queue(t: Trampoline, in: LineStream)(f2: Result[R2]=>Unit) {
+      def queue(t: Trampoline, in: LineStream)(f2: Result[R2] => Unit) {
         self.queue(t, in) {
           case Success(res1, tail) => f1(res1).queue(t, tail)(f2)
           case f: Failure => f2(f)
@@ -223,10 +223,10 @@ trait Parsers {
       }
     }
     
-    def filter(f: R=>Boolean): Parser[R] = new NonTerminalParser[R] {
+    def filter(f: R => Boolean): Parser[R] = new NonTerminalParser[R] {
       def computeFirst(seen: Set[Parser[Any]]) = self.computeFirst(seen + this)
       
-      def queue(t: Trampoline, in: LineStream)(f2: Result[R]=>Unit) {
+      def queue(t: Trampoline, in: LineStream)(f2: Result[R] => Unit) {
         self.queue(t, in) {
           case s @ Success(res, _) => {
             if (f(res))
@@ -257,7 +257,7 @@ trait Parsers {
     def +(): Parser[List[R]] = new NonTerminalParser[List[R]] {
       def computeFirst(seen: Set[Parser[Any]]) = self.computeFirst(seen + this)
       
-      def queue(t: Trampoline, in: LineStream)(f: Result[List[R]]=>Unit) {
+      def queue(t: Trampoline, in: LineStream)(f: Result[List[R]] => Unit) {
         t.add(self, in) {
           case Success(res1, tail) => {
             f(Success(res1 :: Nil, tail))
@@ -282,7 +282,7 @@ trait Parsers {
     def ?(): Parser[Option[R]] = new NonTerminalParser[Option[R]] {
       def computeFirst(seen: Set[Parser[Any]]) = None
       
-      def queue(t: Trampoline, in: LineStream)(f: Result[Option[R]]=>Unit) {
+      def queue(t: Trampoline, in: LineStream)(f: Result[Option[R]] => Unit) {
         f(Success(None, in))
         
         t.add(self, in) {
@@ -299,7 +299,7 @@ trait Parsers {
     def \(not: TerminalParser[Any]): Parser[R] = new NonTerminalParser[R] {
       def computeFirst(seen: Set[Parser[Any]]) = self.computeFirst(seen)
       
-      def queue(t: Trampoline, in: LineStream)(f: Result[R]=>Unit) {
+      def queue(t: Trampoline, in: LineStream)(f: Result[R] => Unit) {
         self.queue(t, in) {
           case s @ Success(res1, tail) => {
             val sub = not(in)
@@ -323,7 +323,7 @@ trait Parsers {
   trait TerminalParser[+R] extends Parser[R] { self =>
     final val terminal = true
     
-    final def apply(in: LineStream) = List(parse(in) match {
+    final def apply(in: LineStream) = Stream(parse(in) match {
       case Success(res, tail) => processTail(tail) match {
         case Some(tail) => Success(res, tail)
         case None => Failure(TAIL_ERROR_PATTERN.format(canonicalize(tail.mkString)), tail)
@@ -335,7 +335,7 @@ trait Parsers {
     /**
      * For terminal parsing, this just delegates back to apply()
      */
-    def queue(t: Trampoline, in: LineStream)(f: Result[R]=>Unit) {
+    def queue(t: Trampoline, in: LineStream)(f: Result[R] => Unit) {
       f(parse(in))
     }
     
@@ -395,7 +395,7 @@ trait Parsers {
       }
     }
     
-    def mapWithTail[R2](f: LineStream=>R=>R2): Parser[R2] = new MappedParser[R, R2](self, f) with TerminalParser[R2] {
+    def mapWithTail[R2](f: LineStream => R => R2): Parser[R2] = new MappedParser[R, R2](self, f) with TerminalParser[R2] {
       def parse(in: LineStream) = self.parse(in) match {
         case Success(res, tail) => Success(f(in)(res), tail)
         case x: Failure => x
@@ -419,31 +419,48 @@ trait Parsers {
     final def apply(in: LineStream) = {
       val t = new Trampoline
       
-      var successes = Set[Success[R]]()
-      var failures = Set[Failure]()
+      val successes = mutable.Set[Success[R]]()
+      val failures = mutable.Set[Failure]()
+      
+      var recognized = false
+      
+      def parse(): Stream[Result[R]] = {
+        if (t.hasNext) {
+          t.step()
+          
+          if (successes.isEmpty) {
+            parse()
+          } else {
+            val results = successes.toList
+            successes.clear()
+            results.toStream append parse()
+          }
+        } else {
+          val results = if (recognized) successes else failures
+          results.toStream
+        }
+      }
       
       queue(t, in) {
-        case s @ Success(_, Stream()) => successes += s
-        
         case Success(res, tail) => {
           processTail(tail) match {
-            case Some(tail) => successes += Success(res, tail)
+            case Some(tail) => {
+              recognized = true
+              successes += Success(res, tail)
+            }
+            
             case None => failures += Failure(TAIL_ERROR_PATTERN.format(canonicalize(tail.mkString)), tail)
           }
         }
         
         case f: Failure => failures += f
       }
-      t.run()
       
-      if (successes.isEmpty)
-        failures.toList
-      else
-        successes.toList
+      parse()
     }
     
-    def mapWithTail[R2](f1: LineStream=>R=>R2): Parser[R2] = new MappedParser[R, R2](self, f1) with NonTerminalParser[R2] {
-      def queue(t: Trampoline, in: LineStream)(f2: Result[R2]=>Unit) {
+    def mapWithTail[R2](f1: LineStream => R => R2): Parser[R2] = new MappedParser[R, R2](self, f1) with NonTerminalParser[R2] {
+      def queue(t: Trampoline, in: LineStream)(f2: Result[R2] => Unit) {
         self.queue(t, in) { 
           case Success(res, tail) => f2(Success(f1(in)(res), tail))
           case f: Failure => f2(f)
@@ -452,7 +469,7 @@ trait Parsers {
     }
   }
   
-  abstract class MappedParser[A, +B](private val p: Parser[A], private val f1: LineStream=>A=>B) extends Parser[B] {
+  abstract class MappedParser[A, +B](private val p: Parser[A], private val f1: LineStream => A => B) extends Parser[B] {
     def computeFirst(s: Set[Parser[Any]]) = p.computeFirst(s + this)
   
     override def toString = p.toString
@@ -545,7 +562,7 @@ trait Parsers {
       }
     }
     
-    def queue(t: Trampoline, in: LineStream)(f: Result[A ~ B]=>Unit) {
+    def queue(t: Trampoline, in: LineStream)(f: Result[A ~ B] => Unit) {
       left.queue(t, in) {
         case Success(res1, tail) => {
           right.queue(t, tail) {
@@ -636,7 +653,7 @@ trait Parsers {
       }
     }
     
-    def queue(t: Trampoline, in: LineStream)(f: Result[A]=>Unit) {
+    def queue(t: Trampoline, in: LineStream)(f: Result[A] => Unit) {
       val UNEXPECTED_PATTERN = "Unexpected value in stream: '"
       
       if (isLL1) {        // graceful degrade to LL(1)
@@ -653,7 +670,7 @@ trait Parsers {
         }
       } else {
         val thunk = new ThunkParser(this) {
-          def queue(t: Trampoline, in: LineStream)(f: Result[A]=>Unit) {
+          def queue(t: Trampoline, in: LineStream)(f: Result[A] => Unit) {
             var predicted = false
             val results = mutable.Set[Result[A]]()    // merge results
             
@@ -720,7 +737,7 @@ trait Parsers {
   class Trampoline {
     private type RSet[A] = mutable.Set[Result[A]]
     private type SSet[A] = mutable.Set[Success[A]]
-    private type FSet[A] = mutable.Set[Result[A]=>Unit]
+    private type FSet[A] = mutable.Set[Result[A] => Unit]
     
     // R
     private val queue = new mutable.Stack[(Parser[Any], LineStream)]
@@ -739,46 +756,52 @@ trait Parsers {
     
     // L_0
     def run() {
-      while (!queue.isEmpty) {
-        val (p, s) = remove()
-        
-        p.queue(this, s) { res =>
-          if (!popped.contains(s))
-            popped += (s -> HOMap[Parser, SSet]())
-        
-          if (!popped(s).contains(p))
-            popped(s) += (p -> new mutable.HashSet[Success[Any]])
-        
-          res match {
-            case succ: Success[Any] => {
-              popped(s)(p) += succ
-              tracef("Saved: %s *=> %s%n", (p, s), succ)
-            }
-            
-            case _: Failure => ()
+      while (hasNext) {
+        step()
+      }
+    }
+    
+    def hasNext = !queue.isEmpty
+    
+    def step() {
+      val (p, s) = remove()
+      
+      p.queue(this, s) { res =>
+        if (!popped.contains(s))
+          popped += (s -> HOMap[Parser, SSet]())
+      
+        if (!popped(s).contains(p))
+          popped(s) += (p -> new mutable.HashSet[Success[Any]])
+      
+        res match {
+          case succ: Success[Any] => {
+            popped(s)(p) += succ
+            tracef("Saved: %s *=> %s%n", (p, s), succ)
           }
-        
-          if (!saved.contains(res))
-            saved += (res -> new mutable.HashSet[Result[Any]=>Unit])
           
-          for (f <- backlinks(s)(p)) {
-            if (!saved(res).contains(f)) {
-              saved(res) += f
-              f(res)
-            }
+          case _: Failure => ()
+        }
+      
+        if (!saved.contains(res))
+          saved += (res -> new mutable.HashSet[Result[Any] => Unit])
+        
+        for (f <- backlinks(s)(p)) {
+          if (!saved(res).contains(f)) {
+            saved(res) += f
+            f(res)
           }
         }
       }
     }
   
-    def add[A](p: Parser[A], s: LineStream)(f: Result[A]=>Unit) {
+    def add[A](p: Parser[A], s: LineStream)(f: Result[A] => Unit) {
       val tuple = (p, s)
       
       if (!backlinks.contains(s))
         backlinks += (s -> HOMap[Parser, FSet]())
       
       if (!backlinks(s).contains(p))
-        backlinks(s) += (p -> new mutable.HashSet[Result[Any]=>Unit])
+        backlinks(s) += (p -> new mutable.HashSet[Result[Any] => Unit])
       
       backlinks(s)(p) += f
       

@@ -13,7 +13,7 @@ object ParenParser extends common.Example[Int] {
   
   def parser = expr
   
-  def handleSuccesses(forest: List[Int]) {
+  def handleSuccesses(forest: Stream[Int]) {
     for (depth <- forest) {
       println("  " + depth)
     }

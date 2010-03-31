@@ -5,6 +5,7 @@ import org.scalacheck._
 
 object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
   import Prop._
+  import StreamUtils._
   
   "arithmetic grammar" should {
     "compute FIRST set" in {
@@ -20,9 +21,11 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
     
     "parse numbers" in {
       val prop = forAll { x: Int =>
-        expr(x.toString) must beLike {
-          case Success(e, LineStream()) :: Nil => e.solve == x
-          case _ => false
+        (Math.abs(x.toLong) < Math.MAX_INT) ==> {
+          expr(x.toString) must beLike {
+            case Success(e, LineStream()) #:: SNil => e.solve == x
+            case _ => false
+          }
         }
       }
       
@@ -31,24 +34,26 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
     
     "parse simple addition" in {
       val prop = forAll { (x: Int, y: Int) =>
-        val res = expr((x + "+" + y))
-        
-        if (x < 0) {
-          res.length mustBe 2
+        (Math.abs(x.toLong) < Math.MAX_INT && Math.abs(y.toLong) < Math.MAX_INT) ==> {
+          val res = expr((x + "+" + y))
           
-          res must have {
-            case Success(e @ Add(Neg(e1), e2), LineStream()) => e.solve == x + y
-            case _ => false
-          }
-          
-          res must have {
-            case Success(e @ Neg(Add(e1, e2)), LineStream()) => e.solve == -(-x + y)
-            case _ => false
-          }
-        } else {
-          res must beLike {
-            case Success(e, LineStream()) :: Nil => e.solve == x + y
-            case _ => false
+          if (x < 0) {
+            res.length mustBe 2
+            
+            res must have {
+              case Success(e @ Add(Neg(e1), e2), LineStream()) => e.solve == x + y
+              case _ => false
+            }
+            
+            res must have {
+              case Success(e @ Neg(Add(e1, e2)), LineStream()) => e.solve == -(-x + y)
+              case _ => false
+            }
+          } else {
+            res must beLike {
+              case Success(e, LineStream()) #:: SNil => e.solve == x + y
+              case _ => false
+            }
           }
         }
       }
@@ -58,24 +63,26 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
     
     "parse simple subtraction" in {
       val prop = forAll { (x: Int, y: Int) =>
-        val res = expr((x + "-" + y))
-        
-        if (x < 0) {
-          res.length mustBe 2
+        (Math.abs(x.toLong) < Math.MAX_INT && Math.abs(y.toLong) < Math.MAX_INT) ==> {
+          val res = expr((x + "-" + y))
           
-          res must have {
-            case Success(e @ Sub(Neg(e1), e2), LineStream()) => e.solve == x - y
-            case _ => false
-          }
-          
-          res must have {
-            case Success(e @ Neg(Sub(e1, e2)), LineStream()) => e.solve == -(-x - y)
-            case _ => false
-          }
-        } else {
-          res must beLike {
-            case Success(e, LineStream()) :: Nil => e.solve == x - y
-            case _ => false
+          if (x < 0) {
+            res.length mustBe 2
+            
+            res must have {
+              case Success(e @ Sub(Neg(e1), e2), LineStream()) => e.solve == x - y
+              case _ => false
+            }
+            
+            res must have {
+              case Success(e @ Neg(Sub(e1, e2)), LineStream()) => e.solve == -(-x - y)
+              case _ => false
+            }
+          } else {
+            res must beLike {
+              case Success(e, LineStream()) #:: SNil => e.solve == x - y
+              case _ => false
+            }
           }
         }
       }
@@ -85,24 +92,26 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
     
     "parse simple multiplication" in {
       val prop = forAll { (x: Int, y: Int) =>
-        val res = expr((x + "*" + y))
-        
-        if (x < 0) {
-          res.length mustBe 2
+        (Math.abs(x.toLong) < Math.MAX_INT && Math.abs(y.toLong) < Math.MAX_INT) ==> {
+          val res = expr((x + "*" + y))
           
-          res must have {
-            case Success(e @ Mul(Neg(e1), e2), LineStream()) => e.solve == x * y
-            case _ => false
-          }
-          
-          res must have {
-            case Success(e @ Neg(Mul(e1, e2)), LineStream()) => e.solve == -(-x * y)
-            case _ => false
-          }
-        } else {
-          res must beLike {
-            case Success(e, LineStream()) :: Nil => e.solve == x * y
-            case _ => false
+          if (x < 0) {
+            res.length mustBe 2
+            
+            res must have {
+              case Success(e @ Mul(Neg(e1), e2), LineStream()) => e.solve == x * y
+              case _ => false
+            }
+            
+            res must have {
+              case Success(e @ Neg(Mul(e1, e2)), LineStream()) => e.solve == -(-x * y)
+              case _ => false
+            }
+          } else {
+            res must beLike {
+              case Success(e, LineStream()) #:: SNil => e.solve == x * y
+              case _ => false
+            }
           }
         }
       }
@@ -112,7 +121,7 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
     
     "parse simple division" in {
       val prop = forAll { (x: Int, y: Int) =>
-        y != 0 ==> {
+        (Math.abs(x.toLong) < Math.MAX_INT && Math.abs(y.toLong) < Math.MAX_INT && y != 0) ==> {
           val res = expr((x + "/" + y))
           
           if (x < 0) {
@@ -129,7 +138,7 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
             }
           } else {
             res must beLike {
-              case Success(e, LineStream()) :: Nil => e.solve == x / y
+              case Success(e, LineStream()) #:: SNil => e.solve == x / y
               case _ => false
             }
           }
@@ -168,7 +177,7 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
         case r => fail("%s does not match the expected pattern".format(r))
       }
       
-      res.sort { _ < _ } mustEqual List(-55, -29)
+      (res sort { _ < _ } toList) mustEqual List(-55, -29)
     }
   }
   

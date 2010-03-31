@@ -5,6 +5,7 @@ import org.scalacheck._
 
 object RegexSpecs extends Specification with ScalaCheck with RegexParsers {
   import Prop._
+  import StreamUtils._
   
   "regex parsers" should {
     "match, consume and return from a regex match" in {
@@ -12,7 +13,7 @@ object RegexSpecs extends Specification with ScalaCheck with RegexParsers {
         val p: Parser[String] = """(\d{1,3}\.){3}\d{1,3}"""r
         
         p("192.168.101.2") must beLike {
-          case Success("192.168.101.2", LineStream()) :: Nil => true
+          case Success("192.168.101.2", LineStream()) #:: SNil => true
           case _ => false
         }
       }
@@ -21,7 +22,7 @@ object RegexSpecs extends Specification with ScalaCheck with RegexParsers {
         val p: Parser[String] = """\d+"""r
         
         p("1234daniel") must beLike {
-          case Failure("Unexpected trailing characters: 'daniel'", LineStream('d', 'a', 'n', 'i', 'e', 'l')) :: Nil => true
+          case Failure("Unexpected trailing characters: 'daniel'", LineStream('d', 'a', 'n', 'i', 'e', 'l')) #:: SNil => true
           case _ => false
         }
       }
@@ -38,7 +39,7 @@ object RegexSpecs extends Specification with ScalaCheck with RegexParsers {
         val data = LineStream("123.457.321")
         
         p(data) must beLike {
-          case Failure("""Expected /(\d{1,3}\.){3}\d{1,3}/""", `data`) :: Nil => true
+          case Failure("""Expected /(\d{1,3}\.){3}\d{1,3}/""", `data`) #:: SNil => true
           case _ => false
         }
       }
@@ -47,14 +48,14 @@ object RegexSpecs extends Specification with ScalaCheck with RegexParsers {
         val data = LineStream("123.457.321.sdf")
         
         p(data) must beLike {
-          case Failure("""Expected /(\d{1,3}\.){3}\d{1,3}/""", `data`) :: Nil => true
+          case Failure("""Expected /(\d{1,3}\.){3}\d{1,3}/""", `data`) #:: SNil => true
           case _ => false
         }
       }
       
       {
         p(LineStream()) must beLike {
-          case Failure("""Expected /(\d{1,3}\.){3}\d{1,3}/""", LineStream()) :: Nil => true
+          case Failure("""Expected /(\d{1,3}\.){3}\d{1,3}/""", LineStream()) #:: SNil => true
           case _ => false
         }
       }
@@ -64,23 +65,23 @@ object RegexSpecs extends Specification with ScalaCheck with RegexParsers {
       val p = literal("daniel")
       
       p("daniel") must beLike {
-        case Success("daniel", LineStream()) :: Nil => true
+        case Success("daniel", LineStream()) #:: SNil => true
         case _ => false
       }
       
       p("  daniel") must beLike {
-        case Success("daniel", LineStream()) :: Nil => true
+        case Success("daniel", LineStream()) #:: SNil => true
         case _ => false
       }
       
       p("\tdaniel") must beLike {
-        case Success("daniel", LineStream()) :: Nil => true
+        case Success("daniel", LineStream()) #:: SNil => true
         case _ => false
       }
       
       p("""
       daniel""") must beLike {
-        case Success("daniel", LineStream()) :: Nil => true
+        case Success("daniel", LineStream()) #:: SNil => true
         case _ => false
       }
     }
@@ -89,17 +90,17 @@ object RegexSpecs extends Specification with ScalaCheck with RegexParsers {
       val p = literal("daniel")
       
       p("daniel    ") must beLike {
-        case Success("daniel", LineStream()) :: Nil => true
+        case Success("daniel", LineStream()) #:: SNil => true
         case _ => false
       }
       
       p("daniel\t") must beLike {
-        case Success("daniel", LineStream()) :: Nil => true
+        case Success("daniel", LineStream()) #:: SNil => true
         case _ => false
       }
       
       p("daniel\n") must beLike {
-        case Success("daniel", LineStream()) :: Nil => true
+        case Success("daniel", LineStream()) #:: SNil => true
         case _ => false
       }
     }
@@ -112,7 +113,7 @@ object RegexSpecs extends Specification with ScalaCheck with RegexParsers {
       val p1 = "test" \ ("test" | "ing")
       
       p1("test") must beLike {
-        case Failure("Expected 'test' and not /(test)|(ing)/ in 'test'", LineStream(tail @ _*)) :: Nil =>
+        case Failure("Expected 'test' and not /(test)|(ing)/ in 'test'", LineStream(tail @ _*)) #:: SNil =>
           tail.mkString mustEqual "test"
         
         case _ => false
@@ -121,19 +122,19 @@ object RegexSpecs extends Specification with ScalaCheck with RegexParsers {
       val p2 = "test" \ ("blah" | "ing ")
       
       p2("test") must beLike {
-        case Success("test", LineStream()) :: Nil => true
+        case Success("test", LineStream()) #:: SNil => true
         case _ => false
       }
       
       p2("ing ") must beLike {
-        case Failure("Expected 'test' got 'ing '", LineStream(tail @ _*)) :: Nil =>
+        case Failure("Expected 'test' got 'ing '", LineStream(tail @ _*)) #:: SNil =>
           tail.mkString mustEqual "ing "
         
         case _ => false
       }
       
       p2("blah") must beLike {
-        case Failure("Expected 'test' got 'blah'", LineStream(tail @ _*)) :: Nil =>
+        case Failure("Expected 'test' got 'blah'", LineStream(tail @ _*)) #:: SNil =>
           tail.mkString mustEqual "blah"
         
         case _ => false

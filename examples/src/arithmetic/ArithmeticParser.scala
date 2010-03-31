@@ -29,7 +29,7 @@ object ArithmeticParser extends common.Example[Expr] with RegexParsers {
   
   def parser = expr
   
-  def handleSuccesses(forest: List[Expr]) {
+  def handleSuccesses(forest: Stream[Expr]) {
     forest foreach println
   }
 }

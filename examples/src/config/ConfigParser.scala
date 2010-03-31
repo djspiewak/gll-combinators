@@ -33,7 +33,7 @@ object ConfigParser extends common.Example[Map[String, String]] with RegexParser
       
       back
     } else {
-      val sorted = results sort { _.tail.length < _.tail.length }
+      val sorted = results.toList sort { _.tail.length < _.tail.length }
       val length = sorted.head.tail.length
       
       throw new ConfigException(sorted takeWhile { _.tail.length == length } flatMap {
@@ -43,7 +43,7 @@ object ConfigParser extends common.Example[Map[String, String]] with RegexParser
     }
   }
   
-  def handleSuccesses(forest: List[Map[String, String]]) {
+  def handleSuccesses(forest: Stream[Map[String, String]]) {
     for ((key, value) <- forest.foldLeft(Map[String, String]()) { _ ++ _ }) {
       println("  " + key + " -> " + value)
     }

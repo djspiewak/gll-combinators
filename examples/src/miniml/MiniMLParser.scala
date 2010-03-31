@@ -77,7 +77,7 @@ object MiniMLParser extends common.Example[Any] with RegexParsers {
   
   def parser = decs
   
-  def handleSuccesses(v: List[Any]) {
+  def handleSuccesses(v: Stream[Any]) {
     if (!v.isEmpty)
       println("  Successfully recognized!")
   }
