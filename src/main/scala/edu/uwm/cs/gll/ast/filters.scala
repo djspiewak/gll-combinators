@@ -19,8 +19,10 @@ trait Filter extends (Node => Boolean) { self =>
 
 private[ast] class AssocFilter(sym: Symbol, isLeft: Boolean) extends Filter {
   def apply(n: Node): Boolean = n match {
-    case n: BinaryNode if n.label == sym => 
-      (if (isLeft) n.right.label else n.left.label) != sym
+    case n: BinaryNode if n.label == sym => {
+      val valid = (if (isLeft) n.right.label else n.left.label) != sym
+      valid && (n.children forall apply)
+    }
     
     case n => n.children forall apply
   }
@@ -40,7 +42,7 @@ private[ast] class PrecedenceFilter(order: Seq[Symbol]) extends Filter {
     else
       true
     
-    (n.children forall apply) && valid
+    valid && (n.children forall apply)
   }
 }
 
