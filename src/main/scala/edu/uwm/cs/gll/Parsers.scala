@@ -9,6 +9,8 @@ import Global._
 
 // I hate the way this file is organized, but I don't have a choice
 trait Parsers {
+  import SetSyntax._
+  
   private val TAIL_ERROR_PATTERN = "Unexpected trailing characters: '%s'"
   
   implicit def literal(str: String) = new LiteralParser(str)
@@ -31,12 +33,6 @@ trait Parsers {
     }
     
     back + tack
-  }
-  
-  private implicit def setSyntax[A](set: Set[A]) = new {
-    def isComplement = set.isInstanceOf[ComplementarySet[_]]
-    
-    def complement = new ComplementarySet(set)
   }
   
   // implicit conversions

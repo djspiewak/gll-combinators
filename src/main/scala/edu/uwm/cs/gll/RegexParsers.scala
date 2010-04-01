@@ -5,13 +5,18 @@ import scala.util.matching.Regex
 import util._
 
 trait RegexParsers extends Parsers {
+  import SetSyntax._
+  
   protected val whitespace = """\s+"""r
   protected val skipWhitespace = true
   
   override implicit def literal(str: String): LiteralParser = {
     if (skipWhitespace) {
       new LiteralParser(str) {
-        override def computeFirst(seen: Set[Parser[Any]]) = Some(UniversalOptCharSet)    // because of whitespace
+        override def computeFirst(seen: Set[Parser[Any]]) = {
+          val wsFirst = if (skipWhitespace) RegexUtils.first(whitespace) else Set[Option[Char]]()
+          Some((wsFirst - None) ++ (super.computeFirst(seen) getOrElse Set[Option[Char]]()))
+        }
         
         // there should be a way to do this with traits, but I haven't found it yet
         override def parse(s: LineStream) = super.parse(handleWhitespace(s))
@@ -22,8 +27,6 @@ trait RegexParsers extends Parsers {
   implicit def regex(r: Regex): RegexParser = {
     if (skipWhitespace) {
       new RegexParser(r) {
-        override def computeFirst(seen: Set[Parser[Any]]) = Some(UniversalOptCharSet)
-        
         override def parse(s: LineStream) = super.parse(handleWhitespace(s))
       }
     } else new RegexParser(r)
@@ -70,7 +73,17 @@ trait RegexParsers extends Parsers {
     if (regex == null)
       throw new NullPointerException("Cannot parse a null regular expression")
     
-    def computeFirst(s: Set[Parser[Any]]) = Some(UniversalOptCharSet)
+    lazy val constFirst = {
+      val wsFirst = if (skipWhitespace) RegexUtils.first(whitespace) else Set[Option[Char]]()
+      val regexFirst = RegexUtils.first(regex)
+      
+      if (wsFirst.isComplement)
+        Some((wsFirst - None) ++ regexFirst)
+      else
+        Some(regexFirst ++ (wsFirst - None))
+    }
+    
+    def computeFirst(s: Set[Parser[Any]]) = constFirst
     
     def parse(in: LineStream) = {
       val res = regex findPrefixOf in map { str => Success(str, in drop str.length) }

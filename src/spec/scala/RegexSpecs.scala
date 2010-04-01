@@ -1,4 +1,6 @@
-import edu.uwm.cs.gll._
+import edu.uwm.cs._
+import gll._
+import util._
 
 import org.specs._
 import org.scalacheck._
@@ -105,8 +107,14 @@ object RegexSpecs extends Specification with ScalaCheck with RegexParsers {
       }
     }
     
-    "have universal FIRST set" in {
-      """\d""".r.first mustBe edu.uwm.cs.util.UniversalCharSet
+    "define FIRST set" in {
+      """\d""".r.first must containAll(Set('0', '1', '2', '3', '4', '5', '6', '7', '8', '9'))
+      "abc".r.first must containAll(Set('a'))
+      "abc|def".r.first must containAll(Set('a', 'd'))
+      "a*".r.first mustBe UniversalCharSet
+      "a+".r.first must containAll(Set('a'))
+      "[^abc]".r.first mustEqual new ComplementarySet(Set('a', 'b', 'c'))
+      "abc|(def)|[^abc]".r.first mustEqual new ComplementarySet(Set('b', 'c'))
     }
     
     "negate using a regexp parser" in {

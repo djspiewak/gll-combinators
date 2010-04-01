@@ -295,7 +295,7 @@ object CompoundSpecs extends Specification with Parsers with ScalaCheck {
         val n = """\d+"""r
       }
       
-      ComplexParser.exp.first mustEqual UniversalCharSet
+      ComplexParser.exp.first must containAll(Set('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ' ', '\t', '\n', '\r', '('))
     }
     
     "handle nested left-recursion" in {
