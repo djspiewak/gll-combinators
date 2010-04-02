@@ -34,6 +34,10 @@ class ComplementarySet[A](private val without: Set[A]) extends collection.immuta
     case _ => without ++ other
   }
   
+  override def map[B](f: A => B) = new ComplementarySet(without map f)
+  
+  override def flatMap[B](f: A => Iterable[B]) = new ComplementarySet(without flatMap f)
+  
   def subsetOf(other: Set[A]) = other match {
     case that: ComplementarySet[A] => that.without subsetOf this.without
     case _ => false
