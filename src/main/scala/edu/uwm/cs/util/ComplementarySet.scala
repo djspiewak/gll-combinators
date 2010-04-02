@@ -25,13 +25,13 @@ class ComplementarySet[A](private val without: Set[A]) extends collection.immuta
   override def ++(other: Iterable[A]) = other match {
     case that: ComplementarySet[A] => new ComplementarySet(this.without ** that.without)
     
-    case _ => without -- other
+    case _ => new ComplementarySet(without -- other)
   }
   
   override def --(other: Iterable[A]) = other match {
     case that: ComplementarySet[A] => new ComplementarySet(this.without ++ that.without)
     
-    case _ => without ++ other
+    case _ => new ComplementarySet(without ++ other)
   }
   
   override def map[B](f: A => B) = new ComplementarySet(without map f)
