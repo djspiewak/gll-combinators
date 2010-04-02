@@ -638,13 +638,8 @@ trait Parsers {
       else {
         val newSeen = seen + this
         
-        val leftFirst = left.computeFirst(newSeen) getOrElse Set()
-        val rightFirst = right.computeFirst(newSeen) getOrElse Set()
-        
-        val back = if (rightFirst.isComplement)
-          rightFirst ++ leftFirst
-        else
-          leftFirst ++ rightFirst
+        val firstSets = gather map { _ computeFirst newSeen getOrElse Set[Option[Char]]() } toList
+        val back = firstSets sort { (a, b) => a.isComplement || !b.isComplement } reduceLeft { _ ++ _ }
         
         Some(if (back.size == 0)
           UniversalOptCharSet
