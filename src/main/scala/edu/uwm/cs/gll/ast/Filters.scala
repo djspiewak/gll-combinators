@@ -1,6 +1,6 @@
 package edu.uwm.cs.gll.ast
 
-object Filters {
+trait Filters {
   def prec(order: Symbol*): Filter[Node] = new PrecedenceFilter(order)
   
   implicit def liftFilter[A](f: Filter[A])(str: Stream[Result[A]]): Stream[Result[A]] = {
@@ -53,3 +53,5 @@ object Filters {
     }
   }
 }
+
+object Filters extends Filters
