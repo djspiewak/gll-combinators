@@ -1,6 +1,7 @@
 package edu.uwm.cs.util
 
-import scala.collection.SetLike
+import collection.SetLike
+import collection.generic.CanBuildFrom
 
 class ComplementarySet[A](private val without: Set[A]) extends Set[A] with SetLike[A, ComplementarySet[A]] {
   override val size = Math.MAX_INT     // should be infinite
@@ -45,6 +46,12 @@ class ComplementarySet[A](private val without: Set[A]) extends Set[A] with SetLi
     
     case _ => new ComplementarySet(without ++ other)
   }
+  
+  override def map[B, That](f: A => B)(implicit bf: CanBuildFrom[ComplementarySet[A], B, That]): That = 
+    new ComplementarySet(without map f).asInstanceOf[That]
+  
+  override def flatMap[B, That](f: A => Traversable[B])(implicit bf: CanBuildFrom[ComplementarySet[A], B, That]): That =
+    new ComplementarySet(without flatMap f).asInstanceOf[That]
   
   def subsetOf(other: Set[A]) = other match {
     case that: ComplementarySet[A] => that.without subsetOf this.without

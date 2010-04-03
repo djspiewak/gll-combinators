@@ -6,10 +6,10 @@ object AllSpecs extends Specification {
     ArithmeticSpecs,
     CompoundSpecs,
     DisjunctionSpecs,
+    FilterSpecs,
     LineStreamSpecs,
     RegexSpecs,
-    TerminalSpecs
-  )
+    TerminalSpecs)
 }
 
 class AllSpecs extends JUnit4(AllSpecs)

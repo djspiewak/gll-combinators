@@ -9,6 +9,8 @@ import Global._
 
 // I hate the way this file is organized, but I don't have a choice
 trait Parsers {
+  import SetSyntax._
+  
   private val TAIL_ERROR_PATTERN = "Unexpected trailing characters: '%s'"
   
   implicit def literal(str: String) = new LiteralParser(str)
@@ -31,12 +33,6 @@ trait Parsers {
     }
     
     back + tack
-  }
-  
-  private implicit def setSyntax[A](set: Set[A]) = new {
-    def isComplement = set.isInstanceOf[ComplementarySet[_]]
-    
-    def complement = new ComplementarySet(set)
   }
   
   // implicit conversions
@@ -67,6 +63,7 @@ trait Parsers {
   
   implicit def funSyntax6[A, B, C, D, E, F](p: Parser[A ~ B ~ C ~ D ~ E ~ F]) = new RichSyntax6(p)
   implicit def funSyntax7[A, B, C, D, E, F, G](p: Parser[A ~ B ~ C ~ D ~ E ~ F ~ G]) = new RichSyntax7(p)
+  implicit def funSyntax8[A, B, C, D, E, F, G, H](p: Parser[A ~ B ~ C ~ D ~ E ~ F ~ G ~ H]) = new RichSyntax8(p)
 
   class RichParser[A](left: =>Parser[A]) {
     def |[B >: A](right: =>Parser[B]): Parser[B] = new DisjunctiveParser(left, right)
@@ -182,6 +179,12 @@ trait Parsers {
     def ^#[R](fun: LineStream => (A, B, C, D, E, F, G) => R) = p mapWithTail { in => { case a ~ b ~ c ~ d ~ e ~ f ~ g => fun(in)(a, b, c, d, e, f, g) } }
   }
   
+  class RichSyntax8[A, B, C, D, E, F, G, H](p: Parser[A ~ B ~ C ~ D ~ E ~ F ~ G ~ H]) {
+    def ^^[R](f: (A, B, C, D, E, F, G, H) => R) = ^# { _ => f }
+    
+    def ^#[R](fun: LineStream => (A, B, C, D, E, F, G, H) => R) = p mapWithTail { in => { case a ~ b ~ c ~ d ~ e ~ f ~ g ~ h => fun(in)(a, b, c, d, e, f, g, h) } }
+  }
+  
   //////////////////////////////////////////////////////////////////////////////
   
   sealed trait Parser[+R] extends (LineStream => Stream[Result[R]]) { self =>
@@ -202,7 +205,7 @@ trait Parsers {
      */
     def computeFirst(seen: Set[Parser[Any]]): Option[Set[Option[Char]]]
     
-    def queue(t: Trampoline, in: LineStream)(f: Result[R] => Unit)
+    def chain(t: Trampoline, in: LineStream)(f: Result[R] => Unit)
     
     // syntax
     
@@ -215,9 +218,9 @@ trait Parsers {
     def flatMap[R2](f1: R => Parser[R2]): Parser[R2] = new NonTerminalParser[R2] {
       def computeFirst(seen: Set[Parser[Any]]) = self.computeFirst(seen + this)
       
-      def queue(t: Trampoline, in: LineStream)(f2: Result[R2] => Unit) {
-        self.queue(t, in) {
-          case Success(res1, tail) => f1(res1).queue(t, tail)(f2)
+      def chain(t: Trampoline, in: LineStream)(f2: Result[R2] => Unit) {
+        self.chain(t, in) {
+          case Success(res1, tail) => f1(res1).chain(t, tail)(f2)
           case f: Failure => f2(f)
         }
       }
@@ -226,8 +229,8 @@ trait Parsers {
     def filter(f: R => Boolean): Parser[R] = new NonTerminalParser[R] {
       def computeFirst(seen: Set[Parser[Any]]) = self.computeFirst(seen + this)
       
-      def queue(t: Trampoline, in: LineStream)(f2: Result[R] => Unit) {
-        self.queue(t, in) {
+      def chain(t: Trampoline, in: LineStream)(f2: Result[R] => Unit) {
+        self.chain(t, in) {
           case s @ Success(res, _) => {
             if (f(res))
               f2(s)
@@ -257,7 +260,7 @@ trait Parsers {
     def +(): Parser[List[R]] = new NonTerminalParser[List[R]] {
       def computeFirst(seen: Set[Parser[Any]]) = self.computeFirst(seen + this)
       
-      def queue(t: Trampoline, in: LineStream)(f: Result[List[R]] => Unit) {
+      def chain(t: Trampoline, in: LineStream)(f: Result[List[R]] => Unit) {
         t.add(self, in) {
           case Success(res1, tail) => {
             f(Success(res1 :: Nil, tail))
@@ -280,9 +283,9 @@ trait Parsers {
     def +(sep: Parser[_]) = this ~ (sep ~> this).* ^^ { _ :: _ }
     
     def ?(): Parser[Option[R]] = new NonTerminalParser[Option[R]] {
-      def computeFirst(seen: Set[Parser[Any]]) = None
+      def computeFirst(seen: Set[Parser[Any]]) = Some(Set[Option[Char]](None))
       
-      def queue(t: Trampoline, in: LineStream)(f: Result[Option[R]] => Unit) {
+      def chain(t: Trampoline, in: LineStream)(f: Result[Option[R]] => Unit) {
         f(Success(None, in))
         
         t.add(self, in) {
@@ -299,12 +302,12 @@ trait Parsers {
     def \(not: TerminalParser[Any]): Parser[R] = new NonTerminalParser[R] {
       def computeFirst(seen: Set[Parser[Any]]) = self.computeFirst(seen)
       
-      def queue(t: Trampoline, in: LineStream)(f: Result[R] => Unit) {
-        self.queue(t, in) {
+      def chain(t: Trampoline, in: LineStream)(f: Result[R] => Unit) {
+        lazy val sub = not.parse(in)
+        
+        self.chain(t, in) {
           case s @ Success(res1, tail) => {
-            val sub = not(in)
-            
-            if (sub exists { case Success(_, `tail`) => true; case _ => false })
+            if (sub match { case Success(_, `tail`) => true case _ => false })
               f(Failure("Expected %s and not %s in '%s'".format(self, not, in.line), in))
             else
               f(s)
@@ -335,7 +338,7 @@ trait Parsers {
     /**
      * For terminal parsing, this just delegates back to apply()
      */
-    def queue(t: Trampoline, in: LineStream)(f: Result[R] => Unit) {
+    def chain(t: Trampoline, in: LineStream)(f: Result[R] => Unit) {
       f(parse(in))
     }
     
@@ -383,9 +386,9 @@ trait Parsers {
       
       def parse(in: LineStream) = self.parse(in) match {
         case s @ Success(res1, tail) => {
-          val sub = not(in)
+          val sub = not.parse(in)
           
-          if (sub exists { case Success(_, `tail`) => true; case _ => false })
+          if (sub match { case Success(_, `tail`) => true case _ => false })
             Failure("Expected %s and not %s in '%s'".format(self, not, in.line), in)
           else
             s
@@ -441,7 +444,7 @@ trait Parsers {
         }
       }
       
-      queue(t, in) {
+      chain(t, in) {
         case Success(res, tail) => {
           processTail(tail) match {
             case Some(tail) => {
@@ -460,8 +463,8 @@ trait Parsers {
     }
     
     def mapWithTail[R2](f1: LineStream => R => R2): Parser[R2] = new MappedParser[R, R2](self, f1) with NonTerminalParser[R2] {
-      def queue(t: Trampoline, in: LineStream)(f2: Result[R2] => Unit) {
-        self.queue(t, in) { 
+      def chain(t: Trampoline, in: LineStream)(f2: Result[R2] => Unit) {
+        self.chain(t, in) { 
           case Success(res, tail) => f2(Success(f1(in)(res), tail))
           case f: Failure => f2(f)
         }
@@ -562,10 +565,10 @@ trait Parsers {
       }
     }
     
-    def queue(t: Trampoline, in: LineStream)(f: Result[A ~ B] => Unit) {
-      left.queue(t, in) {
+    def chain(t: Trampoline, in: LineStream)(f: Result[A ~ B] => Unit) {
+      left.chain(t, in) {
         case Success(res1, tail) => {
-          right.queue(t, tail) {
+          right.chain(t, tail) {
             case Success(res2, tail) => f(Success(new ~(res1, res2), tail))
             
             case res: Failure => f(res)
@@ -638,13 +641,8 @@ trait Parsers {
       else {
         val newSeen = seen + this
         
-        val leftFirst = left.computeFirst(newSeen) getOrElse Set()
-        val rightFirst = right.computeFirst(newSeen) getOrElse Set()
-        
-        val back = if (rightFirst.isComplement)
-          rightFirst ++ leftFirst
-        else
-          leftFirst ++ rightFirst
+        val firstSets = gather map { _ computeFirst newSeen getOrElse Set[Option[Char]]() } toList
+        val back = firstSets sort { (a, b) => a.isComplement || !b.isComplement } reduceLeft { _ ++ _ }
         
         Some(if (back.size == 0)
           UniversalOptCharSet
@@ -653,7 +651,7 @@ trait Parsers {
       }
     }
     
-    def queue(t: Trampoline, in: LineStream)(f: Result[A] => Unit) {
+    def chain(t: Trampoline, in: LineStream)(f: Result[A] => Unit) {
       val UNEXPECTED_PATTERN = "Unexpected value in stream: '"
       
       if (isLL1) {        // graceful degrade to LL(1)
@@ -663,14 +661,14 @@ trait Parsers {
           f(Failure("Unexpected end of stream", in))
         } else {
           predict get in.head match {
-            case Some(p) => p.queue(t, in)(f)
+            case Some(p) => p.chain(t, in)(f)
             
             case None => f(Failure(UNEXPECTED_PATTERN + in.head + "'", in))
           }
         }
       } else {
         val thunk = new ThunkParser(this) {
-          def queue(t: Trampoline, in: LineStream)(f: Result[A] => Unit) {
+          def chain(t: Trampoline, in: LineStream)(f: Result[A] => Unit) {
             var predicted = false
             val results = mutable.Set[Result[A]]()    // merge results
             
@@ -766,7 +764,7 @@ trait Parsers {
     def step() {
       val (p, s) = remove()
       
-      p.queue(this, s) { res =>
+      p.chain(this, s) { res =>
         if (!popped.contains(s))
           popped += (s -> HOMap[Parser, SSet]())
       

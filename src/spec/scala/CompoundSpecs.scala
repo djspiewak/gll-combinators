@@ -295,7 +295,7 @@ object CompoundSpecs extends Specification with Parsers with ScalaCheck {
         val n = """\d+"""r
       }
       
-      ComplexParser.exp.first mustEqual UniversalCharSet
+      ComplexParser.exp.first must containAll(Set('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ' ', '\t', '\n', '\r', '('))
     }
     
     "handle nested left-recursion" in {
@@ -336,6 +336,22 @@ object CompoundSpecs extends Specification with Parsers with ScalaCheck {
       
       p2("test") must beLike {
         case Success("test", LineStream()) #:: SNil => true
+        case _ => false
+      }
+    }
+    
+    "negate within a sequence" in {
+      import RegexParsers._
+      
+      val p = ("a|b".r \ "a") ~ "c" ^^ { _ + _ }
+      
+      p("bc") must beLike {
+        case Success("bc", LineStream()) #:: SNil => true
+        case _ => false
+      }
+      
+      p("ac") must beLike {
+        case Failure("Expected /a|b/ and not 'a' in 'ac'", _) #:: _ => true
         case _ => false
       }
     }
