@@ -63,6 +63,7 @@ trait Parsers {
   
   implicit def funSyntax6[A, B, C, D, E, F](p: Parser[A ~ B ~ C ~ D ~ E ~ F]) = new RichSyntax6(p)
   implicit def funSyntax7[A, B, C, D, E, F, G](p: Parser[A ~ B ~ C ~ D ~ E ~ F ~ G]) = new RichSyntax7(p)
+  implicit def funSyntax8[A, B, C, D, E, F, G, H](p: Parser[A ~ B ~ C ~ D ~ E ~ F ~ G ~ H]) = new RichSyntax8(p)
 
   class RichParser[A](left: =>Parser[A]) {
     def |[B >: A](right: =>Parser[B]): Parser[B] = new DisjunctiveParser(left, right)
@@ -176,6 +177,12 @@ trait Parsers {
     def ^^[R](f: (A, B, C, D, E, F, G) => R) = ^# { _ => f }
     
     def ^#[R](fun: LineStream => (A, B, C, D, E, F, G) => R) = p mapWithTail { in => { case a ~ b ~ c ~ d ~ e ~ f ~ g => fun(in)(a, b, c, d, e, f, g) } }
+  }
+  
+  class RichSyntax8[A, B, C, D, E, F, G, H](p: Parser[A ~ B ~ C ~ D ~ E ~ F ~ G ~ H]) {
+    def ^^[R](f: (A, B, C, D, E, F, G, H) => R) = ^# { _ => f }
+    
+    def ^#[R](fun: LineStream => (A, B, C, D, E, F, G, H) => R) = p mapWithTail { in => { case a ~ b ~ c ~ d ~ e ~ f ~ g ~ h => fun(in)(a, b, c, d, e, f, g, h) } }
   }
   
   //////////////////////////////////////////////////////////////////////////////
