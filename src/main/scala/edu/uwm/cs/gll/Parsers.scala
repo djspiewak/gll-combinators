@@ -303,11 +303,11 @@ trait Parsers {
       def computeFirst(seen: Set[Parser[Any]]) = self.computeFirst(seen)
       
       def chain(t: Trampoline, in: LineStream)(f: Result[R] => Unit) {
+        lazy val sub = not.parse(in)
+        
         self.chain(t, in) {
           case s @ Success(res1, tail) => {
-            val sub = not(in)
-            
-            if (sub exists { case Success(_, `tail`) => true; case _ => false })
+            if (sub match { case Success(_, `tail`) => true case _ => false })
               f(Failure("Expected %s and not %s in '%s'".format(self, not, in.line), in))
             else
               f(s)
@@ -386,9 +386,9 @@ trait Parsers {
       
       def parse(in: LineStream) = self.parse(in) match {
         case s @ Success(res1, tail) => {
-          val sub = not(in)
+          val sub = not.parse(in)
           
-          if (sub exists { case Success(_, `tail`) => true; case _ => false })
+          if (sub match { case Success(_, `tail`) => true case _ => false })
             Failure("Expected %s and not %s in '%s'".format(self, not, in.line), in)
           else
             s

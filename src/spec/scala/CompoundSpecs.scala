@@ -339,6 +339,22 @@ object CompoundSpecs extends Specification with Parsers with ScalaCheck {
         case _ => false
       }
     }
+    
+    "negate within a sequence" in {
+      import RegexParsers._
+      
+      val p = ("a|b".r \ "a") ~ "c" ^^ { _ + _ }
+      
+      p("bc") must beLike {
+        case Success("bc", LineStream()) #:: SNil => true
+        case _ => false
+      }
+      
+      p("ac") must beLike {
+        case Failure("Expected /a|b/ and not 'a' in 'ac'", _) #:: _ => true
+        case _ => false
+      }
+    }
   }
   
   "repeated non-terminal parsers" should {
