@@ -22,7 +22,7 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
     "parse numbers" in {
       val prop = forAll { x: Int =>
         (Math.abs(x.toLong) < Math.MAX_INT) ==> {
-          expr(x.toString) must beLike {
+          expr(x.toString) match {
             case Success(e, LineStream()) #:: SNil => e.solve == x
             case _ => false
           }
@@ -38,19 +38,21 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
           val res = expr((x + "+" + y))
           
           if (x < 0) {
-            res.length mustBe 2
+            val res1 = res.length == 2
             
-            res must have {
+            val res2 = res exists {
               case Success(e @ Add(Neg(e1), e2), LineStream()) => e.solve == x + y
               case _ => false
             }
             
-            res must have {
+            val res3 = res exists {
               case Success(e @ Neg(Add(e1, e2)), LineStream()) => e.solve == -(-x + y)
               case _ => false
             }
+            
+            res1 && res2 && res3
           } else {
-            res must beLike {
+            res match {
               case Success(e, LineStream()) #:: SNil => e.solve == x + y
               case _ => false
             }
@@ -67,19 +69,21 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
           val res = expr((x + "-" + y))
           
           if (x < 0) {
-            res.length mustBe 2
+            val res1 = res.length == 2
             
-            res must have {
+            val res2 = res exists {
               case Success(e @ Sub(Neg(e1), e2), LineStream()) => e.solve == x - y
               case _ => false
             }
             
-            res must have {
+            val res3 = res exists {
               case Success(e @ Neg(Sub(e1, e2)), LineStream()) => e.solve == -(-x - y)
               case _ => false
             }
+            
+            res1 && res2 && res3
           } else {
-            res must beLike {
+            res match {
               case Success(e, LineStream()) #:: SNil => e.solve == x - y
               case _ => false
             }
@@ -96,19 +100,21 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
           val res = expr((x + "*" + y))
           
           if (x < 0) {
-            res.length mustBe 2
+            val res1 = res.length == 2
             
-            res must have {
+            val res2 = res exists {
               case Success(e @ Mul(Neg(e1), e2), LineStream()) => e.solve == x * y
               case _ => false
             }
             
-            res must have {
+            val res3 = res exists {
               case Success(e @ Neg(Mul(e1, e2)), LineStream()) => e.solve == -(-x * y)
               case _ => false
             }
+            
+            res1 && res2 && res3
           } else {
-            res must beLike {
+            res match {
               case Success(e, LineStream()) #:: SNil => e.solve == x * y
               case _ => false
             }
@@ -125,19 +131,21 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
           val res = expr((x + "/" + y))
           
           if (x < 0) {
-            res.length mustBe 2
+            val res1 = res.length == 2
             
-            res must have {
+            val res2 = res exists {
               case Success(e @ Div(Neg(e1), e2), LineStream()) => e.solve == x / y
               case _ => false
             }
             
-            res must have {
+            val res3 = res exists {
               case Success(e @ Neg(Div(e1, e2)), LineStream()) => e.solve == -(-x / y)
               case _ => false
             }
+            
+            res1 && res2 && res3
           } else {
-            res must beLike {
+            res match {
               case Success(e, LineStream()) #:: SNil => e.solve == x / y
               case _ => false
             }

@@ -34,7 +34,7 @@ object FilterSpecs extends Specification with ScalaCheck with RegexParsers {
       }
       
       val prop = forAll { num: Int =>
-        expr(1 to ((num % 15) + 1) mkString " + ").lengthCompare(1) mustEqual 0
+        expr(1 to ((num % 15) + 1) mkString " + ").lengthCompare(1) == 0
       }
       
       prop must pass
@@ -64,7 +64,7 @@ object FilterSpecs extends Specification with ScalaCheck with RegexParsers {
       }
       
       val prop = forAll { num: Int =>
-        expr(1 to ((num % 15) + 1) mkString " + ").lengthCompare(1) mustEqual 0
+        expr(1 to ((num % 15) + 1) mkString " + ").lengthCompare(1) == 0
       }
       
       prop must pass

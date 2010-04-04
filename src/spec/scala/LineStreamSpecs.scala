@@ -11,7 +11,7 @@ object LineStreamSpecs extends Specification with ScalaCheck {
   "LineStream" should {
     "have length for String construction" in {
       val prop = forAll { str: String =>
-        LineStream(str).length mustBe str.length
+        LineStream(str).length == str.length
       }
       
       prop must pass
@@ -19,7 +19,7 @@ object LineStreamSpecs extends Specification with ScalaCheck {
     
     "have length for Source construction" in {
       val prop = forAll { str: String =>
-        LineStream(Source.fromString(str)).length mustBe str.length
+        LineStream(Source.fromString(str)).length == str.length
       }
       
       prop must pass
@@ -27,7 +27,7 @@ object LineStreamSpecs extends Specification with ScalaCheck {
     
     "have length for Char* construction" in {
       val prop = forAll { str: String =>
-        LineStream(str:_*).length mustBe str.length
+        LineStream(str: _*).length == str.length
       }
       
       prop must pass
@@ -38,8 +38,8 @@ object LineStreamSpecs extends Specification with ScalaCheck {
         (0 until str.length).contains(i) ==> {
           val stream = LineStream(str)
           
-          stream(0) mustEqual stream.head
-          stream(i) mustEqual str(i)
+          stream(0) == stream.head &&
+            stream(i) == str(i)
         }
       }
       

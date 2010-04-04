@@ -53,7 +53,7 @@ object DisjunctionSpecs extends Specification with Parsers with ScalaCheck {
     "gather binary alternatives" in {
       val prop = forAll { (left: String, right: String) =>
         val p = (left | right).asInstanceOf[DisjunctiveParser[String]]
-        p.gather mustEqual List(literal(left), literal(right))
+        p.gather == List(literal(left), literal(right))
       }
       
       prop must pass
@@ -67,9 +67,9 @@ object DisjunctionSpecs extends Specification with Parsers with ScalaCheck {
         val rightFirst = if (right.length == 0) Set[Char]() else Set(right charAt 0)
         
         if (leftFirst.size == 0 || rightFirst.size == 0)
-          (left | right).first mustEqual UniversalCharSet
+          (left | right).first == UniversalCharSet
         else
-          (left | right).first mustEqual (leftFirst ++ rightFirst)
+          (left | right).first == (leftFirst ++ rightFirst)
       }
       
       prop must pass
@@ -292,15 +292,17 @@ object DisjunctionSpecs extends Specification with Parsers with ScalaCheck {
             | right
           ) ^^ f
           
-          p(left) must beLike {
+          val res1 = p(left) match {
             case Success(v, LineStream()) #:: SNil => v == f(left)
             case _ => false
           }
           
-          p(right) must beLike {
+          val res2 = p(right) match {
             case Success(v, LineStream()) #:: SNil => v == f(right)
             case _ => false
           }
+          
+          res1 && res2
         }
       }
       
@@ -409,25 +411,27 @@ object DisjunctionSpecs extends Specification with Parsers with ScalaCheck {
         
         val result = p(head + suffix)
         
-        result.length mustBe 2
+        val res1 = result.length == 2
         
-        {
+        val res2 = {
           val v = head + suffix
           
-          result must have {
+          result exists {
             case Success(`v`, LineStream()) => true
             case _ => false
           }
         }
         
-        {
+        val res3 = {
           val v = head + " " + suffix
           
-          result must have {
+          result exists {
             case Success(`v`, LineStream()) => true
             case _ => false
           }
         }
+        
+        res1 && res2 && res3
       }
       
       prop must pass

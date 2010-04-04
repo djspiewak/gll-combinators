@@ -15,7 +15,7 @@ object RegexUtilsSpecs extends Specification with ScalaCheck {
     "handle single characters" in {
       val prop = forAll { c: Char =>
         !specialChars(c) ==> {
-          first(c.toString.r) must containAll(Set(Some(c)))
+          first(c.toString.r) contains Some(c)
         }
       }
       
@@ -25,7 +25,7 @@ object RegexUtilsSpecs extends Specification with ScalaCheck {
     "handle character sequences" in {
       val prop = forAll { str: String =>
         (!(str exists specialChars) && !str.isEmpty) ==> {
-          first(str.r) must containAll(Set(Some(str charAt 0)))
+          first(str.r) contains Some(str charAt 0)
         }
       }
       
