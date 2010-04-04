@@ -65,12 +65,12 @@ trait RegexParsers extends Parsers {
   
   
   class RichRegexParser(left: RegexParser) extends RichParser(left) {
-    def |(right: Regex) = new RegexParser(new Regex("(" + left + ")|(" + right + ")"))
+    def |(right: Regex) = new RegexParser(new Regex("(" + escapeRegex(left.regex.toString) + ")|(" + escapeRegex(right.regex.toString) + ")"))
     
-    def |(right: String) = new RegexParser(new Regex("(" + left + ")|(" + escapeRegex(right) + ")"))
+    def |(right: String) = new RegexParser(new Regex("(" + escapeRegex(left.regex.toString) + ")|(" + escapeRegex(right) + ")"))
   }
   
-  case class RegexParser(private val regex: Regex) extends TerminalParser[String] {
+  case class RegexParser(val regex: Regex) extends TerminalParser[String] {
     if (regex == null)
       throw new NullPointerException("Cannot parse a null regular expression")
     
