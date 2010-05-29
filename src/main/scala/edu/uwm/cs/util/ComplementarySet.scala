@@ -31,17 +31,13 @@ class ComplementarySet[A](private val without: Set[A]) extends Set[A] with SetLi
   
   def -(e: A) = new ComplementarySet(without + e)
   
-  override def ++(other: Iterator[A]) = new ComplementarySet(without -- other)
-  
-  override def ++(other: Traversable[A]) = other match {
+  override def ++(other: TraversableOnce[A]) = other match {
     case that: ComplementarySet[A] => new ComplementarySet(this.without ** that.without)
     
     case _ => new ComplementarySet(without -- other)
   }
   
-  override def --(other: Iterator[A]) = new ComplementarySet(without ++ other)
-  
-  override def --(other: Traversable[A]) = other match {
+  override def --(other: TraversableOnce[A]) = other match {
     case that: ComplementarySet[A] => new ComplementarySet(this.without ++ that.without)
     
     case _ => new ComplementarySet(without ++ other)

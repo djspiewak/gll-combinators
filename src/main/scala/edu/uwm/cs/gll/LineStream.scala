@@ -130,12 +130,16 @@ class LineCons(override val head: Char, _tail: =>LineStream, line: String, lineN
   override lazy val length = 1 + tail.length
   
   override val isEmpty = false
+  
+  def apply(i: Int) = if (i == 0) head else tail(i - 1)
 }
 
 object LineNil extends LineStream("", 1) {
   override val length = 0
   
   override val isEmpty = true
+  
+  def apply(i: Int) = throw new StringIndexOutOfBoundsException("Cannot index into an empty LineStream")
   
   override def head = throw new RuntimeException("Cannot get the head of an empty LineStream")
   

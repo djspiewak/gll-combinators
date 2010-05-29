@@ -35,11 +35,12 @@ object LineStreamSpecs extends Specification with ScalaCheck {
     
     "correctly define apply()" in {
       val prop = forAll { (i: Int, str: String) =>
-        (0 until str.length).contains(i) ==> {
+        (str.length > 0) ==> {
+          val idx = Math.abs(i % str.length)
           val stream = LineStream(str)
           
-          stream(0) == stream.head &&
-            stream(i) == str(i)
+          stream(0) mustEqual stream.head
+          stream(idx) mustEqual str(idx)
         }
       }
       
