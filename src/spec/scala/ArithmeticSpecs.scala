@@ -21,7 +21,7 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
     
     "parse numbers" in {
       val prop = forAll { x: Int =>
-        (Math.abs(x.toLong) < Math.MAX_INT) ==> {
+        (abs(x.toLong) < Math.MAX_INT) ==> {
           expr(x.toString) match {
             case Success(e, LineStream()) #:: SNil => e.solve == x
             case _ => false
@@ -34,7 +34,7 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
     
     "parse simple addition" in {
       val prop = forAll { (x: Int, y: Int) =>
-        (Math.abs(x.toLong) < Math.MAX_INT && Math.abs(y.toLong) < Math.MAX_INT) ==> {
+        (abs(x.toLong) < Math.MAX_INT && abs(y.toLong) < Math.MAX_INT) ==> {
           val res = expr((x + "+" + y))
           
           if (x < 0) {
@@ -65,7 +65,7 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
     
     "parse simple subtraction" in {
       val prop = forAll { (x: Int, y: Int) =>
-        (Math.abs(x.toLong) < Math.MAX_INT && Math.abs(y.toLong) < Math.MAX_INT) ==> {
+        (abs(x.toLong) < Math.MAX_INT && abs(y.toLong) < Math.MAX_INT) ==> {
           val res = expr((x + "-" + y))
           
           if (x < 0) {
@@ -96,7 +96,7 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
     
     "parse simple multiplication" in {
       val prop = forAll { (x: Int, y: Int) =>
-        (Math.abs(x.toLong) < Math.MAX_INT && Math.abs(y.toLong) < Math.MAX_INT) ==> {
+        (abs(x.toLong) < Math.MAX_INT && abs(y.toLong) < Math.MAX_INT) ==> {
           val res = expr((x + "*" + y))
           
           if (x < 0) {
@@ -127,7 +127,7 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
     
     "parse simple division" in {
       val prop = forAll { (x: Int, y: Int) =>
-        (Math.abs(x.toLong) < Math.MAX_INT && Math.abs(y.toLong) < Math.MAX_INT && y != 0) ==> {
+        (abs(x.toLong) < Math.MAX_INT && abs(y.toLong) < Math.MAX_INT && y != 0) ==> {
           val res = expr((x + "/" + y))
           
           if (x < 0) {
@@ -188,6 +188,10 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
       (res sort { _ < _ } toList) mustEqual List(-55, -29)
     }
   }
+  
+  def abs(i: Int) = Math.abs(i)
+  
+  def abs(l: Long) = Math.abs(l)
   
   // %%
   
