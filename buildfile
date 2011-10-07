@@ -1,5 +1,3 @@
-ENV['SCALA_HOME'] = ENV['SCALA28_HOME']
-
 require 'buildr/scala'
 
 repositories.remote << 'http://repo1.maven.org/maven2'
