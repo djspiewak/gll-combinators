@@ -9,8 +9,8 @@ Buildr::Scala::Specs.dependencies.delete_if do |str|
     str =~ /scalacheck/
 end
 
-Buildr::Scala::Specs.dependencies << 'org.scala-tools.testing:specs_2.8.0.RC3:jar:1.6.5-SNAPSHOT'
-Buildr::Scala::Specs.dependencies << 'org.scala-tools.testing:scalacheck_2.8.0.RC3:jar:1.7'
+Buildr::Scala::Specs.dependencies << 'org.scala-tools.testing:specs_2.9.1:jar:1.6.9'
+Buildr::Scala::Specs.dependencies << 'org.scala-tools.testing:scalacheck_2.9.1:jar:1.9'
 
 
 Project.local_task :pdf
