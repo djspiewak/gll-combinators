@@ -1,6 +1,6 @@
 package edu.uwm.cs.util
 
-import collection.SetLike
+import collection.{SetLike, GenTraversableOnce}
 import collection.generic.CanBuildFrom
 
 class ComplementarySet[A](private val without: Set[A]) extends Set[A] with SetLike[A, ComplementarySet[A]] {
@@ -31,13 +31,13 @@ class ComplementarySet[A](private val without: Set[A]) extends Set[A] with SetLi
   
   def -(e: A) = new ComplementarySet(without + e)
   
-  override def ++(other: TraversableOnce[A]) = other match {
+  override def ++(other: GenTraversableOnce[A]) = other match {
     case that: ComplementarySet[A] => new ComplementarySet(this.without ** that.without)
     
     case _ => new ComplementarySet(without -- other)
   }
   
-  override def --(other: TraversableOnce[A]) = other match {
+  override def --(other: GenTraversableOnce[A]) = other match {
     case that: ComplementarySet[A] => new ComplementarySet(this.without ++ that.without)
     
     case _ => new ComplementarySet(without ++ other)
@@ -46,7 +46,7 @@ class ComplementarySet[A](private val without: Set[A]) extends Set[A] with SetLi
   override def map[B, That](f: A => B)(implicit bf: CanBuildFrom[ComplementarySet[A], B, That]): That = 
     new ComplementarySet(without map f).asInstanceOf[That]
   
-  override def flatMap[B, That](f: A => Traversable[B])(implicit bf: CanBuildFrom[ComplementarySet[A], B, That]): That =
+  override def flatMap[B, That](f: A => GenTraversableOnce[B])(implicit cbf: CanBuildFrom[ComplementarySet[A], B, That]): That =
     new ComplementarySet(without flatMap f).asInstanceOf[That]
   
   def subsetOf(other: Set[A]) = other match {

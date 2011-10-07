@@ -99,7 +99,7 @@ object LineStream {
     else
       Iterator.empty
     
-    apply(src.getLines(sep) ++ add)
+    apply(src.getLines() ++ add)
   }
   
   def apply(src: Source): LineStream = apply(src.getLines())

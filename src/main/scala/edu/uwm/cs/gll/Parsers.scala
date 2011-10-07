@@ -342,7 +342,7 @@ trait Parsers {
       f(parse(in))
     }
     
-    protected def parse(in: LineStream): Result[R]
+    protected[gll] def parse(in: LineStream): Result[R]
     
     override def ~[R2](other: Parser[R2]) = other match {
       case other: TerminalParser[R2] => {
@@ -615,7 +615,7 @@ trait Parsers {
      */
     lazy val predict = {
       gather.foldLeft(Map[Char, Parser[A]]()) { (map, p) =>
-        p.first.foldLeft(map) { _(_) = p }
+        p.first.foldLeft(map) { _.updated(_, p) }
       }
     }
   
