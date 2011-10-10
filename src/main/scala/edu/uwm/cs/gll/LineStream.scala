@@ -92,6 +92,25 @@ object LineStream {
   
   def apply(str: String): LineStream = apply(new StringReader(str))
   
+  def apply(itr: Iterator[Char]): LineStream = {
+    apply(new Reader {
+      def close() {}
+      
+      def read(cbuf: Array[Char], off: Int, len: Int) = {
+        val emptyAtStart = itr.isEmpty
+        val proj = itr take len
+        
+        var count = 0
+        while (proj.hasNext) {
+          cbuf(count) = proj.next()
+          count += 1
+        }
+        
+        if (emptyAtStart) -1 else count
+      }
+    })
+  }
+  
   def apply(reader: Reader): LineStream = {
     def gen(num: Int): LineStream = {
       def state0(acc: StringBuilder): (String, String) = {
