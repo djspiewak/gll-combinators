@@ -1,6 +1,6 @@
 package edu.uwm.cs.gll
 
-import java.io.PrintStream
+import java.io.{PrintStream, StringReader, Reader}
 
 import scala.collection.LinearSeq
 import scala.io.Source
@@ -90,32 +90,49 @@ object LineStream {
   
   def apply(chars: Char*): LineStream = apply(new String(chars.toArray))
   
-  def apply(str: String): LineStream = {
-    val sep = System getProperty "line.separator"
-    val src = Source fromString str
-    
-    val add = if (str.length > 0 && str.substring(str.length - sep.length, str.length) == sep)
-      Iterator("")
-    else
-      Iterator.empty
-    
-    apply(src.getLines() ++ add)
-  }
+  def apply(str: String): LineStream = apply(new StringReader(str))
   
-  def apply(src: Source): LineStream = apply(src.getLines())
-  
-  def apply(lines: Iterator[String]): LineStream = {
+  def apply(reader: Reader): LineStream = {
     def gen(num: Int): LineStream = {
-      if (lines.hasNext) {
-        val line = lines.next
+      def state0(acc: StringBuilder): (String, String) = {
+        val c = reader.read()
         
-        val init = if (lines.hasNext)
-          new LineCons('\n', gen(num + 1), line, num)
-        else
-          LineNil
+        if (c < 0) 
+          (acc.toString, "")
+        else if (c == '\n') 
+          (acc.toString, "\n")
+        else if (c == '\r') 
+          state1(acc)
+        else 
+          state0(acc.append(c.toChar))
+      }
+      
+      def state1(acc: StringBuilder): (String, String) = {
+        val c = reader.read()
         
-        line.foldRight(init) { new LineCons(_, _, line, num) }
-      } else LineNil
+        if (c < 0) 
+          (acc.append('\r').toString, "")
+        else if (c == '\n') 
+          (acc.toString, "\r\n")
+        else if (c == '\r') 
+          state1(acc.append('\r'))
+        else 
+          state0(acc.append('\r').append(c.toChar))
+      }
+      
+      val (line, term) = state0(new StringBuilder)
+      
+      // cannot use a fold because we don't have a non-strict foldRight
+      val termLS = if (term.length == 0)
+        LineNil
+      else if (term.length == 1)
+        new LineCons(term.first, gen(num + 1), line, num)
+      else if (term.length == 2)
+        new LineCons(term(0), new LineCons(term(1), gen(num + 1), line, num), line, num)
+      else
+        error("Line terminator contains more than two characters; cannot process newline!")
+      
+      line.foldRight(termLS) { new LineCons(_, _, line, num) }
     }
     
     gen(1)
