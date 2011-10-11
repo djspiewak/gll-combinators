@@ -2,6 +2,8 @@ name := "gll-combinators"
 
 organization := "edu.uwm.cs"
 
+version := "1.5-SNAPSHOT"
+
 scalaVersion := "2.9.1"
 
 libraryDependencies ++= Seq(
