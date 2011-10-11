@@ -720,14 +720,7 @@ trait Parsers {
       process(left) ++ process(right)
     }
     
-    override def toString = {
-      val tail = """.*\$([^\$]+\$\d+)$"""r
-      
-      val tail(left) = leftClass.getName
-      val tail(right) = rightClass.getName
-      
-      "(%s | %s)".format(left, right)
-    }
+    override def toString = "(<left> | <right>)"
   }
   
   //////////////////////////////////////////////////////////////////////////////
