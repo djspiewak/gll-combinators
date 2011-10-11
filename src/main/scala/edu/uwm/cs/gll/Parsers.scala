@@ -476,16 +476,6 @@ trait Parsers {
     def computeFirst(s: Set[Parser[Any]]) = p.computeFirst(s + this)
   
     override def toString = p.toString
-  
-    override def equals(other: Any) = other match {
-      case that: MappedParser[A, B] => {
-        this.p == that.p && this.f1.getClass == that.f1.getClass
-      }
-  
-      case _ => false
-    }
-  
-    override def hashCode = p.hashCode + f1.getClass.hashCode
   }
   
   /**
@@ -720,7 +710,7 @@ trait Parsers {
       process(left) ++ process(right)
     }
     
-    override def toString = "(<left> | <right>)"
+    override def toString = "(%d | %d)".format(left.hashCode, right.hashCode)
   }
   
   //////////////////////////////////////////////////////////////////////////////

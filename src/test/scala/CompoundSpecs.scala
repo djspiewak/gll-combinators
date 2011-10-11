@@ -278,6 +278,31 @@ object CompoundSpecs extends Specification with Parsers with ScalaCheck {
       }
     }
     
+    "avoid greedy matching on a local ambiguity" in {
+      sealed trait Expr
+      
+      case class Binding(formals: Vector[String]) extends Expr
+      case class TicVar(id: String) extends Expr
+      case class Dispatch(actuals: Vector[Expr]) extends Expr
+        
+      object TestParser extends RegexParsers {
+        lazy val expr: Parser[Expr] = (
+            "(" ~ formals ~ ")" ~ ":=" ^^ { (_, fs, _, _) => Binding(fs) }
+          | "(" ~ expr ~ ")" ^^ { (_, as, _) => Dispatch(Vector(as)) }
+          | ticId ^^ TicVar
+        )
+  
+        lazy val formals: Parser[Vector[String]] = (
+            formals ~ "," ~ ticId ^^ { (fs, _, f) => fs :+ f }
+          | ticId                 ^^ { Vector(_) }
+        )
+        
+        val ticId = "a"
+      }
+      
+      TestParser.expr("(a) :=") mustNot throwA[ClassCastException]
+    }
+    
     "compute FIRST for nested left-recursion" in {
       object ComplexParser extends RegexParsers {
         lazy val exp: Parser[Any] = (
