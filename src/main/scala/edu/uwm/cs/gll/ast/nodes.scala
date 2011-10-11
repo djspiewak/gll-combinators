@@ -18,3 +18,7 @@ trait UnaryNode extends Node {
   
   def children = List(child)
 }
+
+trait LeafNode extends Node {
+  val children = Nil
+}
