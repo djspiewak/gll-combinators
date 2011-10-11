@@ -75,13 +75,26 @@ sealed abstract class LineStream(val line: String, val lineNum: Int) extends Lin
    * </ol>
    */
   def printError(pattern: String)(ps: PrintStream) {
+    ps.print(formatError(pattern))
+  }
+  
+  /**
+   * Expects a pattern with the following arguments:
+   * 
+   * <ol>
+   *   <li><code>%d</code> &mdash; Line number</li>
+   *   <li><code>%s</code> &mdash; Line contents</li>
+   *   <li><code>%s</code> &mdash; Indicator caret</li>
+   * </ol>
+   */
+  def formatError(pattern: String): String = {
     val charIndex = if (isEmpty)
       line.length
     else
       line.length - (tail takeWhile { _ != '\n' } length) - 1
     
     val caret = (1 to charIndex).foldLeft("") { (acc, _) => acc + ' ' } + '^'
-    ps.print(pattern.format(lineNum, line, caret))
+    pattern.format(lineNum, line, caret)
   }
 }
 
