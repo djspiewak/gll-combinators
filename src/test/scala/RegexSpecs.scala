@@ -107,6 +107,30 @@ object RegexSpecs extends Specification with ScalaCheck with RegexParsers {
         case _ => false
       }
     }
+      
+    "eat infix whitespace" in {
+      val p = """\d+""".r ~ "+" ~ """\d+""".r
+      
+      p("1 + 2") must beLike {
+        case Success(_, LineStream()) #:: SNil => true
+        case _ => false
+      }
+      
+      p("1 +2") must beLike {
+        case Success(_, LineStream()) #:: SNil => true
+        case _ => false
+      }
+      
+      p("1+ 2") must beLike {
+        case Success(_, LineStream()) #:: SNil => true
+        case _ => false
+      }
+      
+      p("  1   +  2") must beLike {
+        case Success(_, LineStream()) #:: SNil => true
+        case _ => false
+      }
+    }
     
     "define FIRST set" in {
       """\d""".r.first must containAll(Set('0', '1', '2', '3', '4', '5', '6', '7', '8', '9'))
