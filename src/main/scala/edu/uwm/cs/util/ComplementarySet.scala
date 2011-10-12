@@ -2,6 +2,7 @@ package edu.uwm.cs.util
 
 import collection.{SetLike, GenTraversableOnce}
 import collection.generic.CanBuildFrom
+import scala.collection.GenSet
 
 class ComplementarySet[A](private val without: Set[A]) extends Set[A] with SetLike[A, ComplementarySet[A]] {
   override val size = Math.MAX_INT     // should be infinite
@@ -30,6 +31,14 @@ class ComplementarySet[A](private val without: Set[A]) extends Set[A] with SetLi
   }
   
   def -(e: A) = new ComplementarySet(without + e)
+  
+  override def intersect(that: GenSet[A]) = that match {
+    case s: ComplementarySet[A] => new ComplementarySet(without ++ s.without)
+    case s: Set[A] => new ComplementarySet(new ComplementarySet(without -- s))
+    case _ => new ComplementarySet(new ComplementarySet(Set(that.toList: _*)))
+  }
+  
+  override def union(that: GenSet[A]) = this ++ that
   
   override def ++(other: GenTraversableOnce[A]) = other match {
     case that: ComplementarySet[A] => new ComplementarySet(this.without ** that.without)
