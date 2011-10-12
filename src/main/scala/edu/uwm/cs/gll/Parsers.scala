@@ -235,7 +235,7 @@ trait Parsers {
             if (f(res))
               f2(s)
             else
-              f2(Failure("Syntax error", in))
+              f2(Failure(SyntaxError, in))
           }
           
           case f: Failure => f2(f)
@@ -308,7 +308,7 @@ trait Parsers {
         self.chain(t, in) {
           case s @ Success(res1, tail) => {
             if (sub match { case Success(_, `tail`) => true case _ => false })
-              f(Failure("Expected %s and not %s in '%s'".format(self, not, in.line), in))
+              f(Failure(SyntaxError, in))
             else
               f(s)
           }
@@ -329,7 +329,7 @@ trait Parsers {
     final def apply(in: LineStream) = Stream(parse(in) match {
       case Success(res, tail) => processTail(tail) match {
         case Some(tail) => Success(res, tail)
-        case None => Failure(TAIL_ERROR_PATTERN.format(canonicalize(tail.mkString)), tail)
+        case None => Failure(UnexpectedTrailingChars(canonicalize(tail.mkString)), tail)
       }
       
       case x => x
@@ -389,7 +389,7 @@ trait Parsers {
           val sub = not.parse(in)
           
           if (sub match { case Success(_, `tail`) => true case _ => false })
-            Failure("Expected %s and not %s in '%s'".format(self, not, in.line), in)
+            Failure(SyntaxError, in)
           else
             s
         }
@@ -452,7 +452,7 @@ trait Parsers {
               successes += Success(res, tail)
             }
             
-            case None => failures += Failure(TAIL_ERROR_PATTERN.format(canonicalize(tail.mkString)), tail)
+            case None => failures += Failure(UnexpectedTrailingChars(canonicalize(tail.mkString)), tail)
           }
         }
         
@@ -504,10 +504,9 @@ trait Parsers {
     
     def parse(in: LineStream) = {
       val trunc = in take str.length
-      lazy val errorMessage = "Expected '%s' got '%s'".format(str, canonicalize(trunc.mkString))
       
       if (trunc.lengthCompare(str.length) != 0) {
-        Failure("Unexpected end of stream (expected '%s')".format(str), in)
+        Failure(UnexpectedEndOfStream(Some(str)), in)
       } else {
         val succ = trunc.zipWithIndex forall {
           case (c, i) => c == str.charAt(i)
@@ -516,7 +515,7 @@ trait Parsers {
         if (succ)
           Success(str, in drop str.length)
         else
-          Failure(errorMessage, in)
+          Failure(ExpectedLiteral(str, canonicalize(trunc.mkString)), in)
       }
     }
     
@@ -648,12 +647,12 @@ trait Parsers {
         trace("Detected LL(1): " + this)
         
         if (in.isEmpty) {
-          f(Failure("Unexpected end of stream", in))
+          f(Failure(UnexpectedEndOfStream(None), in))
         } else {
           predict get in.head match {
             case Some(p) => p.chain(t, in)(f)
             
-            case None => f(Failure(UNEXPECTED_PATTERN + in.head + "'", in))
+            case None => f(Failure(UnexpectedChars(in.head.toString), in))
           }
         }
       } else {
@@ -682,9 +681,9 @@ trait Parsers {
             
             if (!predicted) {
               if (in.isEmpty)
-                f(Failure("Unexpected end of stream", in))
+                f(Failure(UnexpectedEndOfStream(None), in))
               else
-                f(Failure(UNEXPECTED_PATTERN + in.head + "'", in))
+                f(Failure(UnexpectedChars(in.head.toString), in))
             }
           }
         }

@@ -104,12 +104,12 @@ object DisjunctionSpecs extends Specification with Parsers with ScalaCheck {
       val p = "daniel" | "chris"
       
       p(LineStream('j')) must beLike {
-        case Failure("Unexpected value in stream: 'j'", LineStream('j')) #:: SNil => true
+        case Failure(UnexpectedChars("j"), LineStream('j')) #:: SNil => true
         case _ => false
       }
       
       p(LineStream()) must beLike {
-        case Failure("Unexpected end of stream", LineStream()) #:: SNil => true
+        case Failure(UnexpectedEndOfStream(None), LineStream()) #:: SNil => true
         case _ => false
       }
     }
@@ -118,12 +118,12 @@ object DisjunctionSpecs extends Specification with Parsers with ScalaCheck {
       val p = "daniel" | "danielle"
       
       p(LineStream('j')) must beLike {
-        case Failure("Unexpected value in stream: 'j'", LineStream('j')) #:: SNil => true
+        case Failure(UnexpectedChars("j"), LineStream('j')) #:: SNil => true
         case _ => false
       }
       
       p(LineStream()) must beLike {
-        case Failure("Unexpected end of stream", LineStream()) #:: SNil => true
+        case Failure(UnexpectedEndOfStream(None), LineStream()) #:: SNil => true
         case _ => false
       }
     }
@@ -132,12 +132,12 @@ object DisjunctionSpecs extends Specification with Parsers with ScalaCheck {
       val p = "daniel" | "chris"
       
       p("dan") must beLike {
-        case Failure("Unexpected end of stream (expected 'daniel')", LineStream('d', 'a', 'n')) #:: SNil => true
+        case Failure(UnexpectedEndOfStream(Some("daniel")), LineStream('d', 'a', 'n')) #:: SNil => true
         case _ => false
       }
       
       p("dancin") must beLike {
-        case Failure("Expected 'daniel' got 'dancin'", LineStream('d', 'a', 'n', 'c', 'i', 'n')) #:: SNil => true
+        case Failure(ExpectedLiteral("daniel", "dancin"), LineStream('d', 'a', 'n', 'c', 'i', 'n')) #:: SNil => true
         case _ => false
       }
     }
@@ -146,7 +146,7 @@ object DisjunctionSpecs extends Specification with Parsers with ScalaCheck {
       val p = literal("") | literal("")
       
       p("\n") must beLike {
-        case Failure("Unexpected trailing characters: '\\n'", LineStream('\n')) #:: SNil => true
+        case Failure(UnexpectedTrailingChars("\\n"), LineStream('\n')) #:: SNil => true
         case _ => false
       }
     }
@@ -158,16 +158,16 @@ object DisjunctionSpecs extends Specification with Parsers with ScalaCheck {
         val data = LineStream("foo")
         
         p(data) must haveTheSameElementsAs(List(
-          Failure("Unexpected end of stream (expected 'foobar')", data),
-          Failure("Unexpected end of stream (expected 'foobaz')", data)))
+          Failure(UnexpectedEndOfStream(Some("foobar")), data),
+          Failure(UnexpectedEndOfStream(Some("foobaz")), data)))
       }
       
       {
         val data = LineStream("foobat")
         
         p(data) must haveTheSameElementsAs(List(
-          Failure("Expected 'foobar' got 'foobat'", data),
-          Failure("Expected 'foobaz' got 'foobat'", data)))
+          Failure(ExpectedLiteral("foobar", "foobat"), data),
+          Failure(ExpectedLiteral("foobaz", "foobat"), data)))
       }
     }
     
@@ -230,14 +230,12 @@ object DisjunctionSpecs extends Specification with Parsers with ScalaCheck {
     "produce nary failures for LL(1)" in {
       // assumes unambiguous data
       def check1(p: Parser[Any], expect: String*)(data: String*) = {
-        val pattern = "Expected '%s' got '%s'"
-        
         for (str <- data) {
           val stream = LineStream(str)
           val res = p(stream)
           
           val failures = expect.foldRight(List[String]()) { _ :: _ } map { ex => 
-            Failure(pattern.format(ex, str), stream)
+            Failure(ExpectedLiteral(ex, str), stream)
           }
           
           res must haveTheSameElementsAs(failures)
@@ -245,14 +243,12 @@ object DisjunctionSpecs extends Specification with Parsers with ScalaCheck {
       }
       
       def check2(p: Parser[Any], expect: String*)(data: String*) = {
-        val pattern = "Unexpected end of stream (expected '%s')"
-        
         for (str <- data) {
           val stream = LineStream(str)
           val res = p(stream)
           
           val failures = expect.foldRight(List[String]()) { _ :: _ } map { ex => 
-            Failure(pattern.format(ex), stream)
+            Failure(UnexpectedEndOfStream(Some(ex)), stream)
           }
           
           res must haveTheSameElementsAs(failures)

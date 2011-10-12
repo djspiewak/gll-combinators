@@ -21,12 +21,12 @@ object TerminalSpecs extends Specification with ScalaCheck with Parsers {
       val p = literal("foo")
       
       p("bar") must beLike {
-        case Failure("Expected 'foo' got 'bar'", LineStream('b', 'a', 'r')) #:: SNil => true
+        case Failure(ExpectedLiteral("foo", "bar"), LineStream('b', 'a', 'r')) #:: SNil => true
         case _ => false
       }
       
       p("test") must beLike {
-        case Failure("Expected 'foo' got 'tes'", LineStream('t', 'e', 's', 't')) #:: SNil => true
+        case Failure(ExpectedLiteral("foo", "tes"), LineStream('t', 'e', 's', 't')) #:: SNil => true
         case _ => false
       }
     }
@@ -35,29 +35,29 @@ object TerminalSpecs extends Specification with ScalaCheck with Parsers {
       val p = literal("")
       
       p("\n") must beLike {
-        case Failure("Unexpected trailing characters: '\\n'", LineStream('\n')) #:: SNil => true
+        case Failure(UnexpectedTrailingChars("\\n"), LineStream('\n')) #:: SNil => true
         case _ => false
       }
       
       val p2 = literal("a")
       
       p2("\n") must beLike {
-        case Failure("Expected 'a' got '\\n'", LineStream('\n')) #:: SNil => true
+        case Failure(ExpectedLiteral("a", "\\n"), LineStream('\n')) #:: SNil => true
         case _ => false
       }
       
       p2("\r") must beLike {
-        case Failure("Expected 'a' got '\\r'", LineStream('\r')) #:: SNil => true
+        case Failure(ExpectedLiteral("a", "\\r"), LineStream('\r')) #:: SNil => true
         case _ => false
       }
       
       p2("\t") must beLike {
-        case Failure("Expected 'a' got '\\t'", LineStream('\t')) #:: SNil => true
+        case Failure(ExpectedLiteral("a", "\\t"), LineStream('\t')) #:: SNil => true
         case _ => false
       }
       
       p2("\f") must beLike {
-        case Failure("Expected 'a' got '\\f'", LineStream('\f')) #:: SNil => true
+        case Failure(ExpectedLiteral("a", "\\f"), LineStream('\f')) #:: SNil => true
         case _ => false
       }
     }
@@ -66,12 +66,12 @@ object TerminalSpecs extends Specification with ScalaCheck with Parsers {
       val p = literal("foo")
       
       p(LineStream('f')) must beLike {
-        case Failure("Unexpected end of stream (expected 'foo')", LineStream('f')) #:: SNil => true
+        case Failure(UnexpectedEndOfStream(Some("foo")), LineStream('f')) #:: SNil => true
         case _ => false
       }
       
       p(LineStream()) must beLike {
-        case Failure("Unexpected end of stream (expected 'foo')", LineStream()) #:: SNil => true
+        case Failure(UnexpectedEndOfStream(Some("foo")), LineStream()) #:: SNil => true
         case _ => false
       }
     }
@@ -162,12 +162,12 @@ object TerminalSpecs extends Specification with ScalaCheck with Parsers {
       val p = "te" ~ "st"
       
       p("foo") must beLike {
-        case Failure("Expected 'te' got 'fo'", LineStream('f', 'o', 'o')) #:: SNil => true
+        case Failure(ExpectedLiteral("te", "fo"), LineStream('f', 'o', 'o')) #:: SNil => true
         case _ => false
       }
       
       p("tefoo") must beLike {
-        case Failure("Expected 'st' got 'fo'", LineStream('f', 'o', 'o')) #:: SNil => true
+        case Failure(ExpectedLiteral("st", "fo"), LineStream('f', 'o', 'o')) #:: SNil => true
         case _ => false
       }
     }
@@ -176,22 +176,22 @@ object TerminalSpecs extends Specification with ScalaCheck with Parsers {
       val p = "te" ~ "st"
       
       p(LineStream('t')) must beLike {
-        case Failure("Unexpected end of stream (expected 'te')", LineStream('t')) #:: SNil => true
+        case Failure(UnexpectedEndOfStream(Some("te")), LineStream('t')) #:: SNil => true
         case _ => false
       }
       
       p(LineStream()) must beLike {
-        case Failure("Unexpected end of stream (expected 'te')", LineStream()) #:: SNil => true
+        case Failure(UnexpectedEndOfStream(Some("te")), LineStream()) #:: SNil => true
         case _ => false
       }
       
       p("tes") must beLike {
-        case Failure("Unexpected end of stream (expected 'st')", LineStream('s')) #:: SNil => true
+        case Failure(UnexpectedEndOfStream(Some("st")), LineStream('s')) #:: SNil => true
         case _ => false
       }
       
       p("te") must beLike {
-        case Failure("Unexpected end of stream (expected 'st')", LineStream()) #:: SNil => true
+        case Failure(UnexpectedEndOfStream(Some("st")), LineStream()) #:: SNil => true
         case _ => false
       }
     }

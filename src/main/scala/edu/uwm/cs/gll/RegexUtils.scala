@@ -101,9 +101,9 @@ object RegexUtils extends Parsers {    // note, *not* RegexParsers!
     
     def parse(in: LineStream) = {
       if (in.isEmpty)
-        Failure("Unexpected end of stream", in)
+        Failure(UnexpectedEndOfStream(None), in)
       else if (specialChars contains in.head)
-        Failure("Invalid use of reserved character '%s'".format(in.head), in)
+        Failure(SyntaxError, in)
       else
         Success(in.head, in drop 1)
     }

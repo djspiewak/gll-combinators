@@ -88,7 +88,7 @@ trait RegexParsers extends Parsers {
     
     def parse(in: LineStream) = {
       val res = regex findPrefixOf in map { str => Success(str, in drop str.length) }
-      res getOrElse Failure("Expected /%s/".format(regex), in)
+      res getOrElse Failure(ExpectedRegex(regex), in)
     }
     
     override def equals(other: Any) = other match {

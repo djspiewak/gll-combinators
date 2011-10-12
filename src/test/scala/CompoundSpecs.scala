@@ -350,7 +350,7 @@ object CompoundSpecs extends Specification with Parsers with ScalaCheck {
       val p1 = "test" \ "test"
       
       p1("test") must beLike {
-        case Failure("Expected 'test' and not 'test' in 'test'", LineStream(tail @ _*)) #:: SNil => 
+        case Failure(SyntaxError, LineStream(tail @ _*)) #:: SNil => 
           tail.mkString mustEqual "test"
         
         case _ => false
@@ -375,7 +375,7 @@ object CompoundSpecs extends Specification with Parsers with ScalaCheck {
       }
       
       p("ac") must beLike {
-        case Failure("Expected /a|b/ and not 'a' in 'ac'", _) #:: _ => true
+        case Failure(SyntaxError, _) #:: _ => true
         case _ => false
       }
     }
@@ -472,7 +472,7 @@ object CompoundSpecs extends Specification with Parsers with ScalaCheck {
       }
       
       p(LineStream('a', 'c')) must beLike {
-        case Failure("Expected 'b' got 'c'", LineStream('c')) #:: SNil => true
+        case Failure(ExpectedLiteral("b", "c"), LineStream('c')) #:: SNil => true
         case _ => false
       }
       
@@ -488,7 +488,7 @@ object CompoundSpecs extends Specification with Parsers with ScalaCheck {
       }
       
       p(LineStream('2')) must beLike {
-        case Failure("Expected '1' got '2'", LineStream('2')) #:: SNil => true
+        case Failure(ExpectedLiteral("1", "2"), LineStream('2')) #:: SNil => true
         case _ => false
       }
       
@@ -509,7 +509,7 @@ object CompoundSpecs extends Specification with Parsers with ScalaCheck {
       }
       
       p(LineStream('c')) must beLike {
-        case Failure("Unexpected value in stream: 'c'", LineStream('c')) #:: SNil => true
+        case Failure(UnexpectedChars("c"), LineStream('c')) #:: SNil => true
         case _ => false
       }
       
@@ -525,12 +525,12 @@ object CompoundSpecs extends Specification with Parsers with ScalaCheck {
       }
       
       p(LineStream('b')) must beLike {
-        case Failure("Syntax error", LineStream('b')) #:: SNil => true
+        case Failure(SyntaxError, LineStream('b')) #:: SNil => true
         case _ => false
       }
       
       p(LineStream('c')) must beLike {
-        case Failure("Unexpected value in stream: 'c'", LineStream('c')) #:: SNil => true
+        case Failure(UnexpectedChars("c"), LineStream('c')) #:: SNil => true
         case _ => false
       }
       
