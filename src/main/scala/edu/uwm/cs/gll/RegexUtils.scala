@@ -62,6 +62,10 @@ object RegexUtils extends Parsers {    // note, *not* RegexParsers!
   
   private lazy val classValue: Parser[ClassToken] = (
       charValue                       ^^ CharClass
+    | "("                            ^^^ CharClass('(')
+    | ")"                            ^^^ CharClass(')')
+    | "{"                            ^^^ CharClass('{')
+    | "}"                            ^^^ CharClass('}')
     | "\\" ~> escape
     | charValue ~ ("-" ~> charValue)  ^^ RangeClass
     | "."                            ^^^ AnyChar

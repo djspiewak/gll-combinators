@@ -57,6 +57,13 @@ object RegexUtilsSpecs extends Specification with ScalaCheck {
       first("""\t"""r) must containAll(Set(Some('\t')))
     }
     
+    "correctly parse a char set containing otherwise-illegal characters" in {
+      RegexUtils.first("[(]".r) mustEqual Set(Some('('))
+      RegexUtils.first("[)]".r) mustEqual Set(Some(')'))
+      RegexUtils.first("[{]".r) mustEqual Set(Some('{'))
+      RegexUtils.first("[}]".r) mustEqual Set(Some('}'))
+    }
+    
     "return the universal set for a failed parse" in {
       first("""\@"""r) mustBe UniversalOptCharSet
     }
