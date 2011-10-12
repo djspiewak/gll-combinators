@@ -109,7 +109,33 @@ object RegexSpecs extends Specification with ScalaCheck with RegexParsers {
     }
       
     "eat infix whitespace" in {
-      val p = """\d+""".r ~ "+" ~ """\d+""".r
+      val num = """\d+""".r
+      val p = num ~ "+" ~ num
+      
+      p("1 + 2") must beLike {
+        case Success(_, LineStream()) #:: SNil => true
+        case _ => false
+      }
+      
+      p("1 +2") must beLike {
+        case Success(_, LineStream()) #:: SNil => true
+        case _ => false
+      }
+      
+      p("1+ 2") must beLike {
+        case Success(_, LineStream()) #:: SNil => true
+        case _ => false
+      }
+      
+      p("  1   +  2") must beLike {
+        case Success(_, LineStream()) #:: SNil => true
+        case _ => false
+      }
+    }
+      
+    "eat infix whitespace with explicit type attribution" in {
+      val num: Parser[String] = """\d+""".r
+      val p = num ~ "+" ~ num
       
       p("1 + 2") must beLike {
         case Success(_, LineStream()) #:: SNil => true
