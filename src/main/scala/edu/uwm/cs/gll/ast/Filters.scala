@@ -28,12 +28,10 @@ trait Filters {
   
   private class AssocFilter(sym: Symbol, isLeft: Boolean) extends Filter[Node] {
     def apply(n: Node): Boolean = n match {
-      case n: BinaryNode if n.label == sym => {
-        val valid = (if (isLeft) n.right.label else n.left.label) != sym
-        valid && (n.children forall apply)
-      }
+      case n: BinaryNode if n.label == sym =>
+        (if (isLeft) n.right.label else n.left.label) != sym
       
-      case n => n.children forall apply
+      case n => true
     }
   }
   
@@ -46,12 +44,10 @@ trait Filters {
     }
     
     def apply(n: Node): Boolean = {
-      val valid = if (forbidden contains n.label)
+      if (forbidden contains n.label)
         !(n.children map { _.label } exists forbidden(n.label))
       else
         true
-      
-      valid && (n.children forall apply)
     }
   }
 }
