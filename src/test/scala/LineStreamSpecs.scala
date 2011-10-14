@@ -1,4 +1,4 @@
-import edu.uwm.cs.gll.LineCons
+import edu.uwm.cs.gll.LazyLineCons
 import edu.uwm.cs.gll.LineStream
 
 import scala.io.Source
@@ -49,8 +49,8 @@ object LineStreamSpecs extends Specification with ScalaCheck {
     }
     
     "define equality by identity and not contents" in {
-      val a = new LineCons('a', fail(), "a", 1, 1)
-      val b = new LineCons('a', fail(), "a", 1, 1)
+      val a = new LazyLineCons('a', fail(), "a", 1, 1)
+      val b = new LazyLineCons('a', fail(), "a", 1, 1)
       
       (a == b) mustBe false        // not sure why mustEqual does bad things; bug in Specs?
       (a == a) mustBe true        // not sure why mustEqual does bad things; bug in Specs?
@@ -58,7 +58,7 @@ object LineStreamSpecs extends Specification with ScalaCheck {
     }
     
     "define hashCode by identity" in {
-      new LineCons('a', fail(), "a", 1, 1).hashCode mustEqual 1
+      new LazyLineCons('a', fail(), "a", 1, 1).hashCode mustEqual 1
     }
     
     "define a different lineNum/colNum pair for each index" in {

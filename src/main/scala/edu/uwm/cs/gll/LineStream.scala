@@ -20,7 +20,7 @@ sealed abstract class LineStream(val line: String, val lineNum: Int, val colNum:
     if (length < 0)
       throw new IllegalArgumentException(length.toString)
     else if (length > 0 && !isEmpty)
-      new LineCons(head, tail take length - 1, line, lineNum, colNum)
+      new LazyLineCons(head, tail take length - 1, line, lineNum, colNum)
     else
       LineNil
   }
@@ -165,14 +165,14 @@ object LineStream {
       val termLS = if (term.length == 0)
         LineNil
       else if (term.length == 1)
-        new LineCons(term.first, gen(num + 1), line, num, line.length + 1)
+        new LazyLineCons(term.first, gen(num + 1), line, num, line.length + 1)
       else if (term.length == 2)
-        new LineCons(term(0), new LineCons(term(1), gen(num + 1), line, num, line.length + 2), line, num, line.length + 1)
+        new StrictLineCons(term(0), new LazyLineCons(term(1), gen(num + 1), line, num, line.length + 2), line, num, line.length + 1)
       else
         error("Line terminator contains more than two characters; cannot process newline!")
       
       val (back, _) = line.foldRight((termLS, line.length)) {
-        case (c, (tail, colNum)) => (new LineCons(c, tail, line, num, colNum), colNum - 1)
+        case (c, (tail, colNum)) => (new StrictLineCons(c, tail, line, num, colNum), colNum - 1)
       }
       
       back
@@ -184,9 +184,17 @@ object LineStream {
   def unapplySeq(str: LineStream): Option[Seq[Char]] = Some(str)
 }
 
-class LineCons(override val head: Char, _tail: =>LineStream, line: String, lineNum: Int, colNum: Int) extends LineStream(line, lineNum, colNum) {
+class LazyLineCons(override val head: Char, _tail: =>LineStream, line: String, lineNum: Int, colNum: Int) extends LineStream(line, lineNum, colNum) {
   override lazy val tail = _tail
   
+  override lazy val length = 1 + tail.length
+  
+  override val isEmpty = false
+  
+  def apply(i: Int) = if (i == 0) head else tail(i - 1)
+}
+
+class StrictLineCons(override val head: Char, override val tail: LineStream, line: String, lineNum: Int, colNum: Int) extends LineStream(line, lineNum, colNum) {
   override lazy val length = 1 + tail.length
   
   override val isEmpty = false
