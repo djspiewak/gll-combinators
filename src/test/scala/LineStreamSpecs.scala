@@ -1,3 +1,4 @@
+import edu.uwm.cs.gll.LineCons
 import edu.uwm.cs.gll.LineStream
 
 import scala.io.Source
@@ -42,6 +43,35 @@ object LineStreamSpecs extends Specification with ScalaCheck {
           stream(0) mustEqual stream.head
           stream(idx) mustEqual str(idx)
         }
+      }
+      
+      prop must pass
+    }
+    
+    "define equality by identity and not contents" in {
+      val a = new LineCons('a', fail(), "a", 1, 1)
+      val b = new LineCons('a', fail(), "a", 1, 1)
+      
+      (a == b) mustBe false        // not sure why mustEqual does bad things; bug in Specs?
+      (a == a) mustBe true        // not sure why mustEqual does bad things; bug in Specs?
+      (b == b) mustBe true        // not sure why mustEqual does bad things; bug in Specs?
+    }
+    
+    "define hashCode by identity" in {
+      new LineCons('a', fail(), "a", 1, 1).hashCode mustEqual 1
+    }
+    
+    "define a different lineNum/colNum pair for each index" in {
+      def allNums(ls: LineStream): Stream[(Int, Int)] = {
+        if (ls.isEmpty)
+          Stream.empty
+        else
+          (ls.lineNum, ls.colNum) #:: allNums(ls.tail)
+      }
+      
+      val prop = forAll { str: String =>
+        val ls = LineStream(str)
+        Set(allNums(ls): _*) must haveSize(str.length)
       }
       
       prop must pass

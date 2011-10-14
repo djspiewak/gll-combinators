@@ -9,7 +9,7 @@ import scala.io.Source
  * A lazy character stream with line awareness.  This also provides
  * amortized constant-time {@link CharSequence} access.
  */
-sealed abstract class LineStream(val line: String, val lineNum: Int) extends LinearSeq[Char] with CharSequence { outer =>
+sealed abstract class LineStream(val line: String, val lineNum: Int, val colNum: Int) extends LinearSeq[Char] with CharSequence { outer =>
   override def tail: LineStream = error("yeah, this is annoying")
   
   def charAt(i: Int) = apply(i)
@@ -20,7 +20,7 @@ sealed abstract class LineStream(val line: String, val lineNum: Int) extends Lin
     if (length < 0)
       throw new IllegalArgumentException(length.toString)
     else if (length > 0 && !isEmpty)
-      new LineCons(head, tail take length - 1, line, lineNum)
+      new LineCons(head, tail take length - 1, line, lineNum, colNum)
     else
       LineNil
   }
@@ -96,6 +96,13 @@ sealed abstract class LineStream(val line: String, val lineNum: Int) extends Lin
     val caret = (1 to charIndex).foldLeft("") { (acc, _) => acc + ' ' } + '^'
     pattern.format(lineNum, line, caret)
   }
+  
+  override def equals(a: Any) = a match {
+    case that: LineStream => this eq that
+    case _ => false
+  }
+  
+  override def hashCode = lineNum * colNum
 }
 
 object LineStream {
@@ -158,13 +165,17 @@ object LineStream {
       val termLS = if (term.length == 0)
         LineNil
       else if (term.length == 1)
-        new LineCons(term.first, gen(num + 1), line, num)
+        new LineCons(term.first, gen(num + 1), line, num, line.length + 1)
       else if (term.length == 2)
-        new LineCons(term(0), new LineCons(term(1), gen(num + 1), line, num), line, num)
+        new LineCons(term(0), new LineCons(term(1), gen(num + 1), line, num, line.length + 2), line, num, line.length + 1)
       else
         error("Line terminator contains more than two characters; cannot process newline!")
       
-      line.foldRight(termLS) { new LineCons(_, _, line, num) }
+      val (back, _) = line.foldRight((termLS, line.length)) {
+        case (c, (tail, colNum)) => (new LineCons(c, tail, line, num, colNum), colNum - 1)
+      }
+      
+      back
     }
     
     gen(1)
@@ -173,7 +184,7 @@ object LineStream {
   def unapplySeq(str: LineStream): Option[Seq[Char]] = Some(str)
 }
 
-class LineCons(override val head: Char, _tail: =>LineStream, line: String, lineNum: Int) extends LineStream(line, lineNum) {
+class LineCons(override val head: Char, _tail: =>LineStream, line: String, lineNum: Int, colNum: Int) extends LineStream(line, lineNum, colNum) {
   override lazy val tail = _tail
   
   override lazy val length = 1 + tail.length
@@ -183,7 +194,7 @@ class LineCons(override val head: Char, _tail: =>LineStream, line: String, lineN
   def apply(i: Int) = if (i == 0) head else tail(i - 1)
 }
 
-object LineNil extends LineStream("", 1) {
+object LineNil extends LineStream("", 1, 1) {
   override val length = 0
   
   override val isEmpty = true

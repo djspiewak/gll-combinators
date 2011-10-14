@@ -407,27 +407,10 @@ object DisjunctionSpecs extends Specification with Parsers with ScalaCheck {
         
         val result = p(head + suffix)
         
-        val res1 = result.length == 2
-        
-        val res2 = {
-          val v = head + suffix
-          
-          result exists {
-            case Success(`v`, LineStream()) => true
-            case _ => false
-          }
-        }
-        
-        val res3 = {
-          val v = head + " " + suffix
-          
-          result exists {
-            case Success(`v`, LineStream()) => true
-            case _ => false
-          }
-        }
-        
-        res1 && res2 && res3
+        result.length mustEqual 2
+       
+        result mustContain Success(head + suffix, LineStream())
+        result mustContain Success(head + " " + suffix, LineStream())
       }
       
       prop must pass
