@@ -445,18 +445,26 @@ trait Parsers {
       }
       
       chain(t, in) {
-        case Success(res, tail) => {
+        case s @ Success(res, tail) => {
+          tracef("Top-Level Success: %s%n", s)
           processTail(tail) match {
             case Some(tail) => {
+              tracef("Tail Accepted: %s%n", s)
               recognized = true
               successes += Success(res, tail)
             }
             
-            case None => failures += Failure(UnexpectedTrailingChars(canonicalize(tail.mkString)), tail)
+            case None => {
+              tracef("Tail Rejected: %s%n", s)
+              failures += Failure(UnexpectedTrailingChars(canonicalize(tail.mkString)), tail)
+            }
           }
         }
         
-        case f: Failure => failures += f
+        case f: Failure => {
+          tracef("Top-Level Failure: %s%n", f)
+          failures += f
+        }
       }
       
       parse()

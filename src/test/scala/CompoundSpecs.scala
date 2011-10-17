@@ -379,6 +379,21 @@ object CompoundSpecs extends Specification with Parsers with ScalaCheck {
         case _ => false
       }
     }
+    
+    "correctly globally disambiguate a local sequence ambiguity" in {
+      lazy val expr: Parser[Any] = (
+          id ~ ":=" ~ expr ~ expr
+        | num
+      )
+      
+      lazy val id = "a" | "b" | "c"
+      lazy val num = "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "0"
+      
+      expr("a:=1c:=23") must beLike {
+        case Success(_, LineStream()) #:: SNil => true
+        case _ => false
+      }
+    }
   }
   
   "repeated non-terminal parsers" should {

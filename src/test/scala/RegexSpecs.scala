@@ -199,5 +199,21 @@ object RegexSpecs extends Specification with ScalaCheck with RegexParsers {
         case _ => false
       }
     }
+    
+    "correctly globally disambiguate a local sequence ambiguity" in {
+      lazy val expr: Parser[Any] = (
+          id ~ ":=" ~ expr ~ expr
+        | num
+        | id
+      )
+      
+      lazy val id = """[a-zA-Z][a-zA-Z0-9_]*""".r
+      lazy val num = """\d+""".r
+      
+      expr("a := 1 c := 2 3") must beLike {
+        case Success(_, LineStream()) #:: SNil => true
+        case _ => false
+      }
+    }
   }
 }
