@@ -118,13 +118,13 @@ object TerminalSpecs extends Specification with ScalaCheck with Parsers {
     
     "map results with stream tail" in {
       var in1: LineStream = null
-      val p1 = "foo" ^# { in => s =>
+      val p1 = "foo" ^# { (in, s) =>
         in1 = in
         s
       }
       
       var in2: LineStream = null
-      val p2 = "bar" ^# { in => s =>
+      val p2 = "bar" ^# { (in, s) =>
         in2 = in
         s
       }

@@ -72,117 +72,117 @@ trait Parsers {
   // map syntax
   
   class RichSyntax1[A](p: Parser[A]) {
-    def ^^[R](f: A => R) = ^# { _ => f }
+    def ^^[R](f: A => R) = ^# { (_, r) => f(r) }
     
-    def ^#[R](f: LineStream => A => R) = p mapWithTail f
+    def ^#[R](f: (LineStream, A) => R) = p mapWithTail f
   }
   
   class RichSyntax2[A, B](p: Parser[A ~ B]) {
-    def ^^[R](f: (A, B) => R) = ^# { _ => f }
+    def ^^[R](f: (A, B) => R) = ^# { (_, r1, r2) => f(r1, r2) }
     
-    def ^#[R](fun: LineStream => (A, B) => R) = p mapWithTail { in => { case a ~ b => fun(in)(a, b) } }
+    def ^#[R](fun: (LineStream, A, B) => R) = p mapWithTail { case (in, a ~ b) => fun(in, a, b) }
   }
   
   class RichSyntax3l[A, B, C](p: Parser[A ~ B ~ C]) {
-    def ^^[R](f: (A, B, C) => R) = ^# { _ => f }
+    def ^^[R](f: (A, B, C) => R) = ^# { (_, r1, r2, r3) => f(r1, r2, r3) }
     
-    def ^#[R](fun: LineStream => (A, B, C) => R) = p mapWithTail { in => { case a ~ b ~ c => fun(in)(a, b, c) } }
+    def ^#[R](fun: (LineStream, A, B, C) => R) = p mapWithTail { case (in, a ~ b ~ c) => fun(in, a, b, c) }
   }
   
   class RichSyntax3r[A, B, C](p: Parser[~[A, B ~ C]]) {
-    def ^^[R](f: (A, B, C) => R) = ^# { _ => f }
+    def ^^[R](f: (A, B, C) => R) = ^# { (_, r1, r2, r3) => f(r1, r2, r3) }
     
-    def ^#[R](fun: LineStream => (A, B, C) => R) = p mapWithTail { in => { case a ~ (b ~ c) => fun(in)(a, b, c) } }
+    def ^#[R](fun: (LineStream, A, B, C) => R) = p mapWithTail { case (in, a ~ (b ~ c)) => fun(in, a, b, c) }
   }
   
   class RichSyntax4ll[A, B, C, D](p: Parser[A ~ B ~ C ~ D]) {
-    def ^^[R](f: (A, B, C, D) => R) = ^# { _ => f }
+    def ^^[R](f: (A, B, C, D) => R) = ^# { (_, r1, r2, r3, r4) => f(r1, r2, r3, r4) }
     
-    def ^#[R](fun: LineStream => (A, B, C, D) => R) = p mapWithTail { in => { case a ~ b ~ c ~ d => fun(in)(a, b, c, d) } }
+    def ^#[R](fun: (LineStream, A, B, C, D) => R) = p mapWithTail { case (in, a ~ b ~ c ~ d) => fun(in, a, b, c, d) }
   }
   
   class RichSyntax4lr[A, B, C, D](p: Parser[~[A, B ~ C] ~ D]) {
-    def ^^[R](f: (A, B, C, D) => R) = ^# { _ => f }
+    def ^^[R](f: (A, B, C, D) => R) = ^# { (_, r1, r2, r3, r4) => f(r1, r2, r3, r4) }
     
-    def ^#[R](fun: LineStream => (A, B, C, D) => R) = p mapWithTail { in => { case a ~ (b ~ c) ~ d => fun(in)(a, b, c, d) } }
+    def ^#[R](fun: (LineStream, A, B, C, D) => R) = p mapWithTail { case (in, a ~ (b ~ c) ~ d) => fun(in, a, b, c, d) }
   }
   
   class RichSyntax4rl[A, B, C, D](p: Parser[~[A, B ~ C ~ D]]) {
-    def ^^[R](f: (A, B, C, D) => R) = ^# { _ => f }
+    def ^^[R](f: (A, B, C, D) => R) = ^# { (_, r1, r2, r3, r4) => f(r1, r2, r3, r4) }
     
-    def ^#[R](fun: LineStream => (A, B, C, D) => R) = p mapWithTail { in => { case a ~ ((b ~ c) ~ d) => fun(in)(a, b, c, d) } }
+    def ^#[R](fun: (LineStream, A, B, C, D) => R) = p mapWithTail { case (in, a ~ ((b ~ c) ~ d)) => fun(in, a, b, c, d) }
   }
   
   class RichSyntax4rr[A, B, C, D](p: Parser[~[A, ~[B, C ~ D]]]) {
-    def ^^[R](f: (A, B, C, D) => R) = ^# { _ => f }
+    def ^^[R](f: (A, B, C, D) => R) = ^# { (_, r1, r2, r3, r4) => f(r1, r2, r3, r4) }
     
-    def ^#[R](fun: LineStream => (A, B, C, D) => R) = p mapWithTail { in => { case a ~ (b ~ (c ~ d)) => fun(in)(a, b, c, d) } }
+    def ^#[R](fun: (LineStream, A, B, C, D) => R) = p mapWithTail { case (in, a ~ (b ~ (c ~ d))) => fun(in, a, b, c, d) }
   }
   
   class RichSyntax5lll[A, B, C, D, E](p: Parser[A ~ B ~ C ~ D ~ E]) {
-    def ^^[R](f: (A, B, C, D, E) => R) = ^# { _ => f }
+    def ^^[R](f: (A, B, C, D, E) => R) = ^# { (_, r1, r2, r3, r4, r5) => f(r1, r2, r3, r4, r5) }
     
-    def ^#[R](fun: LineStream => (A, B, C, D, E) => R) = p mapWithTail { in => { case a ~ b ~ c ~ d ~ e => fun(in)(a, b, c, d, e) } }
+    def ^#[R](fun: (LineStream, A, B, C, D, E) => R) = p mapWithTail { case (in, a ~ b ~ c ~ d ~ e) => fun(in, a, b, c, d, e) }
   }
   
   class RichSyntax5llr[A, B, C, D, E](p: Parser[~[A, B ~ C] ~ D ~ E]) {
-    def ^^[R](f: (A, B, C, D, E) => R) = ^# { _ => f }
+    def ^^[R](f: (A, B, C, D, E) => R) = ^# { (_, r1, r2, r3, r4, r5) => f(r1, r2, r3, r4, r5) }
     
-    def ^#[R](fun: LineStream => (A, B, C, D, E) => R) = p mapWithTail { in => { case (a ~ (b ~ c)) ~ d ~ e => fun(in)(a, b, c, d, e) } }
+    def ^#[R](fun: (LineStream, A, B, C, D, E) => R) = p mapWithTail { case (in, (a ~ (b ~ c)) ~ d ~ e) => fun(in, a, b, c, d, e) }
   }
   
   class RichSyntax5lrl[A, B, C, D, E](p: Parser[~[A, B ~ C ~ D] ~ E]) {
-    def ^^[R](f: (A, B, C, D, E) => R) = ^# { _ => f }
+    def ^^[R](f: (A, B, C, D, E) => R) = ^# { (_, r1, r2, r3, r4, r5) => f(r1, r2, r3, r4, r5) }
     
-    def ^#[R](fun: LineStream => (A, B, C, D, E) => R) = p mapWithTail { in => { case (a ~ (b ~ c ~ d)) ~ e => fun(in)(a, b, c, d, e) } }
+    def ^#[R](fun: (LineStream, A, B, C, D, E) => R) = p mapWithTail { case (in, (a ~ (b ~ c ~ d)) ~ e) => fun(in, a, b, c, d, e) }
   }
   
   class RichSyntax5lrr[A, B, C, D, E](p: Parser[~[A, ~[B, C ~ D]] ~ E]) {
-    def ^^[R](f: (A, B, C, D, E) => R) = ^# { _ => f }
+    def ^^[R](f: (A, B, C, D, E) => R) = ^# { (_, r1, r2, r3, r4, r5) => f(r1, r2, r3, r4, r5) }
     
-    def ^#[R](fun: LineStream => (A, B, C, D, E) => R) = p mapWithTail { in => { case (a ~ (b ~ (c ~ d))) ~ e => fun(in)(a, b, c, d, e) } }
+    def ^#[R](fun: (LineStream, A, B, C, D, E) => R) = p mapWithTail { case (in, (a ~ (b ~ (c ~ d))) ~ e) => fun(in, a, b, c, d, e) }
   }
   
   class RichSyntax5rll[A, B, C, D, E](p: Parser[~[A ~ B, C ~ D ~ E]]) {
-    def ^^[R](f: (A, B, C, D, E) => R) = ^# { _ => f }
+    def ^^[R](f: (A, B, C, D, E) => R) = ^# { (_, r1, r2, r3, r4, r5) => f(r1, r2, r3, r4, r5) }
     
-    def ^#[R](fun: LineStream => (A, B, C, D, E) => R) = p mapWithTail { in => { case (a ~ b) ~ (c ~ d ~ e) => fun(in)(a, b, c, d, e) } }
+    def ^#[R](fun: (LineStream, A, B, C, D, E) => R) = p mapWithTail { case (in, (a ~ b) ~ (c ~ d ~ e)) => fun(in, a, b, c, d, e) }
   }
   
   class RichSyntax5rlr[A, B, C, D, E](p: Parser[~[A ~ B, ~[C, D ~ E]]]) {
-    def ^^[R](f: (A, B, C, D, E) => R) = ^# { _ => f }
+    def ^^[R](f: (A, B, C, D, E) => R) = ^# { (_, r1, r2, r3, r4, r5) => f(r1, r2, r3, r4, r5) }
     
-    def ^#[R](fun: LineStream => (A, B, C, D, E) => R) = p mapWithTail { in => { case (a ~ b) ~ (c ~ (d ~ e)) => fun(in)(a, b, c, d, e) } }
+    def ^#[R](fun: (LineStream, A, B, C, D, E) => R) = p mapWithTail { case (in, (a ~ b) ~ (c ~ (d ~ e))) => fun(in, a, b, c, d, e) }
   }
   
   class RichSyntax5rrl[A, B, C, D, E](p: Parser[~[A, ~[B, C ~ D ~ E]]]) {
-    def ^^[R](f: (A, B, C, D, E) => R) = ^# { _ => f }
+    def ^^[R](f: (A, B, C, D, E) => R) = ^# { (_, r1, r2, r3, r4, r5) => f(r1, r2, r3, r4, r5) }
     
-    def ^#[R](fun: LineStream => (A, B, C, D, E) => R) = p mapWithTail { in => { case a ~ (b ~ (c ~ d ~ e)) => fun(in)(a, b, c, d, e) } }
+    def ^#[R](fun: (LineStream, A, B, C, D, E) => R) = p mapWithTail { case (in, a ~ (b ~ (c ~ d ~ e))) => fun(in, a, b, c, d, e) }
   }
   
   class RichSyntax5rrr[A, B, C, D, E](p: Parser[~[A, ~[B, ~[C, D ~ E]]]]) {
-    def ^^[R](f: (A, B, C, D, E) => R) = ^# { _ => f }
+    def ^^[R](f: (A, B, C, D, E) => R) = ^# { (_, r1, r2, r3, r4, r5) => f(r1, r2, r3, r4, r5) }
     
-    def ^#[R](fun: LineStream => (A, B, C, D, E) => R) = p mapWithTail { in => { case a ~ (b ~ (c ~ (d ~ e))) => fun(in)(a, b, c, d, e) } }
+    def ^#[R](fun: (LineStream, A, B, C, D, E) => R) = p mapWithTail { case (in, a ~ (b ~ (c ~ (d ~ e)))) => fun(in, a, b, c, d, e) }
   }
   
   class RichSyntax6[A, B, C, D, E, F](p: Parser[A ~ B ~ C ~ D ~ E ~ F]) {
-    def ^^[R](f: (A, B, C, D, E, F) => R) = ^# { _ => f }
+    def ^^[R](f: (A, B, C, D, E, F) => R) = ^# { (_, r1, r2, r3, r4, r5, r6) => f(r1, r2, r3, r4, r5, r6) }
     
-    def ^#[R](fun: LineStream => (A, B, C, D, E, F) => R) = p mapWithTail { in => { case a ~ b ~ c ~ d ~ e ~ f => fun(in)(a, b, c, d, e, f) } }
+    def ^#[R](fun: (LineStream, A, B, C, D, E, F) => R) = p mapWithTail { case (in, a ~ b ~ c ~ d ~ e ~ f) => fun(in, a, b, c, d, e, f) }
   }
   
   class RichSyntax7[A, B, C, D, E, F, G](p: Parser[A ~ B ~ C ~ D ~ E ~ F ~ G]) {
-    def ^^[R](f: (A, B, C, D, E, F, G) => R) = ^# { _ => f }
+    def ^^[R](f: (A, B, C, D, E, F, G) => R) = ^# { (_, r1, r2, r3, r4, r5, r6, r7) => f(r1, r2, r3, r4, r5, r6, r7) }
     
-    def ^#[R](fun: LineStream => (A, B, C, D, E, F, G) => R) = p mapWithTail { in => { case a ~ b ~ c ~ d ~ e ~ f ~ g => fun(in)(a, b, c, d, e, f, g) } }
+    def ^#[R](fun: (LineStream, A, B, C, D, E, F, G) => R) = p mapWithTail { case (in, a ~ b ~ c ~ d ~ e ~ f ~ g) => fun(in, a, b, c, d, e, f, g) }
   }
   
   class RichSyntax8[A, B, C, D, E, F, G, H](p: Parser[A ~ B ~ C ~ D ~ E ~ F ~ G ~ H]) {
-    def ^^[R](f: (A, B, C, D, E, F, G, H) => R) = ^# { _ => f }
+    def ^^[R](f: (A, B, C, D, E, F, G, H) => R) = ^# { (_, r1, r2, r3, r4, r5, r6, r7, r8) => f(r1, r2, r3, r4, r5, r6, r7, r8) }
     
-    def ^#[R](fun: LineStream => (A, B, C, D, E, F, G, H) => R) = p mapWithTail { in => { case a ~ b ~ c ~ d ~ e ~ f ~ g ~ h => fun(in)(a, b, c, d, e, f, g, h) } }
+    def ^#[R](fun: (LineStream, A, B, C, D, E, F, G, H) => R) = p mapWithTail { case (in, a ~ b ~ c ~ d ~ e ~ f ~ g ~ h) => fun(in, a, b, c, d, e, f, g, h) }
   }
   
   //////////////////////////////////////////////////////////////////////////////
@@ -211,9 +211,9 @@ trait Parsers {
     
     def apply(str: String): Stream[Result[R]] = apply(LineStream(str))
     
-    def map[R2](f: R => R2) = mapWithTail { _ => f }
+    def map[R2](f: R => R2) = mapWithTail { (_, r) => f(r) }
     
-    def mapWithTail[R2](f: LineStream => R => R2): Parser[R2]
+    def mapWithTail[R2](f: (LineStream, R) => R2): Parser[R2]
     
     def flatMap[R2](f1: R => Parser[R2]): Parser[R2] = new NonTerminalParser[R2] {
       def computeFirst(seen: Set[Parser[Any]]) = self.computeFirst(seen + this)
@@ -246,7 +246,6 @@ trait Parsers {
     def orElse[R2 >: R](alternate: =>Parser[R2]): Parser[R2] = new DisjunctiveParser(this, alternate)
     
     // operators
-    
     def ~[R2](that: Parser[R2]): Parser[R ~ R2] = new SequentialParser(this, that)
     
     def <~[R2](that: Parser[R2]) = this ~ that map { case a ~ _ => a }
@@ -398,9 +397,9 @@ trait Parsers {
       }
     }
     
-    def mapWithTail[R2](f: LineStream => R => R2): Parser[R2] = new MappedParser[R, R2](self, f) with TerminalParser[R2] {
+    def mapWithTail[R2](f: (LineStream, R) => R2): Parser[R2] = new MappedParser[R, R2](self, f) with TerminalParser[R2] {
       def parse(in: LineStream) = self.parse(in) match {
-        case Success(res, tail) => Success(f(in)(res), tail)
+        case Success(res, tail) => Success(f(in, res), tail)
         case x: Failure => x
       }
     }
@@ -470,17 +469,17 @@ trait Parsers {
       parse()
     }
     
-    def mapWithTail[R2](f1: LineStream => R => R2): Parser[R2] = new MappedParser[R, R2](self, f1) with NonTerminalParser[R2] {
+    def mapWithTail[R2](f1: (LineStream, R) => R2): Parser[R2] = new MappedParser[R, R2](self, f1) with NonTerminalParser[R2] {
       def chain(t: Trampoline, in: LineStream)(f2: Result[R2] => Unit) {
         self.chain(t, in) { 
-          case Success(res, tail) => f2(Success(f1(in)(res), tail))
+          case Success(res, tail) => f2(Success(f1(in, res), tail))
           case f: Failure => f2(f)
         }
       }
     }
   }
   
-  abstract class MappedParser[A, +B](private val p: Parser[A], private val f1: LineStream => A => B) extends Parser[B] {
+  abstract class MappedParser[A, +B](private val p: Parser[A], private val f1: (LineStream, A) => B) extends Parser[B] {
     def computeFirst(s: Set[Parser[Any]]) = p.computeFirst(s + this)
   
     override def toString = p.toString

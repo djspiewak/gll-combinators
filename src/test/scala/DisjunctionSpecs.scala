@@ -307,13 +307,13 @@ object DisjunctionSpecs extends Specification with Parsers with ScalaCheck {
     
     "map results with stream tail" in {
       var in1: LineStream = null
-      val p1 = ("foo" | "bar") ^# { in => s =>
+      val p1 = ("foo" | "bar") ^# { (in, s) =>
         in1 = in
         s
       }
       
       var in2: LineStream = null
-      val p2 = ("baz" | "bin") ^# { in => s =>
+      val p2 = ("baz" | "bin") ^# { (in, s) =>
         in2 = in
         s
       }
