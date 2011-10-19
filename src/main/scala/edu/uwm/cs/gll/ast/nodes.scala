@@ -14,6 +14,8 @@ trait BinaryNode extends Node {
 }
 
 trait UnaryNode extends Node {
+  val isPrefix: Boolean
+  
   def child: Node
   
   def children = List(child)

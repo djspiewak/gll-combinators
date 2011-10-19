@@ -44,10 +44,33 @@ trait Filters {
     }
     
     def apply(n: Node): Boolean = {
-      if (forbidden contains n.label)
-        !(n.children map { _.label } exists forbidden(n.label))
-      else
+      if (forbidden contains n.label) {
+        lazy val fallback = !(n.children map { _.label } exists forbidden(n.label))
+        
+        n match {
+          case bn: BinaryNode => {
+            lazy val leftCheck = bn.left match {
+              case un: UnaryNode if !un.isPrefix =>
+                true
+              
+              case n => !forbidden(bn.label)(n.label)
+            }
+            
+            lazy val rightCheck = bn.right match {
+              case un: UnaryNode if un.isPrefix =>
+                true
+             
+              case n => !forbidden(bn.label)(n.label) 
+            }
+            
+            leftCheck && rightCheck
+          }
+          
+          case _ => fallback
+        }
+      } else {
         true
+      }
     }
   }
 }

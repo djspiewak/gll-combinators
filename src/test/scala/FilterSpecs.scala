@@ -136,6 +136,72 @@ object FilterSpecs extends Specification with ScalaCheck with RegexParsers {
       }
     }
     
+    "disambiguate prefix unary and binary operations when binary has higher precedence" in {
+      lazy val expr: Parser[Expr] = (
+          expr ~ ("+" ~> expr) ^^ Add
+        | "-" ~> expr          ^^ Neg
+        | num                  ^^ IntLit
+      ) filter prec('add, 'neg)
+      
+      expr("1") must beLike {
+        case Stream(Success(IntLit(1), LineStream())) => true
+        case _ => false
+      }
+      
+      expr("-1") must beLike {
+        case Stream(Success(Neg(IntLit(1)), LineStream())) => true
+        case _ => false
+      }
+      
+      expr("1 + 2") must beLike {
+        case Stream(Success(Add(IntLit(1), IntLit(2)), LineStream())) => true
+        case _ => false
+      }
+      
+      expr("-1 + 2") must beLike {
+        case Stream(Success(Neg(Add(IntLit(1), IntLit(2))), LineStream())) => true
+        case _ => false
+      }
+      
+      expr("1 + -2") must beLike {
+        case Stream(Success(Add(IntLit(1), Neg(IntLit(2))), LineStream())) => true
+        case _ => false
+      }
+    }
+    
+    "disambiguate suffix unary and binary operations when binary has higher precedence" in {
+      lazy val expr: Parser[Expr] = (
+          expr ~ ("+" ~> expr) ^^ Add
+        | expr <~ "~"          ^^ Comp
+        | num                  ^^ IntLit
+      ) filter prec('add, 'comp)
+      
+      expr("1") must beLike {
+        case Stream(Success(IntLit(1), LineStream())) => true
+        case _ => false
+      }
+      
+      expr("1~") must beLike {
+        case Stream(Success(Comp(IntLit(1)), LineStream())) => true
+        case _ => false
+      }
+      
+      expr("1 + 2") must beLike {
+        case Stream(Success(Add(IntLit(1), IntLit(2)), LineStream())) => true
+        case _ => false
+      }
+      
+      expr("1 + 2~") must beLike {
+        case Stream(Success(Comp(Add(IntLit(1), IntLit(2))), LineStream())) => true
+        case _ => false
+      }
+      
+      expr("1~ + 2") must beLike {
+        case Stream(Success(Add(Comp(IntLit(1)), IntLit(2)), LineStream())) => true
+        case _ => false
+      }
+    }
+    
     "disambiguate non-uniform fixity unary operations with precedence" in {
       lazy val expr: Parser[Expr] = (
           "-" ~> expr          ^^ Neg
@@ -202,11 +268,15 @@ object FilterSpecs extends Specification with ScalaCheck with RegexParsers {
   case class Neg(child: Expr) extends Expr with UnaryNode {
     val label = 'neg
     
+    val isPrefix = true
+    
     val solve = -child.solve
   }
   
   case class Comp(child: Expr) extends Expr with UnaryNode {
     val label = 'comp
+    
+    val isPrefix = false
     
     val solve = ~child.solve
   }
