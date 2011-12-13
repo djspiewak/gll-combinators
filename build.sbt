@@ -11,3 +11,7 @@ libraryDependencies ++= Seq(
   "org.scala-tools.testing" %% "specs" % "1.6.9" % "test" withSources)
   
 publishArtifact in (Compile, packageDoc) := false
+
+credentials += Credentials(Path.userHome / ".ivy2" / ".rgcredentials")
+
+publishTo := Some("ReportGrid Nexus" at "http://devci01.reportgrid.com:8081/content/repositories/snapshots")
