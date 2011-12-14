@@ -158,6 +158,22 @@ object RegexSpecs extends Specification with ScalaCheck with RegexParsers {
       }
     }
     
+    "eat infix whitespace without disrupting subsquent regex" in {
+      val num = """[0-9]+(\.[0-9]+)?([eE][0-9]+)?""".r
+      val str = """"([^\n\r\\]|\\.)*"""".r
+      
+      lazy val expr: Parser[Any] = (
+          expr ~ "+" ~ expr
+        | num
+        | str
+      )
+      
+      expr("1 + \"a\"") must beLike {
+        case Success(_, LineStream()) #:: _ => true
+        case _ => false
+      }
+    }
+    
     "define FIRST set" in {
       """\d""".r.first must containAll(Set('0', '1', '2', '3', '4', '5', '6', '7', '8', '9'))
       "abc".r.first must containAll(Set('a'))
