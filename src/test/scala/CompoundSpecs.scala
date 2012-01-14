@@ -394,6 +394,21 @@ object CompoundSpecs extends Specification with Parsers with ScalaCheck {
         case _ => false
       }
     }
+    
+    "successfully process a peculiar mutual left-recursion" in {
+      lazy val expr: Parser[Any] = (
+          prefix ~ "b"
+        | "a"
+        | expr ~ "+"
+      )
+      
+      lazy val prefix: Parser[Any] = (
+          prefix ~ ","
+        | expr ~ ","
+      )
+      
+      expr("") must not(beEmpty)
+    }
   }
   
   "repeated non-terminal parsers" should {
