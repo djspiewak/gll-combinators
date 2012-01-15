@@ -14,4 +14,8 @@ publishArtifact in (Compile, packageDoc) := false
 
 credentials += Credentials(Path.userHome / ".ivy2" / ".rgcredentials")
 
-publishTo := Some("ReportGrid Nexus" at "http://devci01.reportgrid.com:8081/content/repositories/snapshots")
+publishTo <<= (version) { version: String =>
+  val nexus = "http://nexus.reportgrid.com/content/repositories/"
+  if (version.trim.endsWith("SNAPSHOT")) Some("snapshots" at nexus+"snapshots/") 
+  else                                   Some("releases"  at nexus+"releases/")
+},
