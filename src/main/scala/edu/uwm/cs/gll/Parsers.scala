@@ -640,10 +640,7 @@ trait Parsers {
         val firstSets = gather map { _ computeFirst newSeen getOrElse Set[Option[Char]]() } toList
         val back = firstSets sort { (a, b) => a.isComplement || !b.isComplement } reduceLeft { _ ++ _ }
         
-        Some(if (back.size == 0)
-          UniversalOptCharSet
-        else
-          back)
+        Some(back)
       }
     }
     
