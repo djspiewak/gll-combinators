@@ -18,4 +18,4 @@ publishTo <<= (version) { version: String =>
   val nexus = "http://nexus.reportgrid.com/content/repositories/"
   if (version.trim.endsWith("SNAPSHOT")) Some("snapshots" at nexus+"snapshots/") 
   else                                   Some("releases"  at nexus+"releases/")
-},
+}
