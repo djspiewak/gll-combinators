@@ -88,12 +88,7 @@ sealed abstract class LineStream(val line: String, val lineNum: Int, val colNum:
    * </ol>
    */
   def formatError(pattern: String): String = {
-    val charIndex = if (isEmpty)
-      line.length
-    else
-      line.length - (tail takeWhile { _ != '\n' } length) - 1
-    
-    val caret = (1 to charIndex).foldLeft("") { (acc, _) => acc + ' ' } + '^'
+    val caret = (1 to colNum).foldLeft("") { (acc, _) => acc + ' ' } + '^'
     pattern.format(lineNum, line, caret)
   }
   
