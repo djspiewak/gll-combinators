@@ -8,7 +8,7 @@ object RegexUtils extends Parsers {    // note, *not* RegexParsers!
   import SetSyntax._
   
   def first(regex: Regex): Set[Option[Char]] = {
-    val results = disj(regex.toString) flatMap {
+    val results = full(regex.toString) flatMap {
       case Success(t, _) => t.first :: Nil
       case _ => Nil
     } toList
@@ -23,6 +23,8 @@ object RegexUtils extends Parsers {    // note, *not* RegexParsers!
   
   
   // %%
+  
+  private lazy val full: Parser[Token] = disj <~ ("\\b"?)
   
   private lazy val disj: Parser[Token] = (
       disj ~ ("|" ~> seq)    ^^ DisjToken

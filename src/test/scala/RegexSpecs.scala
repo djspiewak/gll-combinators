@@ -30,6 +30,20 @@ object RegexSpecs extends Specification with ScalaCheck with RegexParsers {
       }
     }
     
+    "match correctly when using a boundary token" in {
+      val p = "a" ~ "where\\b".r ~ "b"
+      
+      p("a where b") must beLike {
+        case Success(_, LineStream()) #:: SNil => true
+        case _ => false
+      }
+      
+      p("a whereb") must beLike {
+        case Failure(_, _) #:: SNil => true
+        case _ => false
+      }
+    }
+    
     "gracefully error on null regexp" in {
       regex(null) must throwA(new NullPointerException("Cannot parse a null regular expression"))
     }

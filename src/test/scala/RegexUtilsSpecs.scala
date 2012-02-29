@@ -38,6 +38,10 @@ object RegexUtilsSpecs extends Specification with ScalaCheck {
       first("a|b|c|a".r) must containAll(Set(Some('a'), Some('b'), Some('c')))
     }
     
+    "handle regex ending in \\b" in {
+      first("abc\\b".r) must containAll(Set(Some('a')))
+    }
+    
     "handle all special character classes" in {
       val alpha = Set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ": _*) map { Some(_): Option[Char] }
       val num = Set('0', '1', '2', '3', '4', '5', '6', '7', '8', '9') map { Some(_): Option[Char] }
