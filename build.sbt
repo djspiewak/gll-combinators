@@ -4,6 +4,10 @@ organization := "com.codecommit"
 
 version := "2.0-SNAPSHOT"
 
+licenses := Seq("BSD-style" -> url("http://www.opensource.org/licenses/bsd-license.php"))
+
+homepage := Some(url("https://github.com/djspiewak/gll-combinators"))
+
 scalaVersion := "2.9.1"
 
 libraryDependencies ++= Seq(
@@ -12,10 +16,29 @@ libraryDependencies ++= Seq(
   
 publishArtifact in (Compile, packageDoc) := false
 
-credentials += Credentials(Path.userHome / ".ivy2" / ".rgcredentials")
-
-publishTo <<= (version) { version: String =>
-  val nexus = "http://nexus.reportgrid.com/content/repositories/"
-  if (version.trim.endsWith("SNAPSHOT")) Some("snapshots" at nexus+"snapshots/") 
-  else                                   Some("releases"  at nexus+"releases/")
+publishTo <<= version { v: String =>
+  val nexus = "https://oss.sonatype.org/"
+  if (v.trim.endsWith("SNAPSHOT"))
+    Some("snapshots" at nexus + "content/repositories/snapshots")
+  else
+    Some("releases" at nexus + "service/local/staging/deploy/maven2")
 }
+
+publishMavenStyle := true
+
+publishArtifact in Test := false
+
+pomIncludeRepository := { _ => false }
+
+pomExtra := (
+  <scm>
+    <url>git://github.com/djspiewak/gll-combinators.git</url>
+    <connection>scm:git:git://github.com/djspiewak/gll-combinators.git</connection>
+  </scm>
+  <developers>
+    <developer>
+      <id>djspiewak</id>
+      <name>Daniel Spiewak</name>
+      <url>http://www.codecommit.com/blog</url>
+    </developer>
+  </developers>)
