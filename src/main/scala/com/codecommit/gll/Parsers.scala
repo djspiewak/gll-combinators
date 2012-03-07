@@ -1,9 +1,9 @@
-package edu.uwm.cs.gll
+package com.codecommit.gll
 
 import scala.collection.mutable
 import mutable.{Buffer, ListBuffer}
 
-import edu.uwm.cs.util._
+import com.codecommit.util._
 
 import Global._
 

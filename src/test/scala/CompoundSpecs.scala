@@ -1,5 +1,5 @@
-import edu.uwm.cs.gll._
-import edu.uwm.cs.util._
+import com.codecommit.gll._
+import com.codecommit.util._
 
 import org.specs._
 import org.scalacheck._

@@ -1,4 +1,4 @@
-import edu.uwm.cs.gll._
+import com.codecommit.gll._
 
 import org.specs._
 import org.scalacheck._
@@ -60,7 +60,7 @@ object DisjunctionSpecs extends Specification with Parsers with ScalaCheck {
     }
     
     "compute FIRST for binary alternatives" in {
-      import edu.uwm.cs.util._
+      import com.codecommit.util._
       
       val prop = forAll { (left: String, right: String) =>
         val leftFirst = if (left.length == 0) Set[Char]() else Set(left charAt 0)
@@ -193,7 +193,7 @@ object DisjunctionSpecs extends Specification with Parsers with ScalaCheck {
     }
     
     "compute FIRST for nary alternatives" in {
-      import edu.uwm.cs.util._
+      import com.codecommit.util._
       
       ("daniel" | "chris" | "joseph").first mustEqual Set('d', 'c', 'j')
       ("daniel" | "daniel" | "chris" | "joseph").first mustEqual Set('d', 'c', 'j')

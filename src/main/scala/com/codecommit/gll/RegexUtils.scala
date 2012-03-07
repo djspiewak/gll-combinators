@@ -1,6 +1,6 @@
-package edu.uwm.cs.gll
+package com.codecommit.gll
 
-import edu.uwm.cs.util._
+import com.codecommit.util._
 
 import scala.util.matching.Regex
 

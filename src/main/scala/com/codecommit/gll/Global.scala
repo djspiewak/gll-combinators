@@ -1,4 +1,4 @@
-package edu.uwm.cs.gll
+package com.codecommit.gll
 
 private[gll] object Global {
   val debug = false

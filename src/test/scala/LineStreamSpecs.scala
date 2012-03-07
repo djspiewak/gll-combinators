@@ -1,5 +1,5 @@
-import edu.uwm.cs.gll.LazyLineCons
-import edu.uwm.cs.gll.LineStream
+import com.codecommit.gll.LazyLineCons
+import com.codecommit.gll.LineStream
 
 import scala.io.Source
 

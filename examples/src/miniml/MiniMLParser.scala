@@ -1,6 +1,6 @@
 package miniml
 
-import edu.uwm.cs.gll._
+import com.codecommit.gll._
 
 object MiniMLParser extends common.Example[Any] with RegexParsers {
   

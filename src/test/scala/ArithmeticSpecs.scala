@@ -1,4 +1,4 @@
-import edu.uwm.cs.gll._
+import com.codecommit.gll._
 
 import org.specs._
 import org.scalacheck._

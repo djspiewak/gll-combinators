@@ -1,4 +1,4 @@
-package edu.uwm.cs.util
+package com.codecommit.util
 
 import collection.{SetLike, GenTraversableOnce}
 import collection.generic.CanBuildFrom

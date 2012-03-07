@@ -3,7 +3,7 @@ package lambdacalc
 import scala.io.Source
 import scala.collection.mutable
 
-import edu.uwm.cs.gll._
+import com.codecommit.gll._
 import AST._
 
 object LambdaCalcParser extends common.Example[(List[Alias], Expr)] with RegexParsers {

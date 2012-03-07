@@ -1,4 +1,4 @@
-package edu.uwm.cs.gll.ast
+package com.codecommit.gll.ast
 
 trait Node {
   val label: Symbol

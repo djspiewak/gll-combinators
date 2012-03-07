@@ -1,4 +1,4 @@
-import edu.uwm.cs.gll._
+import com.codecommit.gll._
 
 import org.specs._
 import org.scalacheck._
@@ -86,7 +86,7 @@ object TerminalSpecs extends Specification with ScalaCheck with Parsers {
     }
     
     "compute FIRST set" in {
-      import edu.uwm.cs.util.UniversalCharSet
+      import com.codecommit.util.UniversalCharSet
       
       val prop = forAll { s: String =>
         if (s.length == 0)
@@ -197,7 +197,7 @@ object TerminalSpecs extends Specification with ScalaCheck with Parsers {
     }
     
     "compute FIRST set" in {
-      import edu.uwm.cs.util.UniversalCharSet
+      import com.codecommit.util.UniversalCharSet
       
       val prop = forAll { strs: List[String] =>
         (strs.length > 0 && (strs exists { _.length > 0 })) ==> {

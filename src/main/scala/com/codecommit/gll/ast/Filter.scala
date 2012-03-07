@@ -1,4 +1,4 @@
-package edu.uwm.cs.gll.ast
+package com.codecommit.gll.ast
 
 trait Filter[-A] extends (A => Boolean) { self =>
   def unary_!(): Filter[A] = new Filter[A] {

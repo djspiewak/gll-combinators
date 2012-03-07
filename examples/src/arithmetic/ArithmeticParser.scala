@@ -1,6 +1,6 @@
 package arithmetic
 
-import edu.uwm.cs.gll._
+import com.codecommit.gll._
 import AST._
 
 object ArithmeticParser extends common.Example[Expr] with RegexParsers {

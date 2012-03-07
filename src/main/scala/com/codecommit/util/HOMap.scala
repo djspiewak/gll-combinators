@@ -1,11 +1,11 @@
-package edu.uwm.cs.util
+package com.codecommit.util
 
 import collection.mutable
 
 /**
  * @author Jorge Ortiz
  */
-private[cs] class HOMap[K[_], V[_]] {
+private[codecommit] class HOMap[K[_], V[_]] {
   private val underlying: mutable.Map[K[_], V[_]] = mutable.Map.empty
   
   def add[T](key: K[T], value: V[T]) {
@@ -32,7 +32,7 @@ private[cs] class HOMap[K[_], V[_]] {
   def contains(key: K[_]) = underlying.contains(key)
 }
 
-private[cs] object HOMap {
+private[codecommit] object HOMap {
   def apply[K[_], V[_]](tuples: (K[A], V[A]) forSome { type A } *) = {
     val back = new HOMap[K, V]
     tuples foreach { case (k, v) => back.add(k, v) } 

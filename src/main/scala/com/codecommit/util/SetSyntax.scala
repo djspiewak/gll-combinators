@@ -1,6 +1,6 @@
-package edu.uwm.cs.util
+package com.codecommit.util
 
-private[cs] object SetSyntax {
+private[codecommit] object SetSyntax {
   implicit def setSyntax[A](set: Set[A]): RichSet[A] = new RichSet(set)
   
   class RichSet[A](set: Set[A]) {

@@ -1,7 +1,7 @@
 package common
 
 import scala.io.Source
-import edu.uwm.cs.gll._
+import com.codecommit.gll._
 
 trait Example[A] extends Parsers {
   

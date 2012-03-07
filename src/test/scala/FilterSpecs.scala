@@ -1,4 +1,4 @@
-import edu.uwm.cs.gll
+import com.codecommit.gll
 import gll._
 import gll.ast._
 

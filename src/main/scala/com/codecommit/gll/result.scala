@@ -1,4 +1,4 @@
-package edu.uwm.cs.gll
+package com.codecommit.gll
 
 import scala.util.matching.Regex
 

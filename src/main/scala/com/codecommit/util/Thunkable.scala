@@ -1,4 +1,4 @@
-package edu.uwm.cs.util
+package com.codecommit.util
 
 trait Thunkable {
   protected def thunk[A](field: Symbol) = {

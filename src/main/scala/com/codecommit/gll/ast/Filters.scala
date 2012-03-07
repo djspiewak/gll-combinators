@@ -1,6 +1,6 @@
-package edu.uwm.cs.gll.ast
+package com.codecommit.gll.ast
 
-import edu.uwm.cs.gll._
+import com.codecommit.gll._
 
 trait Filters {
   def prec(order: Symbol*): Filter[Node] = new PrecedenceFilter(order)
