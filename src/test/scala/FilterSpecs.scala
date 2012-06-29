@@ -202,6 +202,25 @@ object FilterSpecs extends Specification with ScalaCheck with RegexParsers {
       }
     }
     
+    "ignore relative precedence of unary operations of the same fixity" in {
+      lazy val expr: Parser[Expr] = (
+          "-" ~> expr          ^^ Neg
+        | "~" ~> expr          ^^ Comp2
+        | "(" ~> expr <~ ")"
+        | num                  ^^ IntLit
+      ) filter prec('add, 'neg, 'comp2)
+      
+      expr("-~1") must beLike {
+        case Stream(Success(Neg(Comp2(IntLit(1))), LineStream())) => true
+        case _ => false
+      }
+      
+      expr("~-1") must beLike {
+        case Stream(Success(Comp2(Neg(IntLit(1))), LineStream())) => true
+        case _ => false
+      }
+    }
+    
     "disambiguate non-uniform fixity unary operations with precedence" in {
       lazy val expr: Parser[Expr] = (
           "-" ~> expr          ^^ Neg
@@ -271,6 +290,14 @@ object FilterSpecs extends Specification with ScalaCheck with RegexParsers {
     val isPrefix = true
     
     val solve = -child.solve
+  }
+  
+  case class Comp2(child: Expr) extends Expr with UnaryNode {
+    val label = 'comp2
+    
+    val isPrefix = true
+    
+    val solve = ~child.solve
   }
   
   case class Comp(child: Expr) extends Expr with UnaryNode {

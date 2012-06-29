@@ -66,6 +66,15 @@ trait Filters {
             leftCheck && rightCheck
           }
           
+          case un: UnaryNode => {
+            un.child match {
+              case un2: UnaryNode if un2.isPrefix == un.isPrefix =>
+                true
+              
+              case _ => fallback
+            }
+          }
+          
           case _ => fallback
         }
       } else {
