@@ -1,10 +1,15 @@
 import com.codecommit.gll._
 import com.codecommit.util._
 
-import org.specs._
+import org.specs2.ScalaCheck
+import org.specs2.mutable._
 import org.scalacheck._
 
-object CompoundSpecs extends Specification with Parsers with ScalaCheck {
+object CompoundSpecs extends Specification
+    with NoTildeSyntax
+    with Parsers
+    with ScalaCheck {
+      
   import Prop._
   import StreamUtils._
   
@@ -18,12 +23,11 @@ object CompoundSpecs extends Specification with Parsers with ScalaCheck {
       // assumes data =~ /a+/
       def check(data: String) {
         p(data) must beLike {
-          case Success(`data`, LineStream()) #:: SNil => true
-          case _ => false
+          case Success(`data`, LineStream()) #:: SNil => ok
         }
       }
 
-      p mustNot throwA[Throwable]
+      p must not(throwA[Throwable])
       
       check("a")
       check("aa")
@@ -40,12 +44,11 @@ object CompoundSpecs extends Specification with Parsers with ScalaCheck {
       // assumes data =~ /a+/
       def check(data: String) {
         p(data) must beLike {
-          case Success(`data`, LineStream()) #:: SNil => true
-          case _ => false
+          case Success(`data`, LineStream()) #:: SNil => ok
         }
       }
 
-      p mustNot throwA[Throwable]
+      p must not(throwA[Throwable])
       
       check("b")
       check("ab")
@@ -62,12 +65,11 @@ object CompoundSpecs extends Specification with Parsers with ScalaCheck {
       // assumes data =~ /a+/
       def check(data: String) {
         p(data) must beLike {
-          case Success(`data`, LineStream()) #:: SNil => true
-          case _ => false
+          case Success(`data`, LineStream()) #:: SNil => ok
         }
       }
       
-      p mustNot throwA[Throwable]
+      p must not(throwA[Throwable])
       
       check("a")
       check("aa")
@@ -84,12 +86,11 @@ object CompoundSpecs extends Specification with Parsers with ScalaCheck {
       // assumes data =~ /a+/
       def check(data: String) {
         p(data) must beLike {
-          case Success(`data`, LineStream()) #:: SNil => true
-          case _ => false
+          case Success(`data`, LineStream()) #:: SNil => ok
         }
       }
       
-      p mustNot throwA[Throwable]
+      p must not(throwA[Throwable])
       
       check("a")
       check("aa")
@@ -114,12 +115,11 @@ object CompoundSpecs extends Specification with Parsers with ScalaCheck {
       // assumes data =~ /a+/
       def check(data: String) {
         s(data) must beLike {
-          case Success(`data`, LineStream()) #:: _ => true     // we don't care how many derivations, just that it works
-          case _ => false
+          case Success(`data`, LineStream()) #:: _ => ok     // we don't care how many derivations, just that it works
         }
       }
       
-      s mustNot throwA[Throwable]
+      s must not(throwA[Throwable])
       
       check("abba")
       check("bbbbbbba")
@@ -143,12 +143,11 @@ object CompoundSpecs extends Specification with Parsers with ScalaCheck {
       // assumes data =~ /a+/
       def check(data: String) {
         s(data) must beLike {
-          case Success(`data`, LineStream()) #:: _ => true     // we don't care how many derivations, just that it works
-          case _ => false
+          case Success(`data`, LineStream()) #:: _ => ok     // we don't care how many derivations, just that it works
         }
       }
       
-      s mustNot throwA[Throwable]
+      s must not(throwA[Throwable])
       
       check("b")
       check("bb")
@@ -165,12 +164,11 @@ object CompoundSpecs extends Specification with Parsers with ScalaCheck {
       // assumes data =~ /a+/
       def check(data: String) {
         s(data) must beLike {
-          case Success(`data`, LineStream()) #:: _ => true     // we don't care how many derivations, just that it works
-          case _ => false
+          case Success(`data`, LineStream()) #:: _ => ok     // we don't care how many derivations, just that it works
         }
       }
       
-      s mustNot throwA[Throwable]
+      s must not(throwA[Throwable])
       
       check("b")
       check("bb")
@@ -205,8 +203,7 @@ object CompoundSpecs extends Specification with Parsers with ScalaCheck {
                      (1 + 2)"""
       
       MathParser.expr(input) must beLike {
-        case Success(8, LineStream()) #:: SNil => true
-        case _ => false
+        case Success(8, LineStream()) #:: SNil => ok
       }
     }
     
@@ -256,25 +253,21 @@ object CompoundSpecs extends Specification with Parsers with ScalaCheck {
           if (map1 contains "core.remote.url") {
             map1 must haveKey("core.filemode")
             map1 must haveKey("core.remote.fetch")
-            map1 mustNot haveKey("remote.url")
+            map1 must not(haveKey("remote.url"))
             
             map2 must haveKey("remote.url")
             map2 must haveKey("core.filemode")
-            map2 mustNot haveKey("core.remote.fetch")
+            map2 must not(haveKey("core.remote.fetch"))
           } else {
             map1 must haveKey("remote.url")
             map1 must haveKey("core.filemode")
-            map1 mustNot haveKey("core.remote.fetch")
+            map1 must not(haveKey("core.remote.fetch"))
             
             map2 must haveKey("core.filemode")
             map2 must haveKey("core.remote.fetch")
-            map2 mustNot haveKey("remote.url")
+            map2 must not(haveKey("remote.url"))
           }
-          
-          true
         }
-        
-        case _ => false
       }
     }
     
@@ -300,7 +293,7 @@ object CompoundSpecs extends Specification with Parsers with ScalaCheck {
         val ticId = "a"
       }
       
-      TestParser.expr("(a) :=") mustNot throwA[ClassCastException]
+      TestParser.expr("(a) :=") must not(throwA[ClassCastException])
     }
     
     "compute FIRST for nested left-recursion" in {
@@ -319,7 +312,7 @@ object CompoundSpecs extends Specification with Parsers with ScalaCheck {
         val n = """\d+"""r
       }
       
-      ComplexParser.exp.first must containAll(Set('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ' ', '\t', '\n', '\r', '('))
+      ComplexParser.exp.first must containAllOf(List('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ' ', '\t', '\n', '\r', '('))
     }
     
     "handle nested left-recursion" in {
@@ -341,8 +334,7 @@ object CompoundSpecs extends Specification with Parsers with ScalaCheck {
       import ComplexParser._
       
       exp("(0,0) 2") must beLike {
-        case Success(_, LineStream()) #:: SNil => true
-        case _ => false
+        case Success(_, LineStream()) #:: SNil => ok
       }
     }
     
@@ -352,15 +344,12 @@ object CompoundSpecs extends Specification with Parsers with ScalaCheck {
       p1("test") must beLike {
         case Failure(SyntaxError, LineStream(tail @ _*)) #:: SNil => 
           tail.mkString mustEqual "test"
-        
-        case _ => false
       }
       
       val p2 = "test" \ "ing"
       
       p2("test") must beLike {
-        case Success("test", LineStream()) #:: SNil => true
-        case _ => false
+        case Success("test", LineStream()) #:: SNil => ok
       }
     }
     
@@ -370,13 +359,11 @@ object CompoundSpecs extends Specification with Parsers with ScalaCheck {
       val p = ("a|b".r \ "a") ~ "c" ^^ { _ + _ }
       
       p("bc") must beLike {
-        case Success("bc", LineStream()) #:: SNil => true
-        case _ => false
+        case Success("bc", LineStream()) #:: SNil => ok
       }
       
       p("ac") must beLike {
-        case Failure(SyntaxError, _) #:: _ => true
-        case _ => false
+        case Failure(SyntaxError, _) #:: _ => ok
       }
     }
     
@@ -390,8 +377,7 @@ object CompoundSpecs extends Specification with Parsers with ScalaCheck {
       lazy val num = "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "0"
       
       expr("a:=1c:=23") must beLike {
-        case Success(_, LineStream()) #:: SNil => true
-        case _ => false
+        case Success(_, LineStream()) #:: SNil => ok
       }
     }
     
@@ -416,36 +402,30 @@ object CompoundSpecs extends Specification with Parsers with ScalaCheck {
       val p = literal("123")*
       
       p("123") must beLike {
-        case Success(List("123"), LineStream()) #:: SNil => true
-        case _ => false
+        case Success(List("123"), LineStream()) #:: SNil => ok
       }
       
       p("123123123123123123123123123123123") must beLike {
-        case Success(List("123", "123", "123", "123", "123", "123", "123", "123", "123", "123", "123"), LineStream()) #:: SNil => true
-        case _ => false
+        case Success(List("123", "123", "123", "123", "123", "123", "123", "123", "123", "123", "123"), LineStream()) #:: SNil => ok
       }
       
       p(LineStream()) must beLike {
-        case Success(Nil, LineStream()) #:: SNil => true
-        case _ => false
+        case Success(Nil, LineStream()) #:: SNil => ok
       }
     }
     "repeat 0..n times with separator" in {
       val p = literal("123") * ","
       
       p("123") must beLike {
-        case Success(List("123"), LineStream()) #:: SNil => true
-        case _ => false
+        case Success(List("123"), LineStream()) #:: SNil => ok
       }
       
       p("123,123,123,123,123,123,123,123,123,123,123") must beLike {
-        case Success(List("123", "123", "123", "123", "123", "123", "123", "123", "123", "123", "123"), LineStream()) #:: SNil => true
-        case _ => false
+        case Success(List("123", "123", "123", "123", "123", "123", "123", "123", "123", "123", "123"), LineStream()) #:: SNil => ok
       }
       
       p(LineStream()) must beLike {
-        case Success(Nil, LineStream()) #:: SNil => true
-        case _ => false
+        case Success(Nil, LineStream()) #:: SNil => ok
       }
     }
     
@@ -453,13 +433,11 @@ object CompoundSpecs extends Specification with Parsers with ScalaCheck {
       val p = literal("123")+
       
       p("123") must beLike {
-        case Success(List("123"), LineStream()) #:: SNil => true
-        case _ => false
+        case Success(List("123"), LineStream()) #:: SNil => ok
       }
       
       p("123123123123123123123123123123123") must beLike {
-        case Success(List("123", "123", "123", "123", "123", "123", "123", "123", "123", "123", "123"), LineStream()) #:: SNil => true
-        case _ => false
+        case Success(List("123", "123", "123", "123", "123", "123", "123", "123", "123", "123", "123"), LineStream()) #:: SNil => ok
       }
     }
     
@@ -467,13 +445,11 @@ object CompoundSpecs extends Specification with Parsers with ScalaCheck {
       val p = literal("123") + ","
       
       p("123") must beLike {
-        case Success(List("123"), LineStream()) #:: SNil => true
-        case _ => false
+        case Success(List("123"), LineStream()) #:: SNil => ok
       }
       
       p("123,123,123,123,123,123,123,123,123,123,123") must beLike {
-        case Success(List("123", "123", "123", "123", "123", "123", "123", "123", "123", "123", "123"), LineStream()) #:: SNil => true
-        case _ => false
+        case Success(List("123", "123", "123", "123", "123", "123", "123", "123", "123", "123", "123"), LineStream()) #:: SNil => ok
       }
     }
     
@@ -481,13 +457,11 @@ object CompoundSpecs extends Specification with Parsers with ScalaCheck {
       val p = literal("123")?
       
       p("123") must beLike {
-        case Success(Some("123"), LineStream()) #:: SNil => true
-        case _ => false
+        case Success(Some("123"), LineStream()) #:: SNil => ok
       }
       
       p(LineStream()) must beLike {
-        case Success(None, LineStream()) #:: SNil => true
-        case _ => false
+        case Success(None, LineStream()) #:: SNil => ok
       }
     }
   }
@@ -497,13 +471,11 @@ object CompoundSpecs extends Specification with Parsers with ScalaCheck {
       val p = literal("a") flatMap { _ => literal("b") }
       
       p(LineStream('a', 'b')) must beLike {
-        case Success("b", LineStream()) #:: SNil => true
-        case _ => false
+        case Success("b", LineStream()) #:: SNil => ok
       }
       
       p(LineStream('a', 'c')) must beLike {
-        case Failure(ExpectedLiteral("b", "c"), LineStream('c')) #:: SNil => true
-        case _ => false
+        case Failure(ExpectedLiteral("b", "c"), LineStream('c')) #:: SNil => ok
       }
       
       p.first mustEqual Set('a')
@@ -513,13 +485,11 @@ object CompoundSpecs extends Specification with Parsers with ScalaCheck {
       val p = literal("1") map { _.toInt }
       
       p(LineStream('1')) must beLike {
-        case Success(1, LineStream()) #:: SNil => true
-        case _ => false
+        case Success(1, LineStream()) #:: SNil => ok
       }
       
       p(LineStream('2')) must beLike {
-        case Failure(ExpectedLiteral("1", "2"), LineStream('2')) #:: SNil => true
-        case _ => false
+        case Failure(ExpectedLiteral("1", "2"), LineStream('2')) #:: SNil => ok
       }
       
       p.first mustEqual Set('1')
@@ -529,18 +499,15 @@ object CompoundSpecs extends Specification with Parsers with ScalaCheck {
       val p = literal("a") orElse literal("b")
       
       p(LineStream('a')) must beLike {
-        case Success("a", LineStream()) #:: SNil => true
-        case _ => false
+        case Success("a", LineStream()) #:: SNil => ok
       }
       
       p(LineStream('b')) must beLike {
-        case Success("b", LineStream()) #:: SNil => true
-        case _ => false
+        case Success("b", LineStream()) #:: SNil => ok
       }
       
       p(LineStream('c')) must beLike {
-        case Failure(UnexpectedChars("c"), LineStream('c')) #:: SNil => true
-        case _ => false
+        case Failure(UnexpectedChars("c"), LineStream('c')) #:: SNil => ok
       }
       
       p.first mustEqual Set('a', 'b')
@@ -550,18 +517,15 @@ object CompoundSpecs extends Specification with Parsers with ScalaCheck {
       val p = ("a" | "b") filter { _ == "a" }
       
       p(LineStream('a')) must beLike {
-        case Success("a", LineStream()) #:: SNil => true
-        case _ => false
+        case Success("a", LineStream()) #:: SNil => ok
       }
       
       p(LineStream('b')) must beLike {
-        case Failure(SyntaxError, LineStream('b')) #:: SNil => true
-        case _ => false
+        case Failure(SyntaxError, LineStream('b')) #:: SNil => ok
       }
       
       p(LineStream('c')) must beLike {
-        case Failure(UnexpectedChars("c"), LineStream('c')) #:: SNil => true
-        case _ => false
+        case Failure(UnexpectedChars("c"), LineStream('c')) #:: SNil => ok
       }
       
       p.first mustEqual Set('a', 'b')
