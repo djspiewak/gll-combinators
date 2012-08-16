@@ -48,7 +48,7 @@ trait RegexParsers extends Parsers {
     }
   }
 
-  override protected def preProcess(s: LineStream) =
+  override protected def handleWhitespace(s: LineStream) =
     s.drop(whitespace findPrefixOf s map { _.length } getOrElse 0)
   
   
