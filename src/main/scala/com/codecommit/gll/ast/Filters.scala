@@ -3,7 +3,126 @@ package com.codecommit.gll.ast
 import com.codecommit.gll._
 
 trait Filters {
-  def prec(order: Symbol*): Filter[Node] = new PrecedenceFilter(order)
+  def prec(levels: PrecLevel*): Filter[Node] = new Filter[Node] {
+    private val normalized: Seq[Set[Manifest[_]]] = levels map { l => l.specs map { _.m } }
+    
+    private val dag: Map[Manifest[_], Set[Manifest[_]]] = { 
+      val (back, _) = normalized.foldLeft((Map[Manifest[_], Set[Manifest[_]]](), Set[Manifest[_]]())) {
+        case ((dag, acc), level) =>
+          (dag ++ (level map { _ -> acc }), acc ++ level)
+      }
+      
+      back
+    }
+    
+    private val matched: Map[Manifest[_], Set[Manifest[_]]] = {
+      val pairs = normalized flatMap { level =>
+        level map { m => m -> (level - m) }
+      }
+      
+      Map(pairs: _*)
+    }
+    
+    def apply(node: Node): Boolean = {
+      import FormSpec._
+      
+      val form = node.form.linearize
+      val manifest = Manifest.classType(node.getClass)
+      
+      val forbidden = dag get manifest getOrElse Set()
+      val peers = matched get manifest getOrElse Set()
+      
+      lazy val precCheck = (form.head, form take 1 drop (form.length - 2), form.last) match {
+        case (HolePart(left), middle, HolePart(right)) if middle forall { _.isSimple } => {
+          val leftManifest = Manifest.classType(left.getClass)
+          val rightManifest = Manifest.classType(right.getClass)
+          
+          lazy val leftBeforeRight = (node.children indexOf left) < (node.children indexOf right)
+          
+          lazy val leftAssoc = !((peers contains leftManifest) ^ leftBeforeRight)
+          lazy val rightAssoc = !((peers contains rightManifest) ^ !leftBeforeRight)
+          
+          lazy val checkLeft = left.form.linearize.last match {
+            case HolePart(_) => !(forbidden contains leftManifest)
+            case _ => true
+          }
+          
+          lazy val checkRight = right.form.linearize.head match {
+            case HolePart(_) => !(forbidden contains rightManifest)
+            case _ => true
+          }
+          
+          leftAssoc && rightAssoc && checkLeft && checkRight
+        }
+        
+        // TODO additional forms
+        
+        case _ => true
+      }
+      
+      precCheck       // TODO additional checks
+    }
+  }
+  
+  
+  case class PrecLevel(specs: Set[ManWrap])
+  
+  case object PrecLevel extends (Set[ManWrap] => PrecLevel) {
+    implicit def coerce1[A <% ManWrap](a: A): PrecLevel =
+      PrecLevel(Set[ManWrap](a))
+    
+    implicit def coerce2[A <% ManWrap, B <% ManWrap](pair: (A, B)): PrecLevel =
+      PrecLevel(Set[ManWrap](pair._1, pair._2))
+    
+    implicit def coerce3[A <% ManWrap, B <% ManWrap, C <% ManWrap](pair: (A, B, C)): PrecLevel =
+      PrecLevel(Set[ManWrap](pair._1, pair._2, pair._3))
+    
+    implicit def coerce4[A <% ManWrap, B <% ManWrap, C <% ManWrap, D <% ManWrap](pair: (A, B, C, D)): PrecLevel =
+      PrecLevel(Set[ManWrap](pair._1, pair._2, pair._3, pair._4))
+    
+    implicit def coerce5[A <% ManWrap, B <% ManWrap, C <% ManWrap, D <% ManWrap, E <% ManWrap](pair: (A, B, C, D, E)): PrecLevel =
+      PrecLevel(Set[ManWrap](pair._1, pair._2, pair._3, pair._4, pair._5))
+  }
+  
+  // newtype ManWrap { m :: Manifest }
+  case class ManWrap(m: Manifest[_])
+  
+  case object ManWrap extends (Manifest[_] => ManWrap) {
+    implicit def coerceValue0[A <: Node](v: A)(implicit m: Manifest[A]): ManWrap =
+      ManWrap(m)
+    
+    implicit def coerceCompanion1[A <: Node](c: _ => A)(implicit m: Manifest[A]): ManWrap =
+      ManWrap(m)
+    
+    implicit def coerceCompanion2[A <: Node](c: (_, _) => A)(implicit m: Manifest[A]): ManWrap =
+      ManWrap(m)
+    
+    implicit def coerceCompanion3[A <: Node](c: (_, _, _) => A)(implicit m: Manifest[A]): ManWrap =
+      ManWrap(m)
+    
+    implicit def coerceCompanion4[A <: Node](c: (_, _, _, _) => A)(implicit m: Manifest[A]): ManWrap =
+      ManWrap(m)
+    
+    implicit def coerceCompanion5[A <: Node](c: (_, _, _, _, _) => A)(implicit m: Manifest[A]): ManWrap =
+      ManWrap(m)
+    
+    implicit def coerceCompanion6[A <: Node](c: (_, _, _, _, _, _) => A)(implicit m: Manifest[A]): ManWrap =
+      ManWrap(m)
+    
+    implicit def coerceCompanion7[A <: Node](c: (_, _, _, _, _, _, _) => A)(implicit m: Manifest[A]): ManWrap =
+      ManWrap(m)
+    
+    implicit def coerceCompanion8[A <: Node](c: (_, _, _, _, _, _, _, _) => A)(implicit m: Manifest[A]): ManWrap =
+      ManWrap(m)
+    
+    implicit def coerceCompanion9[A <: Node](c: (_, _, _, _, _, _, _, _, _) => A)(implicit m: Manifest[A]): ManWrap =
+      ManWrap(m)
+    
+    implicit def coerceCompanion10[A <: Node](c: (_, _, _, _, _, _, _, _, _, _) => A)(implicit m: Manifest[A]): ManWrap =
+      ManWrap(m)
+  }
+  
+  /* def prec(order: Symbol*): Filter[Node] = new PrecedenceFilter(order)
   
   implicit def liftFilter[A](f: Filter[A])(str: Stream[Result[A]]): Stream[Result[A]] = {
     str filter {
@@ -81,7 +200,7 @@ trait Filters {
         true
       }
     }
-  }
+  } */
 }
 
 object Filters extends Filters

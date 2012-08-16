@@ -16,12 +16,10 @@ object FilterSpecs extends Specification
   
   "ast filtering" should {
     "disambiguate left-associativity" in {
-      val assoc = 'add <
-      
       lazy val expr: Parser[Expr] = (
           expr ~ ("+" ~> expr) ^^ Add
         | num                  ^^ IntLit
-      ) filter assoc
+      ) filter prec(Add)
       
       expr("1") must beLike {
         case Stream(Success(IntLit(1), LineStream())) => ok
@@ -41,23 +39,21 @@ object FilterSpecs extends Specification
     }
     
     "disambiguate right-associativity" in {
-      val assoc = 'add >
-      
       lazy val expr: Parser[Expr] = (
-          expr ~ ("+" ~> expr) ^^ Add
+          expr ~ ("+" ~> expr) ^^ AddRight
         | num                  ^^ IntLit
-      ) filter assoc
+      ) filter prec(AddRight)
       
       expr("1") must beLike {
         case Stream(Success(IntLit(1), LineStream())) => ok
       }
       
       expr("1 + 2") must beLike {
-        case Stream(Success(Add(IntLit(1), IntLit(2)), LineStream())) => ok
+        case Stream(Success(AddRight(IntLit(1), IntLit(2)), LineStream())) => ok
       }
       
       expr("1 + 2 + 3") must beLike {
-        case Stream(Success(Add(IntLit(1), Add(IntLit(2), IntLit(3))), LineStream())) => ok
+        case Stream(Success(AddRight(IntLit(1), AddRight(IntLit(2), IntLit(3))), LineStream())) => ok
       }
       
       check { num: Int =>
@@ -70,7 +66,7 @@ object FilterSpecs extends Specification
           expr ~ ("+" ~> expr) ^^ Add
         | expr ~ ("-" ~> expr) ^^ Sub
         | num                  ^^ IntLit
-      ) filter prec('add, 'sub)
+      ) filter prec(Add, Sub)
       
       expr("1") must beLike {
         case Stream(Success(IntLit(1), LineStream())) => ok
@@ -98,7 +94,7 @@ object FilterSpecs extends Specification
           expr ~ ("+" ~> expr) ^^ Add
         | "-" ~> expr          ^^ Neg
         | num                  ^^ IntLit
-      ) filter prec('neg, 'add)
+      ) filter prec(Neg, Add)
       
       expr("1") must beLike {
         case Stream(Success(IntLit(1), LineStream())) => ok
@@ -126,7 +122,7 @@ object FilterSpecs extends Specification
           expr ~ ("+" ~> expr) ^^ Add
         | "-" ~> expr          ^^ Neg
         | num                  ^^ IntLit
-      ) filter prec('add, 'neg)
+      ) filter prec(Add, Neg)
       
       expr("1") must beLike {
         case Stream(Success(IntLit(1), LineStream())) => ok
@@ -154,7 +150,7 @@ object FilterSpecs extends Specification
           expr ~ ("+" ~> expr) ^^ Add
         | expr <~ "~"          ^^ Comp
         | num                  ^^ IntLit
-      ) filter prec('add, 'comp)
+      ) filter prec(Add, Comp)
       
       expr("1") must beLike {
         case Stream(Success(IntLit(1), LineStream())) => ok
@@ -183,7 +179,7 @@ object FilterSpecs extends Specification
         | "~" ~> expr          ^^ Comp2
         | "(" ~> expr <~ ")"
         | num                  ^^ IntLit
-      ) filter prec('add, 'neg, 'comp2)
+      ) filter prec(Add, Neg, Comp2)
       
       expr("-~1") must beLike {
         case Stream(Success(Neg(Comp2(IntLit(1))), LineStream())) => ok
@@ -199,7 +195,7 @@ object FilterSpecs extends Specification
           "-" ~> expr          ^^ Neg
         | expr <~ "~"          ^^ Comp
         | num                  ^^ IntLit
-      ) filter prec('comp, 'neg)
+      ) filter prec(Comp, Neg)
       
       expr("1") must beLike {
         case Stream(Success(IntLit(1), LineStream())) => ok
@@ -230,31 +226,44 @@ object FilterSpecs extends Specification
   }
   
   case class Add(left: Expr, right: Expr) extends Expr with BinaryNode {
-    val label = 'add
+    val assocLeft = true
+    val sym = 'add
+    
+    val solve = left.solve + right.solve
+  }
+  
+  case class AddRight(left: Expr, right: Expr) extends Expr with BinaryNode {
+    val assocLeft = false
+    override val assocRight = true
+    
+    val sym = 'add
     
     val solve = left.solve + right.solve
   }
   
   case class Sub(left: Expr, right: Expr) extends Expr with BinaryNode {
-    val label = 'sub
+    val assocLeft = true
+    val sym = 'sub
     
     val solve = left.solve - right.solve
   }
   
   case class Mul(left: Expr, right: Expr) extends Expr with BinaryNode {
-    val label = 'mul
+    val assocLeft = true
+    val sym = 'mul
     
     val solve = left.solve * right.solve
   }
   
   case class Div(left: Expr, right: Expr) extends Expr with BinaryNode {
-    val label = 'div
+    val assocLeft = true
+    val sym = 'div
     
     val solve = left.solve / right.solve
   }
   
   case class Neg(child: Expr) extends Expr with UnaryNode {
-    val label = 'neg
+    val sym = 'neg
     
     val isPrefix = true
     
@@ -262,7 +271,7 @@ object FilterSpecs extends Specification
   }
   
   case class Comp2(child: Expr) extends Expr with UnaryNode {
-    val label = 'comp2
+    val sym = 'comp2
     
     val isPrefix = true
     
@@ -270,17 +279,14 @@ object FilterSpecs extends Specification
   }
   
   case class Comp(child: Expr) extends Expr with UnaryNode {
-    val label = 'comp
+    val sym = 'comp
     
     val isPrefix = false
     
     val solve = ~child.solve
   }
   
-  case class IntLit(i: Int) extends Expr {
-    val label = 'int
-    val children = Nil
-    
+  case class IntLit(i: Int) extends Expr with LeafNode {
     val solve = i
   }
 }
