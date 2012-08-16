@@ -77,6 +77,17 @@ object RegexSpecs extends Specification with ScalaCheck with RegexParsers {
         }
       }
     }
+
+    "produce a location of after leading whitespace" in {
+      case class A(loc: LineStream, x: String)
+
+      val p = literal("daniel") ^# { (loc, x) => A(loc, x) }
+
+      p("    daniel") must beLike {
+        case Success(A(l, "daniel"), LineStream()) #:: SNil => l.colNum == 5 && l.toString == "daniel"
+        case _ => false
+      }
+    }
     
     "eat leading whitespace" in {
       val p = literal("daniel")

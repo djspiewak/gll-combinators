@@ -17,9 +17,6 @@ trait RegexParsers extends Parsers {
           val wsFirst = if (skipWhitespace) RegexUtils.first(whitespace) else Set[Option[Char]]()
           Some((wsFirst - None) ++ (super.computeFirst(seen) getOrElse Set[Option[Char]]()))
         }
-        
-        // there should be a way to do this with traits, but I haven't found it yet
-        override def parse(s: LineStream) = super.parse(handleWhitespace(s))
       }
     } else super.literal(str)
   }
@@ -27,7 +24,7 @@ trait RegexParsers extends Parsers {
   implicit def regex(r: Regex): RegexParser = {
     if (skipWhitespace) {
       new RegexParser(r) {
-        override def parse(s: LineStream) = super.parse(handleWhitespace(s))
+        override def parse(s: LineStream) = super.parse(s)
       }
     } else new RegexParser(r)
   }
@@ -40,15 +37,6 @@ trait RegexParsers extends Parsers {
   
   implicit def funRegexSyntax(p: Regex) = new RichSyntax1(regex(p))
   
-  override protected def processTail(tail: LineStream) = {
-    val newTail = if (skipWhitespace)
-      handleWhitespace(tail)
-    else
-      tail
-    
-    super.processTail(newTail)
-  }
-  
   private def escapeRegex(str: String) = {
     val specialChars = Set('[', ']', '{', '}', '\\', '|', '*', '+', '?', '^', '$', '(', ')')
     
@@ -59,8 +47,8 @@ trait RegexParsers extends Parsers {
         str + c
     }
   }
-  
-  private def handleWhitespace(s: LineStream) =
+
+  override protected def preProcess(s: LineStream) =
     s.drop(whitespace findPrefixOf s map { _.length } getOrElse 0)
   
   

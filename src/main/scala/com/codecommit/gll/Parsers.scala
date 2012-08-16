@@ -21,8 +21,13 @@ trait Parsers {
   
   def rep1[A](p: Parser[A]) = p+
   
-  protected def processTail(tail: LineStream) = if (tail.isEmpty) Some(tail) else None
-  
+  private def processTail(tail: LineStream) = {
+    val preProcessed = preProcess(tail)
+    if (preProcessed.isEmpty) Some(preProcessed) else None
+  }
+
+  protected def preProcess(s: LineStream) = s
+
   private def canonicalize(str: String) = str.foldLeft("") { (back, c) =>
     val tack = c match {
       case '\n' => "\\n"
@@ -325,7 +330,7 @@ trait Parsers {
   trait TerminalParser[+R] extends Parser[R] { self =>
     final val terminal = true
     
-    final def apply(in: LineStream) = Stream(parse(in) match {
+    final def apply(in: LineStream) = Stream(parse(preProcess(in)) match {
       case Success(res, tail) => processTail(tail) match {
         case Some(tail) => Success(res, tail)
         case None => Failure(UnexpectedTrailingChars(canonicalize(tail.mkString)), tail)
@@ -338,7 +343,7 @@ trait Parsers {
      * For terminal parsing, this just delegates back to apply()
      */
     def chain(t: Trampoline, in: LineStream)(f: Result[R] => Unit) {
-      f(parse(in))
+      f(parse(preProcess(in)))
     }
     
     protected[gll] def parse(in: LineStream): Result[R]
@@ -366,8 +371,8 @@ trait Parsers {
             }
           }
           
-          def parse(in: LineStream) = self.parse(in) match {
-            case Success(res1, tail) => other.parse(tail) match {
+          def parse(in: LineStream) = self.parse(preProcess(in)) match {
+            case Success(res1, tail) => other.parse(preProcess(tail)) match {
               case Success(res2, tail) => Success(new ~(res1, res2), tail)
               case f: Failure => f
             }
@@ -398,9 +403,12 @@ trait Parsers {
     }
     
     def mapWithTail[R2](f: (LineStream, R) => R2): Parser[R2] = new MappedParser[R, R2](self, f) with TerminalParser[R2] {
-      def parse(in: LineStream) = self.parse(in) match {
-        case Success(res, tail) => Success(f(in, res), tail)
-        case x: Failure => x
+      def parse(in: LineStream) = {
+        val preProcessed = preProcess(in)
+        self.parse(preProcessed) match {
+          case Success(res, tail) => Success(f(preProcessed, res), tail)
+          case x: Failure => x
+        }
       }
     }
   }
