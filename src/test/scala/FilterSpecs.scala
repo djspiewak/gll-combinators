@@ -28,7 +28,7 @@ object FilterSpecs extends Specification
       expr("1 + 2") must beLike {
         case Stream(Success(Add(IntLit(1), IntLit(2)), LineStream())) => ok
       }
-      
+   
       expr("1 + 2 + 3") must beLike {
         case Stream(Success(Add(Add(IntLit(1), IntLit(2)), IntLit(3)), LineStream())) => ok
       }

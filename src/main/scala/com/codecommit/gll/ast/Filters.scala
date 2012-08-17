@@ -7,8 +7,8 @@ trait Filters {
     private val normalized: Seq[Set[Manifest[_]]] = levels map { l => l.specs map { _.m } }
     
     private val dag: Map[Manifest[_], Set[Manifest[_]]] = { 
-      val (back, _) = normalized.foldLeft((Map[Manifest[_], Set[Manifest[_]]](), Set[Manifest[_]]())) {
-        case ((dag, acc), level) =>
+      val (back, _) = normalized.foldRight((Map[Manifest[_], Set[Manifest[_]]](), Set[Manifest[_]]())) {
+        case (level, (dag, acc)) =>
           (dag ++ (level map { _ -> acc }), acc ++ level)
       }
       
@@ -17,7 +17,7 @@ trait Filters {
     
     private val matched: Map[Manifest[_], Set[Manifest[_]]] = {
       val pairs = normalized flatMap { level =>
-        level map { m => m -> (level - m) }
+        level map { m => m -> level }
       }
       
       Map(pairs: _*)
@@ -32,15 +32,18 @@ trait Filters {
       val forbidden = dag get manifest getOrElse Set()
       val peers = matched get manifest getOrElse Set()
       
-      lazy val precCheck = (form.head, form take 1 drop (form.length - 2), form.last) match {
+      (form.head, form drop 1 take (form.length - 2), form.last) match {
         case (HolePart(left), middle, HolePart(right)) if middle forall { _.isSimple } => {
           val leftManifest = Manifest.classType(left.getClass)
           val rightManifest = Manifest.classType(right.getClass)
           
           lazy val leftBeforeRight = (node.children indexOf left) < (node.children indexOf right)
           
-          lazy val leftAssoc = !((peers contains leftManifest) ^ leftBeforeRight)
-          lazy val rightAssoc = !((peers contains rightManifest) ^ !leftBeforeRight)
+          lazy val leftAssoc = 
+            if (peers contains leftManifest) leftBeforeRight else true
+          
+          lazy val rightAssoc =
+            if (peers contains rightManifest) !leftBeforeRight else true
           
           lazy val checkLeft = left.form.linearize.last match {
             case HolePart(_) => !(forbidden contains leftManifest)
@@ -55,12 +58,32 @@ trait Filters {
           leftAssoc && rightAssoc && checkLeft && checkRight
         }
         
+        // prefix unary
+        case (head, middle, HolePart(child)) if head.isSimple && (middle forall { _.isSimple }) => {
+          val childManifest = Manifest.classType(child.getClass)
+          
+          child.form.linearize.head match {
+            case HolePart(_) => !(forbidden contains childManifest)
+            case _ => true
+          }
+        }
+        
+        // suffix unary
+        case (HolePart(child), middle, last) if last.isSimple && (middle forall { _.isSimple }) => {
+          val childManifest = Manifest.classType(child.getClass)
+          
+          child.form.linearize.last match {
+            case HolePart(_) => !(forbidden contains childManifest)
+            case _ => true
+          }
+        }
+        
         // TODO additional forms
         
         case _ => true
       }
       
-      precCheck       // TODO additional checks
+      // TODO additional checks
     }
   }
   
