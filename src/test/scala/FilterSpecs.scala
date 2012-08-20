@@ -2,10 +2,15 @@ import com.codecommit.gll
 import gll._
 import gll.ast._
 
-import org.specs._
+import org.specs2.ScalaCheck
+import org.specs2.mutable._
 import org.scalacheck._
 
-object FilterSpecs extends Specification with ScalaCheck with RegexParsers {
+object FilterSpecs extends Specification
+    with NoTildeSyntax
+    with ScalaCheck
+    with RegexParsers {
+      
   import Prop._
   import Filters._
   
@@ -19,25 +24,20 @@ object FilterSpecs extends Specification with ScalaCheck with RegexParsers {
       ) filter assoc
       
       expr("1") must beLike {
-        case Stream(Success(IntLit(1), LineStream())) => true
-        case _ => false
+        case Stream(Success(IntLit(1), LineStream())) => ok
       }
       
       expr("1 + 2") must beLike {
-        case Stream(Success(Add(IntLit(1), IntLit(2)), LineStream())) => true
-        case _ => false
+        case Stream(Success(Add(IntLit(1), IntLit(2)), LineStream())) => ok
       }
       
       expr("1 + 2 + 3") must beLike {
-        case Stream(Success(Add(Add(IntLit(1), IntLit(2)), IntLit(3)), LineStream())) => true
-        case _ => false
+        case Stream(Success(Add(Add(IntLit(1), IntLit(2)), IntLit(3)), LineStream())) => ok
       }
       
-      val prop = forAll { num: Int =>
-        expr(1 to ((num % 15) + 1) mkString " + ").lengthCompare(1) == 0
+      check { num: Int =>
+        expr(1 to ((num % 15) + 1) mkString " + ").lengthCompare(1) mustEqual 0
       }
-      
-      prop must pass
     }
     
     "disambiguate right-associativity" in {
@@ -49,25 +49,20 @@ object FilterSpecs extends Specification with ScalaCheck with RegexParsers {
       ) filter assoc
       
       expr("1") must beLike {
-        case Stream(Success(IntLit(1), LineStream())) => true
-        case _ => false
+        case Stream(Success(IntLit(1), LineStream())) => ok
       }
       
       expr("1 + 2") must beLike {
-        case Stream(Success(Add(IntLit(1), IntLit(2)), LineStream())) => true
-        case _ => false
+        case Stream(Success(Add(IntLit(1), IntLit(2)), LineStream())) => ok
       }
       
       expr("1 + 2 + 3") must beLike {
-        case Stream(Success(Add(IntLit(1), Add(IntLit(2), IntLit(3))), LineStream())) => true
-        case _ => false
+        case Stream(Success(Add(IntLit(1), Add(IntLit(2), IntLit(3))), LineStream())) => ok
       }
       
-      val prop = forAll { num: Int =>
-        expr(1 to ((num % 15) + 1) mkString " + ").lengthCompare(1) == 0
+      check { num: Int =>
+        expr(1 to ((num % 15) + 1) mkString " + ").lengthCompare(1) mustEqual 0
       }
-      
-      prop must pass
     }
     
     "disambiguate binary operations with precedence" in {
@@ -78,28 +73,23 @@ object FilterSpecs extends Specification with ScalaCheck with RegexParsers {
       ) filter prec('add, 'sub)
       
       expr("1") must beLike {
-        case Stream(Success(IntLit(1), LineStream())) => true
-        case _ => false
+        case Stream(Success(IntLit(1), LineStream())) => ok
       }
       
       expr("1 + 2") must beLike {
-        case Stream(Success(Add(IntLit(1), IntLit(2)), LineStream())) => true
-        case _ => false
+        case Stream(Success(Add(IntLit(1), IntLit(2)), LineStream())) => ok
       }
       
       expr("1 - 2") must beLike {
-        case Stream(Success(Sub(IntLit(1), IntLit(2)), LineStream())) => true
-        case _ => false
+        case Stream(Success(Sub(IntLit(1), IntLit(2)), LineStream())) => ok
       }
       
       expr("1 + 2 - 3") must beLike {
-        case Stream(Success(Sub(Add(IntLit(1), IntLit(2)), IntLit(3)), LineStream())) => true
-        case _ => false
+        case Stream(Success(Sub(Add(IntLit(1), IntLit(2)), IntLit(3)), LineStream())) => ok
       }
       
       expr("1 - 2 + 3") must beLike {
-        case Stream(Success(Sub(IntLit(1), Add(IntLit(2), IntLit(3))), LineStream())) => true
-        case _ => false
+        case Stream(Success(Sub(IntLit(1), Add(IntLit(2), IntLit(3))), LineStream())) => ok
       }
     }
     
@@ -111,28 +101,23 @@ object FilterSpecs extends Specification with ScalaCheck with RegexParsers {
       ) filter prec('neg, 'add)
       
       expr("1") must beLike {
-        case Stream(Success(IntLit(1), LineStream())) => true
-        case _ => false
+        case Stream(Success(IntLit(1), LineStream())) => ok
       }
       
       expr("-1") must beLike {
-        case Stream(Success(Neg(IntLit(1)), LineStream())) => true
-        case _ => false
+        case Stream(Success(Neg(IntLit(1)), LineStream())) => ok
       }
       
       expr("1 + 2") must beLike {
-        case Stream(Success(Add(IntLit(1), IntLit(2)), LineStream())) => true
-        case _ => false
+        case Stream(Success(Add(IntLit(1), IntLit(2)), LineStream())) => ok
       }
       
       expr("-1 + 2") must beLike {
-        case Stream(Success(Add(Neg(IntLit(1)), IntLit(2)), LineStream())) => true
-        case _ => false
+        case Stream(Success(Add(Neg(IntLit(1)), IntLit(2)), LineStream())) => ok
       }
       
       expr("1 + -2") must beLike {
-        case Stream(Success(Add(IntLit(1), Neg(IntLit(2))), LineStream())) => true
-        case _ => false
+        case Stream(Success(Add(IntLit(1), Neg(IntLit(2))), LineStream())) => ok
       }
     }
     
@@ -144,28 +129,23 @@ object FilterSpecs extends Specification with ScalaCheck with RegexParsers {
       ) filter prec('add, 'neg)
       
       expr("1") must beLike {
-        case Stream(Success(IntLit(1), LineStream())) => true
-        case _ => false
+        case Stream(Success(IntLit(1), LineStream())) => ok
       }
       
       expr("-1") must beLike {
-        case Stream(Success(Neg(IntLit(1)), LineStream())) => true
-        case _ => false
+        case Stream(Success(Neg(IntLit(1)), LineStream())) => ok
       }
       
       expr("1 + 2") must beLike {
-        case Stream(Success(Add(IntLit(1), IntLit(2)), LineStream())) => true
-        case _ => false
+        case Stream(Success(Add(IntLit(1), IntLit(2)), LineStream())) => ok
       }
       
       expr("-1 + 2") must beLike {
-        case Stream(Success(Neg(Add(IntLit(1), IntLit(2))), LineStream())) => true
-        case _ => false
+        case Stream(Success(Neg(Add(IntLit(1), IntLit(2))), LineStream())) => ok
       }
       
       expr("1 + -2") must beLike {
-        case Stream(Success(Add(IntLit(1), Neg(IntLit(2))), LineStream())) => true
-        case _ => false
+        case Stream(Success(Add(IntLit(1), Neg(IntLit(2))), LineStream())) => ok
       }
     }
     
@@ -177,28 +157,23 @@ object FilterSpecs extends Specification with ScalaCheck with RegexParsers {
       ) filter prec('add, 'comp)
       
       expr("1") must beLike {
-        case Stream(Success(IntLit(1), LineStream())) => true
-        case _ => false
+        case Stream(Success(IntLit(1), LineStream())) => ok
       }
       
       expr("1~") must beLike {
-        case Stream(Success(Comp(IntLit(1)), LineStream())) => true
-        case _ => false
+        case Stream(Success(Comp(IntLit(1)), LineStream())) => ok
       }
       
       expr("1 + 2") must beLike {
-        case Stream(Success(Add(IntLit(1), IntLit(2)), LineStream())) => true
-        case _ => false
+        case Stream(Success(Add(IntLit(1), IntLit(2)), LineStream())) => ok
       }
       
       expr("1 + 2~") must beLike {
-        case Stream(Success(Comp(Add(IntLit(1), IntLit(2))), LineStream())) => true
-        case _ => false
+        case Stream(Success(Comp(Add(IntLit(1), IntLit(2))), LineStream())) => ok
       }
       
       expr("1~ + 2") must beLike {
-        case Stream(Success(Add(Comp(IntLit(1)), IntLit(2)), LineStream())) => true
-        case _ => false
+        case Stream(Success(Add(Comp(IntLit(1)), IntLit(2)), LineStream())) => ok
       }
     }
     
@@ -211,13 +186,11 @@ object FilterSpecs extends Specification with ScalaCheck with RegexParsers {
       ) filter prec('add, 'neg, 'comp2)
       
       expr("-~1") must beLike {
-        case Stream(Success(Neg(Comp2(IntLit(1))), LineStream())) => true
-        case _ => false
+        case Stream(Success(Neg(Comp2(IntLit(1))), LineStream())) => ok
       }
       
       expr("~-1") must beLike {
-        case Stream(Success(Comp2(Neg(IntLit(1))), LineStream())) => true
-        case _ => false
+        case Stream(Success(Comp2(Neg(IntLit(1))), LineStream())) => ok
       }
     }
     
@@ -229,23 +202,19 @@ object FilterSpecs extends Specification with ScalaCheck with RegexParsers {
       ) filter prec('comp, 'neg)
       
       expr("1") must beLike {
-        case Stream(Success(IntLit(1), LineStream())) => true
-        case _ => false
+        case Stream(Success(IntLit(1), LineStream())) => ok
       }
       
       expr("-1") must beLike {
-        case Stream(Success(Neg(IntLit(1)), LineStream())) => true
-        case _ => false
+        case Stream(Success(Neg(IntLit(1)), LineStream())) => ok
       }
       
       expr("1~") must beLike {
-        case Stream(Success(Comp(IntLit(1)), LineStream())) => true
-        case _ => false
+        case Stream(Success(Comp(IntLit(1)), LineStream())) => ok
       }
       
       expr("-1~") must beLike {
-        case Stream(Success(Neg(Comp(IntLit(1))), LineStream())) => true
-        case _ => false
+        case Stream(Success(Neg(Comp(IntLit(1))), LineStream())) => ok
       }
     }
   }

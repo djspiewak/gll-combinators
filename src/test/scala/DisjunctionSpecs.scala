@@ -1,9 +1,14 @@
 import com.codecommit.gll._
 
-import org.specs._
+import org.specs2.ScalaCheck
+import org.specs2.mutable._
 import org.scalacheck._
 
-object DisjunctionSpecs extends Specification with Parsers with ScalaCheck {
+object DisjunctionSpecs extends Specification
+    with NoTildeSyntax
+    with Parsers
+    with ScalaCheck {
+      
   import Prop._
   import StreamUtils._
   
@@ -11,7 +16,7 @@ object DisjunctionSpecs extends Specification with Parsers with ScalaCheck {
     "detect LL(1) grammar" in {
       {
         val p = "daniel" | "chris" | "joseph"
-        p.asInstanceOf[DisjunctiveParser[String]].isLL1 mustBe true
+        p.asInstanceOf[DisjunctiveParser[String]].isLL1 mustEqual true
       }
       
       {
@@ -19,7 +24,7 @@ object DisjunctionSpecs extends Specification with Parsers with ScalaCheck {
             "a" ~ p ^^ { _ + _ }
           | "b"
         )
-        p.asInstanceOf[DisjunctiveParser[String]].isLL1 mustBe true
+        p.asInstanceOf[DisjunctiveParser[String]].isLL1 mustEqual true
       }
       
       {
@@ -28,7 +33,7 @@ object DisjunctionSpecs extends Specification with Parsers with ScalaCheck {
           | "a"
         )
         
-        p.asInstanceOf[DisjunctiveParser[String]].isLL1 mustBe false
+        p.asInstanceOf[DisjunctiveParser[String]].isLL1 mustEqual false
       }
       
       {
@@ -37,7 +42,7 @@ object DisjunctionSpecs extends Specification with Parsers with ScalaCheck {
           | "a"
         )
         
-        p.asInstanceOf[DisjunctiveParser[String]].isLL1 mustBe false
+        p.asInstanceOf[DisjunctiveParser[String]].isLL1 mustEqual false
       }
       
       {
@@ -46,33 +51,25 @@ object DisjunctionSpecs extends Specification with Parsers with ScalaCheck {
           | ""
         )
         
-        p.asInstanceOf[DisjunctiveParser[String]].isLL1 mustBe false
+        p.asInstanceOf[DisjunctiveParser[String]].isLL1 mustEqual false
       }
     }
     
-    "gather binary alternatives" in {
-      val prop = forAll { (left: String, right: String) =>
-        val p = (left | right).asInstanceOf[DisjunctiveParser[String]]
-        p.gather == List(literal(left), literal(right))
-      }
-      
-      prop must pass
+    "gather binary alternatives" in check { (left: String, right: String) =>
+      val p = (left | right).asInstanceOf[DisjunctiveParser[String]]
+      p.gather mustEqual List(literal(left), literal(right))
     }
     
-    "compute FIRST for binary alternatives" in {
+    "compute FIRST for binary alternatives" in check { (left: String, right: String) =>
       import com.codecommit.util._
       
-      val prop = forAll { (left: String, right: String) =>
-        val leftFirst = if (left.length == 0) Set[Char]() else Set(left charAt 0)
-        val rightFirst = if (right.length == 0) Set[Char]() else Set(right charAt 0)
-        
-        if (leftFirst.size == 0 || rightFirst.size == 0)
-          (left | right).first == UniversalCharSet
-        else
-          (left | right).first == (leftFirst ++ rightFirst)
-      }
+      val leftFirst = if (left.length == 0) Set[Char]() else Set(left charAt 0)
+      val rightFirst = if (right.length == 0) Set[Char]() else Set(right charAt 0)
       
-      prop must pass
+      if (leftFirst.size == 0 || rightFirst.size == 0)
+        (left | right).first eq UniversalCharSet
+      else
+        (left | right).first == (leftFirst ++ rightFirst)
     }
     
     "parse binary alternatives" in {
@@ -80,13 +77,11 @@ object DisjunctionSpecs extends Specification with Parsers with ScalaCheck {
         val p = "daniel" | "chris"
         
         p("daniel") must beLike {
-          case Success("daniel", LineStream()) #:: SNil => true
-          case _ => false
+          case Success("daniel", LineStream()) #:: SNil => ok
         }
         
         p("chris") must beLike {
-          case Success("chris", LineStream()) #:: SNil => true
-          case _ => false
+          case Success("chris", LineStream()) #:: SNil => ok
         }
       }
       
@@ -94,8 +89,7 @@ object DisjunctionSpecs extends Specification with Parsers with ScalaCheck {
         val p = "" | ""
         
         p("") must beLike {
-          case Success("", LineStream()) #:: SNil => true
-          case _ => false
+          case Success("", LineStream()) #:: SNil => ok
         }
       }
     }
@@ -104,13 +98,11 @@ object DisjunctionSpecs extends Specification with Parsers with ScalaCheck {
       val p = "daniel" | "chris"
       
       p(LineStream('j')) must beLike {
-        case Failure(UnexpectedChars("j"), LineStream('j')) #:: SNil => true
-        case _ => false
+        case Failure(UnexpectedChars("j"), LineStream('j')) #:: SNil => ok
       }
       
       p(LineStream()) must beLike {
-        case Failure(UnexpectedEndOfStream(None), LineStream()) #:: SNil => true
-        case _ => false
+        case Failure(UnexpectedEndOfStream(None), LineStream()) #:: SNil => ok
       }
     }
     
@@ -118,13 +110,11 @@ object DisjunctionSpecs extends Specification with Parsers with ScalaCheck {
       val p = "daniel" | "danielle"
       
       p(LineStream('j')) must beLike {
-        case Failure(UnexpectedChars("j"), LineStream('j')) #:: SNil => true
-        case _ => false
+        case Failure(UnexpectedChars("j"), LineStream('j')) #:: SNil => ok
       }
       
       p(LineStream()) must beLike {
-        case Failure(UnexpectedEndOfStream(None), LineStream()) #:: SNil => true
-        case _ => false
+        case Failure(UnexpectedEndOfStream(None), LineStream()) #:: SNil => ok
       }
     }
     
@@ -132,13 +122,11 @@ object DisjunctionSpecs extends Specification with Parsers with ScalaCheck {
       val p = "daniel" | "chris"
       
       p("dan") must beLike {
-        case Failure(UnexpectedEndOfStream(Some("daniel")), LineStream('d', 'a', 'n')) #:: SNil => true
-        case _ => false
+        case Failure(UnexpectedEndOfStream(Some("daniel")), LineStream('d', 'a', 'n')) #:: SNil => ok
       }
       
       p("dancin") must beLike {
-        case Failure(ExpectedLiteral("daniel", "dancin"), LineStream('d', 'a', 'n', 'c', 'i', 'n')) #:: SNil => true
-        case _ => false
+        case Failure(ExpectedLiteral("daniel", "dancin"), LineStream('d', 'a', 'n', 'c', 'i', 'n')) #:: SNil => ok
       }
     }
     
@@ -146,8 +134,7 @@ object DisjunctionSpecs extends Specification with Parsers with ScalaCheck {
       val p = literal("") | literal("")
       
       p("\n") must beLike {
-        case Failure(UnexpectedTrailingChars("\\n"), LineStream('\n')) #:: SNil => true
-        case _ => false
+        case Failure(UnexpectedTrailingChars("\\n"), LineStream('\n')) #:: SNil => ok
       }
     }
     
@@ -173,7 +160,7 @@ object DisjunctionSpecs extends Specification with Parsers with ScalaCheck {
     
     "gather nary alternatives" in {
       def check(p: Parser[Any], expected: Parser[String]*) {
-        p.asInstanceOf[DisjunctiveParser[String]].gather must containAll(expected)
+        p.asInstanceOf[DisjunctiveParser[String]].gather must containAllOf(expected)
       }
       
       {
@@ -197,7 +184,7 @@ object DisjunctionSpecs extends Specification with Parsers with ScalaCheck {
       
       ("daniel" | "chris" | "joseph").first mustEqual Set('d', 'c', 'j')
       ("daniel" | "daniel" | "chris" | "joseph").first mustEqual Set('d', 'c', 'j')
-      ("" | "chris" | "" | "daniel" | "daniel").first mustEqual UniversalCharSet
+      (("" | "chris" | "" | "daniel" | "daniel").first eq UniversalCharSet) mustEqual true
     }
     
     "parse nary alternatives" in {
@@ -205,8 +192,7 @@ object DisjunctionSpecs extends Specification with Parsers with ScalaCheck {
       def check(p: Parser[Any], data: String*) = {
         for (str <- data) {
           p(str) must beLike {
-            case Success(`str`, LineStream()) #:: SNil => true
-            case _ => false
+            case Success(`str`, LineStream()) #:: SNil => ok
           }
         }
       }
@@ -280,29 +266,21 @@ object DisjunctionSpecs extends Specification with Parsers with ScalaCheck {
       }
     }
     
-    "map results" in {
-      val prop = forAll { (left: String, right: String, f: String=>Int) =>
-        left != right ==> {
-          val p = (
-              left
-            | right
-          ) ^^ f
-          
-          val res1 = p(left) match {
-            case Success(v, LineStream()) #:: SNil => v == f(left)
-            case _ => false
-          }
-          
-          val res2 = p(right) match {
-            case Success(v, LineStream()) #:: SNil => v == f(right)
-            case _ => false
-          }
-          
-          res1 && res2
+    "map results" in check { (left: String, right: String, f: String => Int) =>
+      left != right ==> {
+        val p = (
+            left
+          | right
+        ) ^^ f
+        
+        p(left) must beLike {
+          case Success(v, LineStream()) #:: SNil => v mustEqual f(left)
+        }
+        
+        p(right) must beLike {
+          case Success(v, LineStream()) #:: SNil => v mustEqual f(right)
         }
       }
-      
-      prop must pass
     }
     
     "map results with stream tail" in {
@@ -321,99 +299,91 @@ object DisjunctionSpecs extends Specification with Parsers with ScalaCheck {
       val p = p1 ~ "\n" ~> p2
       
       p("foo\nbaz") must beLike {
-        case Success("baz", LineStream()) #:: SNil => true
-        case _ => false
+        case Success("baz", LineStream()) #:: SNil => ok
       }
       
-      in1 mustNot beNull
+      in1 must not(beNull)
       in1.line mustEqual "foo"
       in1.lineNum mustEqual 1
-      in1.head mustBe 'f'
+      in1.head mustEqual 'f'
       in1.toString mustEqual "foo\nbaz"
       
-      in2 mustNot beNull
+      in2 must not(beNull)
       in2.line mustEqual "baz"
       in2.lineNum mustEqual 2
-      in2.head mustBe 'b'
+      in2.head mustEqual 'b'
       in2.toString mustEqual "baz"
       
       
       p("foo\nbin") must beLike {
-        case Success("bin", LineStream()) #:: SNil => true
-        case _ => false
+        case Success("bin", LineStream()) #:: SNil => ok
       }
       
-      in1 mustNot beNull
+      in1 must not(beNull)
       in1.line mustEqual "foo"
       in1.lineNum mustEqual 1
-      in1.head mustBe 'f'
+      in1.head mustEqual 'f'
       in1.toString mustEqual "foo\nbin"
       
-      in2 mustNot beNull
+      in2 must not(beNull)
       in2.line mustEqual "bin"
       in2.lineNum mustEqual 2
-      in2.head mustBe 'b'
+      in2.head mustEqual 'b'
       in2.toString mustEqual "bin"
       
       p("bar\nbaz") must beLike {
-        case Success("baz", LineStream()) #:: SNil => true
-        case _ => false
+        case Success("baz", LineStream()) #:: SNil => ok
       }
       
-      in1 mustNot beNull
+      in1 must not(beNull)
       in1.line mustEqual "bar"
       in1.lineNum mustEqual 1
-      in1.head mustBe 'b'
+      in1.head mustEqual 'b'
       in1.toString mustEqual "bar\nbaz"
       
-      in2 mustNot beNull
+      in2 must not(beNull)
       in2.line mustEqual "baz"
       in2.lineNum mustEqual 2
-      in2.head mustBe 'b'
+      in2.head mustEqual 'b'
       in2.toString mustEqual "baz"
       
       p("bar\nbin") must beLike {
-        case Success("bin", LineStream()) #:: SNil => true
-        case _ => false
+        case Success("bin", LineStream()) #:: SNil => ok
       }
       
-      in1 mustNot beNull
+      in1 must not(beNull)
       in1.line mustEqual "bar"
       in1.lineNum mustEqual 1
-      in1.head mustBe 'b'
+      in1.head mustEqual 'b'
       in1.toString mustEqual "bar\nbin"
       
-      in2 mustNot beNull
+      in2 must not(beNull)
       in2.line mustEqual "bin"
       in2.lineNum mustEqual 2
-      in2.head mustBe 'b'
+      in2.head mustEqual 'b'
       in2.toString mustEqual "bin"
     }
     
-    "handle binary shift/reduce ambiguity" in {
-      val prop = forAll { (head: String, suffix: String) =>
-        // %%
-        
-        val p1 = (
-            head ~ suffix     ^^ { _ + _ }
-          | head
-        )
-        
-        val p2 = "" | suffix  ^^ { " " + _ }
-        
-        val p = p1 ~ p2       ^^ { _ + _ }
-        
-        // %%
-        
-        val result = p(head + suffix)
-        
-        result.length mustEqual 2
-       
-        result mustContain Success(head + suffix, LineStream())
-        result mustContain Success(head + " " + suffix, LineStream())
-      }
+    "handle binary shift/reduce ambiguity" in check { (head: String, suffix: String) =>
+      // %%
       
-      prop must pass
+      val p1 = (
+          head ~ suffix     ^^ { _ + _ }
+        | head
+      )
+      
+      val p2 = "" | suffix  ^^ { " " + _ }
+      
+      val p = p1 ~ p2       ^^ { _ + _ }
+      
+      // %%
+      
+      val result = p(head + suffix)
+      
+      result.length mustEqual 2
+     
+      result must contain(Success(head + suffix, LineStream()))
+      result must contain(Success(head + " " + suffix, LineStream()))
     }
     
     "compute FIRST for left-recursive grammar" in {

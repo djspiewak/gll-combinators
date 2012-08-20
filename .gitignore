@@ -5,3 +5,4 @@ reports/
 .settings/
 .manager/
 .ensime
+.ensime_lucene/

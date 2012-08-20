@@ -2,7 +2,8 @@ import com.codecommit._
 import gll._
 import util._
 
-import org.specs._
+import org.specs2.ScalaCheck
+import org.specs2.mutable._
 import org.scalacheck._
 
 object RegexUtilsSpecs extends Specification with ScalaCheck {
@@ -12,53 +13,45 @@ object RegexUtilsSpecs extends Specification with ScalaCheck {
   "regexp FIRST set computation" should {
     val specialChars = Set('[', ']', '{', '}', '\\', '|', '*', '+', '?', '^', '$', '(', ')', '.')
     
-    "handle single characters" in {
-      val prop = forAll { c: Char =>
-        !specialChars(c) ==> {
-          first(c.toString.r) contains Some(c)
-        }
+    "handle single characters" in check { c: Char =>
+      !specialChars(c) ==> {
+        first(c.toString.r) must contain(Some(c))
       }
-      
-      prop must pass
     }
     
-    "handle character sequences" in {
-      val prop = forAll { str: String =>
-        (!(str exists specialChars) && !str.isEmpty) ==> {
-          first(str.r) contains Some(str charAt 0)
-        }
+    "handle character sequences" in check { str: String =>
+      (!(str exists specialChars) && !str.isEmpty) ==> {
+        first(str.r) must contain(Some(str charAt 0))
       }
-      
-      prop must pass
     }
     
     "handle disjunctions" in {
-      first("a|b".r) must containAll(Set(Some('a'), Some('b')))
-      first("a|b|c".r) must containAll(Set(Some('a'), Some('b'), Some('c')))
-      first("a|b|c|a".r) must containAll(Set(Some('a'), Some('b'), Some('c')))
+      first("a|b".r) must containAllOf(List(Some('a'), Some('b')))
+      first("a|b|c".r) must containAllOf(List(Some('a'), Some('b'), Some('c')))
+      first("a|b|c|a".r) must containAllOf(List(Some('a'), Some('b'), Some('c')))
     }
     
     "handle regex ending in \\b" in {
-      first("abc\\b".r) must containAll(Set(Some('a')))
+      first("abc\\b".r) must containAllOf(List(Some('a')))
     }
     
     "handle all special character classes" in {
-      val alpha = Set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ": _*) map { Some(_): Option[Char] }
-      val num = Set('0', '1', '2', '3', '4', '5', '6', '7', '8', '9') map { Some(_): Option[Char] }
-      val ws = Set(' ', '\t', '\r', '\n') map { Some(_): Option[Char] }
+      val alpha = List("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ": _*) map { Some(_): Option[Char] }
+      val num = List('0', '1', '2', '3', '4', '5', '6', '7', '8', '9') map { Some(_): Option[Char] }
+      val ws = List(' ', '\t', '\r', '\n') map { Some(_): Option[Char] }
       
-      first("""\d"""r) must containAll(num)
-      first("""\D"""r) mustEqual (new ComplementarySet(num) - None)
+      first("""\d"""r) must containAllOf(num)
+      (first("""\D"""r) == (new ComplementarySet(Set(num: _*)) - None)) mustEqual true
       
-      first("""\w"""r) must containAll(alpha)
-      first("""\W"""r) mustEqual (new ComplementarySet(alpha) - None)
+      first("""\w"""r) must containAllOf(alpha)
+      (first("""\W"""r) == (new ComplementarySet(Set(alpha: _*)) - None)) mustEqual true
       
-      first("""\s"""r) must containAll(ws)
-      first("""\S"""r) mustEqual (new ComplementarySet(ws) - None)
+      first("""\s"""r) must containAllOf(ws)
+      (first("""\S"""r) == (new ComplementarySet(Set(ws: _*)) - None)) mustEqual true
       
-      first("""\n"""r) must containAll(Set(Some('\n')))
-      first("""\r"""r) must containAll(Set(Some('\r')))
-      first("""\t"""r) must containAll(Set(Some('\t')))
+      first("""\n"""r) must containAllOf(List(Some('\n')))
+      first("""\r"""r) must containAllOf(List(Some('\r')))
+      first("""\t"""r) must containAllOf(List(Some('\t')))
     }
     
     "correctly parse a char set containing otherwise-illegal characters" in {
@@ -69,7 +62,7 @@ object RegexUtilsSpecs extends Specification with ScalaCheck {
     }
     
     "return the universal set for a failed parse" in {
-      first("""\@"""r) mustBe UniversalOptCharSet
+      (first("""\@"""r) eq UniversalOptCharSet) mustEqual true
     }
   }
 }

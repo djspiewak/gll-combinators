@@ -1,9 +1,14 @@
 import com.codecommit.gll._
 
-import org.specs._
+import org.specs2.ScalaCheck
+import org.specs2.mutable._
 import org.scalacheck._
 
-object TerminalSpecs extends Specification with ScalaCheck with Parsers {
+object TerminalSpecs extends Specification
+    with NoTildeSyntax
+    with ScalaCheck
+    with Parsers {
+      
   import Prop._
   import StreamUtils._
   
@@ -12,8 +17,7 @@ object TerminalSpecs extends Specification with ScalaCheck with Parsers {
       val p = literal("test")
       
       p("test") must beLike {
-        case Success("test", LineStream()) #:: SNil => true
-        case _ => false
+        case Success("test", LineStream()) #:: SNil => ok
       }
     }
     
@@ -21,13 +25,11 @@ object TerminalSpecs extends Specification with ScalaCheck with Parsers {
       val p = literal("foo")
       
       p("bar") must beLike {
-        case Failure(ExpectedLiteral("foo", "bar"), LineStream('b', 'a', 'r')) #:: SNil => true
-        case _ => false
+        case Failure(ExpectedLiteral("foo", "bar"), LineStream('b', 'a', 'r')) #:: SNil => ok
       }
       
       p("test") must beLike {
-        case Failure(ExpectedLiteral("foo", "tes"), LineStream('t', 'e', 's', 't')) #:: SNil => true
-        case _ => false
+        case Failure(ExpectedLiteral("foo", "tes"), LineStream('t', 'e', 's', 't')) #:: SNil => ok
       }
     }
     
@@ -35,30 +37,25 @@ object TerminalSpecs extends Specification with ScalaCheck with Parsers {
       val p = literal("")
       
       p("\n") must beLike {
-        case Failure(UnexpectedTrailingChars("\\n"), LineStream('\n')) #:: SNil => true
-        case _ => false
+        case Failure(UnexpectedTrailingChars("\\n"), LineStream('\n')) #:: SNil => ok
       }
       
       val p2 = literal("a")
       
       p2("\n") must beLike {
-        case Failure(ExpectedLiteral("a", "\\n"), LineStream('\n')) #:: SNil => true
-        case _ => false
+        case Failure(ExpectedLiteral("a", "\\n"), LineStream('\n')) #:: SNil => ok
       }
       
       p2("\r") must beLike {
-        case Failure(ExpectedLiteral("a", "\\r"), LineStream('\r')) #:: SNil => true
-        case _ => false
+        case Failure(ExpectedLiteral("a", "\\r"), LineStream('\r')) #:: SNil => ok
       }
       
       p2("\t") must beLike {
-        case Failure(ExpectedLiteral("a", "\\t"), LineStream('\t')) #:: SNil => true
-        case _ => false
+        case Failure(ExpectedLiteral("a", "\\t"), LineStream('\t')) #:: SNil => ok
       }
       
       p2("\f") must beLike {
-        case Failure(ExpectedLiteral("a", "\\f"), LineStream('\f')) #:: SNil => true
-        case _ => false
+        case Failure(ExpectedLiteral("a", "\\f"), LineStream('\f')) #:: SNil => ok
       }
     }
     
@@ -66,13 +63,11 @@ object TerminalSpecs extends Specification with ScalaCheck with Parsers {
       val p = literal("foo")
       
       p(LineStream('f')) must beLike {
-        case Failure(UnexpectedEndOfStream(Some("foo")), LineStream('f')) #:: SNil => true
-        case _ => false
+        case Failure(UnexpectedEndOfStream(Some("foo")), LineStream('f')) #:: SNil => ok
       }
       
       p(LineStream()) must beLike {
-        case Failure(UnexpectedEndOfStream(Some("foo")), LineStream()) #:: SNil => true
-        case _ => false
+        case Failure(UnexpectedEndOfStream(Some("foo")), LineStream()) #:: SNil => ok
       }
     }
     
@@ -80,30 +75,26 @@ object TerminalSpecs extends Specification with ScalaCheck with Parsers {
       val p = literal("")
       
       p(LineStream()) must beLike {
-        case Success("", LineStream()) #:: SNil => true
-        case _ => false
+        case Success("", LineStream()) #:: SNil => ok
       }
     }
     
     "compute FIRST set" in {
       import com.codecommit.util.UniversalCharSet
       
-      val prop = forAll { s: String =>
+      check { s: String =>
         if (s.length == 0)
-          literal(s).first == UniversalCharSet     // TODO file bug report for non-working specs matchers
+          literal(s).first eq UniversalCharSet
         else
           literal(s).first == Set(s charAt 0)
       }
-      
-      prop must pass
     }
     
     "map results according to a function" in {
       val p = "test" ^^ { _.length }
       
       p("test") must beLike {
-        case Success(4, LineStream()) #:: SNil => true
-        case _ => false
+        case Success(4, LineStream()) #:: SNil => ok
       }
     }
     
@@ -111,8 +102,7 @@ object TerminalSpecs extends Specification with ScalaCheck with Parsers {
       val p = "test" ^^^ 42
       
       p("test") must beLike {
-        case Success(42, LineStream()) #:: SNil => true
-        case _ => false
+        case Success(42, LineStream()) #:: SNil => ok
       }
     }
     
@@ -132,18 +122,17 @@ object TerminalSpecs extends Specification with ScalaCheck with Parsers {
       val p = p1 ~ "\n" ~> p2
       
       p("foo\nbar") must beLike {
-        case Success("bar", LineStream()) #:: SNil => true
-        case _ => false
+        case Success("bar", LineStream()) #:: SNil => ok
       }
       
       in1.line mustEqual "foo"
       in1.lineNum mustEqual 1
-      in1.head mustBe 'f'
+      in1.head mustEqual 'f'
       in1.toString mustEqual "foo\nbar"
       
       in2.line mustEqual "bar"
       in2.lineNum mustEqual 2
-      in2.head mustBe 'b'
+      in2.head mustEqual 'b'
       in2.toString mustEqual "bar"
     }
   }
@@ -153,8 +142,7 @@ object TerminalSpecs extends Specification with ScalaCheck with Parsers {
       val p = "te" ~ "st"
       
       p("test") must beLike {
-        case Success("te" ~ "st", LineStream()) #:: SNil => true
-        case _ => false
+        case Success("te" ~ "st", LineStream()) #:: SNil => ok
       }
     }
     
@@ -162,13 +150,11 @@ object TerminalSpecs extends Specification with ScalaCheck with Parsers {
       val p = "te" ~ "st"
       
       p("foo") must beLike {
-        case Failure(ExpectedLiteral("te", "fo"), LineStream('f', 'o', 'o')) #:: SNil => true
-        case _ => false
+        case Failure(ExpectedLiteral("te", "fo"), LineStream('f', 'o', 'o')) #:: SNil => ok
       }
       
       p("tefoo") must beLike {
-        case Failure(ExpectedLiteral("st", "fo"), LineStream('f', 'o', 'o')) #:: SNil => true
-        case _ => false
+        case Failure(ExpectedLiteral("st", "fo"), LineStream('f', 'o', 'o')) #:: SNil => ok
       }
     }
     
@@ -176,44 +162,36 @@ object TerminalSpecs extends Specification with ScalaCheck with Parsers {
       val p = "te" ~ "st"
       
       p(LineStream('t')) must beLike {
-        case Failure(UnexpectedEndOfStream(Some("te")), LineStream('t')) #:: SNil => true
-        case _ => false
+        case Failure(UnexpectedEndOfStream(Some("te")), LineStream('t')) #:: SNil => ok
       }
       
       p(LineStream()) must beLike {
-        case Failure(UnexpectedEndOfStream(Some("te")), LineStream()) #:: SNil => true
-        case _ => false
+        case Failure(UnexpectedEndOfStream(Some("te")), LineStream()) #:: SNil => ok
       }
       
       p("tes") must beLike {
-        case Failure(UnexpectedEndOfStream(Some("st")), LineStream('s')) #:: SNil => true
-        case _ => false
+        case Failure(UnexpectedEndOfStream(Some("st")), LineStream('s')) #:: SNil => ok
       }
       
       p("te") must beLike {
-        case Failure(UnexpectedEndOfStream(Some("st")), LineStream()) #:: SNil => true
-        case _ => false
+        case Failure(UnexpectedEndOfStream(Some("st")), LineStream()) #:: SNil => ok
       }
     }
     
-    "compute FIRST set" in {
+    "compute FIRST set" in check { strs: List[String] =>
       import com.codecommit.util.UniversalCharSet
       
-      val prop = forAll { strs: List[String] =>
-        (strs.length > 0 && (strs exists { _.length > 0 })) ==> {
-          val p = strs.map(literal).reduceLeft[Parser[Any]] { _ ~ _ }
-          
-          val composite = strs.mkString
-          val first = if (composite.length == 0) UniversalCharSet else Set(composite charAt 0)
-          
-          if (p.first.size == 0 && first.size == 0)
-            true
-          else
-            p.first == first    // TODO file bug report
-        }
+      (strs.length > 0 && (strs exists { _.length > 0 })) ==> {
+        val p = strs.map(literal).reduceLeft[Parser[Any]] { _ ~ _ }
+        
+        val composite = strs.mkString
+        val first = if (composite.length == 0) UniversalCharSet else Set(composite charAt 0)
+        
+        if (p.first.size == 0 && first.size == 0)
+          true
+        else
+          p.first == first    // TODO file bug report
       }
-      
-      prop must pass
     }
   }
 }
