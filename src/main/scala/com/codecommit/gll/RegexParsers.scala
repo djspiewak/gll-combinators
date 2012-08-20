@@ -21,13 +21,8 @@ trait RegexParsers extends Parsers {
     } else super.literal(str)
   }
   
-  implicit def regex(r: Regex): RegexParser = {
-    if (skipWhitespace) {
-      new RegexParser(r) {
-        override def parse(s: LineStream) = super.parse(s)
-      }
-    } else new RegexParser(r)
-  }
+  implicit def regex(r: Regex): RegexParser =
+    new RegexParser(r)
   
   override implicit def disjunctiveLiterals(left: String): RichRegexParser =
     new RichRegexParser(regex(new Regex(escapeRegex(left))))
