@@ -75,6 +75,18 @@ object RegexSpecs extends Specification
         }
       }
     }
+
+    "produce a location of after leading whitespace" in {
+      case class A(loc: LineStream, x: String)
+
+      val p = literal("daniel") ^# { (loc, x) => A(loc, x) }
+
+      p("    daniel") must beLike {
+        case Success(A(l, "daniel"), LineStream()) #:: SNil =>
+          l.colNum mustEqual 5
+          l.toString mustEqual "daniel"
+      }
+    }
     
     "eat leading whitespace" in {
       val p = literal("daniel")
