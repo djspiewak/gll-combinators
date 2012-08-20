@@ -213,6 +213,35 @@ object FilterSpecs extends Specification
         case Stream(Success(Neg(Comp(IntLit(1))), LineStream())) => ok
       }
     }
+    
+    "disambiguate uniform associativity operations with precedence levels" in {
+      lazy val expr: Parser[Expr] = (
+          expr ~ ("+" ~> expr)       ^^ Add
+        | expr ~ ("-" ~> expr)       ^^ Sub
+        | expr ~ ("*" ~> expr)       ^^ Mul
+        | num                        ^^ IntLit
+      ) filter prec(Mul, (Add, Sub))
+      
+      expr("1 + 2") must beLike {
+        case Stream(Success(Add(IntLit(1), IntLit(2)), LineStream())) => ok
+      }
+      
+      expr("1 - 2") must beLike {
+        case Stream(Success(Sub(IntLit(1), IntLit(2)), LineStream())) => ok
+      }
+      
+      expr("1 + 2 - 3") must beLike {
+        case Stream(Success(Sub(Add(IntLit(1), IntLit(2)), IntLit(3)), LineStream())) => ok
+      }
+      
+      expr("1 - 2 + 3") must beLike {
+        case Stream(Success(Add(Sub(IntLit(1), IntLit(2)), IntLit(3)), LineStream())) => ok
+      }
+      
+      expr("1 + 2 * 3") must beLike {
+        case Stream(Success(Add(IntLit(1), Mul(IntLit(2), IntLit(3))), LineStream())) => ok
+      }
+    }
   }
   
   // %%
