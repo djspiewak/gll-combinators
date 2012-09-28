@@ -33,7 +33,7 @@ trait Filters {
       val peers = matched get manifest getOrElse Set()
       
       (form.head, form drop 1 take (form.length - 2), form.last) match {
-        case (HolePart(left), middle, HolePart(right)) if middle forall { _.isSimple } => {
+        case (HolePart(left), middle, HolePart(right)) => {
           val leftManifest = Manifest.classType(left.getClass)
           val rightManifest = Manifest.classType(right.getClass)
           
@@ -59,7 +59,7 @@ trait Filters {
         }
         
         // prefix unary
-        case (head, middle, HolePart(child)) if head.isSimple && (middle forall { _.isSimple }) => {
+        case (head, middle, HolePart(child)) if head.isSimple && (middle.lastOption map { _.isSimple } getOrElse true) => {
           val childManifest = Manifest.classType(child.getClass)
           
           child.form.linearize.head match {
@@ -69,7 +69,7 @@ trait Filters {
         }
         
         // suffix unary
-        case (HolePart(child), middle, last) if last.isSimple && (middle forall { _.isSimple }) => {
+        case (HolePart(child), middle, last) if last.isSimple && (middle.headOption map { _.isSimple } getOrElse true) => {
           val childManifest = Manifest.classType(child.getClass)
           
           child.form.linearize.last match {
