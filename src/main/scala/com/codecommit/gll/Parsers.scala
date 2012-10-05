@@ -759,12 +759,15 @@ trait Parsers {
       val (p, s) = remove()
       
       p.chain(this, s) { res =>
-        if (!popped.contains(s))
-          popped += (s -> HOMap[Parser, SSet]())
-      
-        if (!popped(s).contains(p))
-          popped(s) += (p -> new mutable.HashSet[Success[Any]])
-      
+        popped.get(s) match {
+          case Some(parsers) => 
+            if (!(parsers contains p))
+              popped(s) += (p -> new mutable.HashSet[Success[Any]])
+          case None => 
+            popped += (s -> HOMap[Parser, SSet]())
+            popped(s) += (p -> new mutable.HashSet[Success[Any]])
+        }
+
         res match {
           case succ: Success[Any] => {
             popped(s)(p) += succ
@@ -773,11 +776,16 @@ trait Parsers {
           
           case _: Failure => ()
         }
+
+        saved.get(res) match {
+          case Some(parsers) =>
+            updateSaved 
+          case None =>
+            saved += (res -> new mutable.HashSet[Result[Any] => Unit])
+            updateSaved
+        }
       
-        if (!saved.contains(res))
-          saved += (res -> new mutable.HashSet[Result[Any] => Unit])
-        
-        for (f <- backlinks(s)(p)) {
+        def updateSaved() = for (f <- backlinks(s)(p)) {
           if (!saved(res).contains(f)) {
             saved(res) += f
             f(res)
@@ -788,30 +796,42 @@ trait Parsers {
   
     def add[A](p: Parser[A], s: LineStream)(f: Result[A] => Unit) {
       val tuple = (p, s)
-      
-      if (!backlinks.contains(s))
-        backlinks += (s -> HOMap[Parser, FSet]())
-      
-      if (!backlinks(s).contains(p))
-        backlinks(s) += (p -> new mutable.HashSet[Result[Any] => Unit])
+
+      backlinks.get(s) match {
+        case Some(parsers) =>
+          if (!(parsers contains p))
+            backlinks(s) += (p -> new mutable.HashSet[Result[Any] => Unit])
+        case None => 
+          backlinks += (s -> HOMap[Parser, FSet]())
+          backlinks(s) += (p -> new mutable.HashSet[Result[Any] => Unit])
+      }
       
       backlinks(s)(p) += f
-      
-      if (popped.contains(s) && popped(s).contains(p)) {
-        for (res <- popped(s)(p)) {           // if we've already done that, use the result
-          tracef("Revisited: %s *=> %s%n", tuple, res)
-          f(res)
-        }
-      } else {
-        if (!done.contains(s))
-          done += (s -> new mutable.HashSet[Parser[Any]])
-        
-        if (!done(s).contains(p)) {
-          queue.push(tuple)
-          done(s) += p
-          
-          trace("Added: " + tuple)
-        }
+
+
+      popped.get(s) match {
+        case Some(parsers) if (parsers contains p) =>
+            for (res <- parsers(p)) {           // if we've already done that, use the result
+              tracef("Revisited: %s *=> %s%n", tuple, res)
+              f(res)
+            }
+        case _ =>
+          done.get(s) match {
+            case Some(parsers) =>
+              if (!(parsers contains p))
+                addTuple(parsers)
+            case None => 
+              val parsers = new mutable.HashSet[Parser[Any]]
+              done += (s -> parsers)
+              addTuple(parsers)
+          }
+
+          def addTuple(parsers: mutable.Set[Parser[Any]]) {
+            queue.push(tuple)
+            parsers += p
+            
+            trace("Added: " + tuple)
+          }
       }
     }
     
