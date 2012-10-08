@@ -778,18 +778,17 @@ trait Parsers {
         }
 
         saved.get(res) match {
-          case Some(parsers) =>
-            updateSaved 
+          case Some(set) => 
+            for (f <- backlinks(s)(p)) {
+              if (!set.contains(f)) {
+                set += f
+                f(res)
+              }
+            }
           case None =>
             saved += (res -> new mutable.HashSet[Result[Any] => Unit])
-            updateSaved
-        }
-      
-        def updateSaved() = for (f <- backlinks(s)(p)) {
-          if (!saved(res).contains(f)) {
-            saved(res) += f
-            f(res)
-          }
+
+            for (f <- backlinks(s)(p)) f(res)
         }
       }
     }
