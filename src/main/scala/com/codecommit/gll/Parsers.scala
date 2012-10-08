@@ -785,10 +785,15 @@ trait Parsers {
                 f(res)
               }
             }
+            
           case None =>
-            saved += (res -> new mutable.HashSet[Result[Any] => Unit])
+            val set = new mutable.HashSet[Result[Any] => Unit]
+            saved += (res -> set)
 
-            for (f <- backlinks(s)(p)) f(res)
+            for (f <- backlinks(s)(p)) {
+              set += f
+              f(res)
+            }
         }
       }
     }
