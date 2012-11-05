@@ -44,7 +44,10 @@ trait RegexParsers extends Parsers {
   }
 
   override protected def handleWhitespace(s: LineStream) =
-    s.drop(whitespace findPrefixOf s map { _.length } getOrElse 0)
+    if (skipWhitespace)
+      s.drop(whitespace findPrefixOf s map { _.length } getOrElse 0)
+    else
+      s
   
   
   class RichRegexParser(left: RegexParser) extends RichParser(left) {

@@ -700,7 +700,7 @@ trait Parsers {
           }
         }
   
-        t.add(thunk, in)(f)
+        t.add(thunk, handleWhitespace(in))(f)
       }
     }
     
