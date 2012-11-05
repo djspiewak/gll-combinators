@@ -88,6 +88,23 @@ object RegexSpecs extends Specification
       }
     }
     
+    "produce a location of after leading whitespace in seqential parser" in {
+      sealed trait A
+      case class B(loc: LineStream, id: String, left: String, right: A) extends A
+      case class C(loc: LineStream, id: String) extends A
+
+      lazy val p: Parser[A] = (
+          "daniel" ~ ":=" ~ "daniel" ~ p ^# { (loc, id, _, a, b) => B(loc, id, a, b) }
+        | "daniel"                       ^# { (loc, d) => C(loc, d) }
+      )
+
+      p("\n\n\n\n daniel := daniel daniel") must beLike {
+        case Success(B(l, "daniel", "daniel", C(l2, "daniel")), LineStream()) #:: SNil =>
+          l.lineNum mustEqual 5
+          l.colNum mustEqual 2
+      }
+    }
+
     "eat leading whitespace" in {
       val p = literal("daniel")
       
