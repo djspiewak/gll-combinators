@@ -391,5 +391,16 @@ object DisjunctionSpecs extends Specification
       
       p.first mustEqual Set('a')
     }
+    
+    "prefer an appropriately annotated terminal parser in case of ambiguity" in {
+      lazy val p = (
+          ("ab" preferred) ^^^ 3
+        | "a" ~ "b"        ^^^ 2
+      )
+      
+      p("ab") must beLike {
+        case Stream(Success(3, LineStream())) => ok
+      }
+    }
   }
 }

@@ -204,6 +204,8 @@ trait Parsers {
         set flatMap { x => x }
     }
     
+    def isPreferred = false
+    
     /**
      * @return The FIRST set for this parser, or the empty set
      *         if the production goes to \epsilon.
@@ -232,6 +234,8 @@ trait Parsers {
     }
     
     def filter(f: R => Boolean): Parser[R] = new NonTerminalParser[R] {
+      override def isPreferred = self.isPreferred
+      
       def computeFirst(seen: Set[Parser[Any]]) = self.computeFirst(seen + this)
       
       def chain(t: Trampoline, in: LineStream)(f2: Result[R] => Unit) {
@@ -386,6 +390,8 @@ trait Parsers {
     }
     
     override def \(not: TerminalParser[Any]) = new TerminalParser[R] {
+      override def isPreferred = self.isPreferred
+      
       def computeFirst(s: Set[Parser[Any]]) = self.computeFirst(s)
       
       def parse(in: LineStream) = self.parse(in) match {
@@ -403,6 +409,8 @@ trait Parsers {
     }
     
     def mapWithTail[R2](f: (LineStream, R) => R2): Parser[R2] = new MappedParser[R, R2](self, f) with TerminalParser[R2] {
+      override def isPreferred = self.isPreferred
+      
       def parse(in: LineStream) = {
         val newTail = handleWhitespace(in)
         self.parse(newTail) match {
@@ -411,6 +419,8 @@ trait Parsers {
         }
       }
     }
+    
+    def preferred: TerminalParser[R] = PreferredParser(this)
   }
   
   trait NonTerminalParser[+R] extends Parser[R] { self =>
@@ -498,6 +508,8 @@ trait Parsers {
    * alternatives (for the sake of left-recursion).
    */
   private[gll] abstract class ThunkParser[+A](private val self: Parser[A]) extends NonTerminalParser[A] {
+    override def isPreferred = self.isPreferred
+    
     def computeFirst(s: Set[Parser[Any]]) = self.computeFirst(s)
   
     override def toString = self.toString
@@ -509,6 +521,14 @@ trait Parsers {
   
     override def hashCode = self.hashCode
   }
+  
+  private[gll] case class PreferredParser[+R](delegate: TerminalParser[R]) extends TerminalParser[R] {
+    override def isPreferred = true
+    
+    def computeFirst(s: Set[Parser[Any]]) = delegate.computeFirst(s)
+    
+    protected[gll] def parse(in: LineStream) = delegate.parse(in)
+  } 
   
   //////////////////////////////////////////////////////////////////////////////
   
@@ -673,29 +693,48 @@ trait Parsers {
             var predicted = false
             val results = mutable.Set[Result[A]]()    // merge results
             
-            for {
-              p <- gather
-              
-              // [(S = {}) -> (FIRST = U)] /\ [~(S = {}) -> (S[0] \in FIRST)]
-              if !in.isEmpty || p.first == UniversalCharSet
-              if in.isEmpty || p.first.contains(in.head)      // lookahead
-            } {
-              predicted = true
-              t.add(p, in) { res =>
+            val preferred = gather filter { _.isPreferred }
+            val prefResults = preferred flatMap { _(in) }
+            
+            val prefSuccess = prefResults exists {
+              case _: Success[_] => true
+              case _ => false
+            }
+            
+            if (prefSuccess) {
+              prefResults foreach { res =>
                 if (!results.contains(res)) {
-                  tracef("Reduced: %s *=> %s%n", this, res)
-    
+                  tracef("Reduced preferred: %s *=> %s%n", this, res)
+                  
                   f(res)
                   results += res
                 }
               }
-            }
-            
-            if (!predicted) {
-              if (in.isEmpty)
-                f(Failure(UnexpectedEndOfStream(None), in))
-              else
-                f(Failure(UnexpectedChars(in.head.toString), in))
+            } else {
+              for {
+                p <- gather
+                
+                // [(S = {}) -> (FIRST = U)] /\ [~(S = {}) -> (S[0] \in FIRST)]
+                if !in.isEmpty || p.first == UniversalCharSet
+                if in.isEmpty || p.first.contains(in.head)      // lookahead
+              } {
+                predicted = true
+                t.add(p, in) { res =>
+                  if (!results.contains(res)) {
+                    tracef("Reduced: %s *=> %s%n", this, res)
+      
+                    f(res)
+                    results += res
+                  }
+                }
+              }
+              
+              if (!predicted) {
+                if (in.isEmpty)
+                  f(Failure(UnexpectedEndOfStream(None), in))
+                else
+                  f(Failure(UnexpectedChars(in.head.toString), in))
+              }
             }
           }
         }
