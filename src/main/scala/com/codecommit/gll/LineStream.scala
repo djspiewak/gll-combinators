@@ -10,7 +10,7 @@ import scala.io.Source
  * amortized constant-time {@link CharSequence} access.
  */
 sealed abstract class LineStream(val line: String, val lineNum: Int, val colNum: Int) extends LinearSeq[Char] with CharSequence { outer =>
-  override def tail: LineStream = error("yeah, this is annoying")
+  override def tail: LineStream = sys.error("yeah, this is annoying")
   
   def charAt(i: Int) = apply(i)
   
@@ -160,11 +160,11 @@ object LineStream {
       val termLS = if (term.length == 0)
         LineNil
       else if (term.length == 1)
-        new LazyLineCons(term.first, gen(num + 1), line, num, line.length + 1)
+        new LazyLineCons(term.head, gen(num + 1), line, num, line.length + 1)
       else if (term.length == 2)
         new StrictLineCons(term(0), new LazyLineCons(term(1), gen(num + 1), line, num, line.length + 2), line, num, line.length + 1)
       else
-        error("Line terminator contains more than two characters; cannot process newline!")
+        sys.error("Line terminator contains more than two characters; cannot process newline!")
       
       val (back, _) = line.foldRight((termLS, line.length)) {
         case (c, (tail, colNum)) => (new StrictLineCons(c, tail, line, num, colNum), colNum - 1)

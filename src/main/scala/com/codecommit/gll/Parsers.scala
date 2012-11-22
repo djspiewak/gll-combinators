@@ -666,7 +666,7 @@ trait Parsers {
         val newSeen = seen + this
         
         val firstSets = gather map { _ computeFirst newSeen getOrElse Set[Option[Char]]() } toList
-        val back = firstSets sort { (a, b) => a.isComplement || !b.isComplement } reduceLeft { _ ++ _ }
+        val back = firstSets sortWith { (a, b) => a.isComplement || !b.isComplement } reduceLeft { _ ++ _ }
         
         Some(back)
       }

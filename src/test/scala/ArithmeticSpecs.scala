@@ -21,7 +21,7 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
     }
     
     "parse numbers" in check { x: Int =>
-      (abs(x.toLong) < Math.MAX_INT) ==> {
+      (abs(x.toLong) < Int.MaxValue) ==> {
         expr(x.toString) must beLike {
           case Success(e, LineStream()) #:: SNil => e.solve mustEqual x
         }
@@ -29,7 +29,7 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
     }
     
     "parse simple addition" in check { (x: Int, y: Int) =>
-      (abs(x.toLong) < Math.MAX_INT && abs(y.toLong) < Math.MAX_INT) ==> {
+      (abs(x.toLong) < Int.MaxValue && abs(y.toLong) < Int.MaxValue) ==> {
         val res = expr((x + "+" + y))
         
         if (x < 0) {
@@ -58,7 +58,7 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
     }
     
     "parse simple subtraction" in check { (x: Int, y: Int) =>
-      (abs(x.toLong) < Math.MAX_INT && abs(y.toLong) < Math.MAX_INT) ==> {
+      (abs(x.toLong) < Int.MaxValue && abs(y.toLong) < Int.MaxValue) ==> {
         val res = expr((x + "-" + y))
         
         if (x < 0) {
@@ -87,7 +87,7 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
     }
     
     "parse simple multiplication" in check { (x: Int, y: Int) =>
-      (abs(x.toLong) < Math.MAX_INT && abs(y.toLong) < Math.MAX_INT) ==> {
+      (abs(x.toLong) < Int.MaxValue && abs(y.toLong) < Int.MaxValue) ==> {
         val res = expr((x + "*" + y))
         
         if (x < 0) {
@@ -116,7 +116,7 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
     }
     
     "parse simple division" in check { (x: Int, y: Int) =>
-      (abs(x.toLong) < Math.MAX_INT && abs(y.toLong) < Math.MAX_INT && y != 0) ==> {
+      (abs(x.toLong) < Int.MaxValue && abs(y.toLong) < Int.MaxValue && y != 0) ==> {
         val res = expr((x + "/" + y))
         
         if (x < 0) {
@@ -205,9 +205,9 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
     }
   }
   
-  def abs(i: Int) = Math.abs(i)
+  def abs(i: Int) = math.abs(i)
   
-  def abs(l: Long) = Math.abs(l)
+  def abs(l: Long) = math.abs(l)
   
   // %%
   

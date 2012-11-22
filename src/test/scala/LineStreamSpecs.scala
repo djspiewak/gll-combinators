@@ -61,5 +61,5 @@ object LineStreamSpecs extends Specification with ScalaCheck {
     }
   }
   
-  def abs(i: Int) = Math.abs(i)
+  def abs(i: Int) = math.abs(i)
 }
