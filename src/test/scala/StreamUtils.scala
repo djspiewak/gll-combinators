@@ -4,7 +4,7 @@ object StreamUtils {
   class RichStream[A](str: =>Stream[A]) {
     def #::[B](hd: B) = Stream.cons(hd, str)
     
-    def sort(pred: (A, A) => Boolean) = str.toList sort pred toStream    // cheating!
+    def sort(pred: (A, A) => Boolean) = (str.toList sortWith pred).toStream    // cheating!
   }
   
   val SNil = Stream.empty

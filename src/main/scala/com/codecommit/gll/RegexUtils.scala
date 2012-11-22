@@ -16,7 +16,7 @@ object RegexUtils extends Parsers {    // note, *not* RegexParsers!
     if (results.isEmpty) {
       UniversalOptCharSet
     } else {
-      val sorted = results sort { (a, b) => a.isComplement || !b.isComplement }    // sort complements first
+      val sorted = results sortWith { (a, b) => a.isComplement || !b.isComplement }    // sort complements first
       sorted reduceLeft { _ ++ _ }
     }
   }
