@@ -354,18 +354,47 @@ object CompoundSpecs extends Specification
     }
     
     "negate within a sequence" in {
-      org.specs2.execute.Pending("missing parameter type for expanded function ((x$53, x$54) => x$53.$plus(x$54))")
-//      import RegexParsers._
-//      
-//      val p = ("a|b".r \ "a") ~ "c" ^^ { _ + _ }
-//      
-//      p("bc") must beLike {
-//        case Success("bc", LineStream()) #:: SNil => ok
-//      }
-//      
-//      p("ac") must beLike {
-//        case Failure(SyntaxError, _) #:: _ => ok
-//      }
+      import RegexParsers._
+
+      // Formerly:
+      // val p = ("a|b".r \ "a") ~ "c" ^^ (_ + _)
+      //
+      // The explicit call to RegexParsers.funSyntax2 is necessary in 2.10 to
+      // deal with the consequences of implicit ambiguity: we are in a class
+      // which inherits from Parsers (and so inherits an implicit funSyntax2)
+      // but within a nested scope, importing RegexParsers._ brings in another
+      // implicit funSyntax2, and that's the one we need.
+      //
+      // The change in 2.10, which is at least ostensibly a bug fix, is to
+      // consistently apply the rule that if a method cannot be called explicitly,
+      // then it cannot be called implicitly. And indeed in both 2.9 and 2.10,
+      // an attempt to call funSyntax2 without qualification is an error:
+      //
+      // [error] CompoundSpecs.scala:359: reference to funSyntax2 is ambiguous;
+      // [error] it is both defined in trait Parsers and imported subsequently by
+      // [error] import RegexParsers._
+      // [error]       val p = /*RegexParsers.*/funSyntax2(("a|b".r \ "a") ~ "c") ^^ (_ + _)
+      // [error]                                ^
+      //
+      // Unfortunately rather than reporting the ambiguity, it reports its
+      // confusion at trying to type "_ + _" when it wasn't able to work out
+      // what method is being called with that as an argument. So it would
+      // articulate the issue like this:
+      //
+      // [error] CompoundSpecs.scala:359: missing parameter type for expanded function ((x$53, x$54) => x$53.$plus(x$54))
+      // [error]       val p = ("a|b".r \ "a") ~ "c" ^^ (_ + _)
+      // [error]                                         ^
+      //
+      // The fully qualified, works in 2.9 and 2.10 formulation:
+      val p = RegexParsers.funSyntax2(("a|b".r \ "a") ~ "c") ^^ (_ + _)
+
+      p("bc") must beLike {
+        case Success("bc", LineStream()) #:: SNil => ok
+      }
+
+      p("ac") must beLike {
+        case Failure(SyntaxError, _) #:: _ => ok
+      }
     }
     
     "correctly globally disambiguate a local sequence ambiguity" in {
