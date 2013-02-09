@@ -32,6 +32,18 @@ object RegexSpecs extends Specification
         }
       }
     }
+
+    "properly escape contained strings turned into regexes" in {
+      val p: Parser[String] = "(" | ")"
+
+      p("(") must beLike {
+        case Success("(", LineStream()) #:: SNil => ok
+      }
+
+      p(")") must beLike {
+        case Success(")", LineStream()) #:: SNil => ok
+      }
+    }
     
     "match correctly when using a boundary token" in {
       val p = "a" ~ "where\\b".r ~ "b"
