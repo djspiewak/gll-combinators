@@ -51,9 +51,9 @@ trait RegexParsers extends Parsers {
   
   
   class RichRegexParser(left: RegexParser) extends RichParser(left) {
-    def |(right: Regex) = new RegexParser(new Regex("(" + escapeRegex(left.regex.toString) + ")|(" + escapeRegex(right.regex.toString) + ")"))
+    def |(right: Regex) = new RegexParser(new Regex("(" + left.regex.toString + ")|(" + escapeRegex(right.regex.toString) + ")"))
     
-    def |(right: String) = new RegexParser(new Regex("(" + escapeRegex(left.regex.toString) + ")|(" + escapeRegex(right) + ")"))
+    def |(right: String) = new RegexParser(new Regex("(" + left.regex.toString + ")|(" + escapeRegex(right) + ")"))
   }
   
   case class RegexParser(val regex: Regex) extends TerminalParser[String] {
