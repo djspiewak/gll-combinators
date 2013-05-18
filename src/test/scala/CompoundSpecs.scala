@@ -494,6 +494,26 @@ object CompoundSpecs extends Specification
         case Success(None, LineStream()) #:: SNil => ok
       }
     }
+    
+    "repeat 1..n times with optional parser as first component" in {
+      val p = ("-".? ~> "1")+
+      
+      p("11") must beLike {
+        case Success(List("1", "1"), LineStream()) #:: SNil => ok
+      }
+      p("-11") must beLike {
+        case Success(List("1", "1"), LineStream()) #:: SNil => ok
+      }
+      p("1-1") must beLike {
+        case Success(List("1", "1"), LineStream()) #:: SNil => ok
+      }
+      p("-1-1") must beLike {
+        case Success(List("1", "1"), LineStream()) #:: SNil => ok
+      }
+      p("1-1-1") must beLike {
+        case Success(List("1", "1", "1"), LineStream()) #:: SNil => ok
+      }
+    }
   }
   
   "monadic parsers" should {
