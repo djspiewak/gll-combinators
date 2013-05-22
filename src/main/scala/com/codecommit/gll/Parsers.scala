@@ -291,10 +291,8 @@ trait Parsers {
     def +(sep: Parser[_]) = this ~ (sep ~> this).* ^^ { _ :: _ }
     
     def ?(): Parser[Option[R]] = new NonTerminalParser[Option[R]] {
-      def computeFirst(seen: Set[Parser[Any]]) = self.computeFirst(seen) match {
-        case Some(set) => Some(set + None)
-        case None => Some(Set[Option[Char]](None))
-      }
+      def computeFirst(seen: Set[Parser[Any]]) =
+        Some(self.computeFirst(seen) map { _ + None } getOrElse Set(None))
       
       def chain(t: Trampoline, in: LineStream)(f: Result[Option[R]] => Unit) {
         f(Success(None, in))
