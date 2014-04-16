@@ -8,9 +8,9 @@ licenses := Seq("BSD-style" -> url("http://www.opensource.org/licenses/bsd-licen
 
 homepage := Some(url("https://github.com/djspiewak/gll-combinators"))
 
-scalaVersion := "2.11.0-RC1"
+scalaVersion := "2.11.0-RC4"
 
-crossScalaVersions := Seq("2.10.3", scalaVersion.value)
+crossScalaVersions := Seq("2.10.4", scalaVersion.value)
 
 parallelExecution in Test := false
 
