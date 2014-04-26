@@ -65,13 +65,10 @@ object DisjunctionSpecs extends Specification
 
       val leftFirst = if (left.length == 0) Set[Char]() else Set(left charAt 0)
       val rightFirst = if (right.length == 0) Set[Char]() else Set(right charAt 0)
-      val result: Boolean = (
-        if (leftFirst.size == 0 || rightFirst.size == 0)
-          (left | right).first eq UniversalCharSet
-        else
-          (left | right).first == (leftFirst ++ rightFirst)
-      )
-      result
+      if (leftFirst.size == 0 || rightFirst.size == 0)
+        (left | right).first eq UniversalCharSet
+      else
+        (left | right).first == (leftFirst ++ rightFirst)
     }
 
     "parse binary alternatives" in {

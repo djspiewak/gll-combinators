@@ -8,7 +8,7 @@ licenses := Seq("BSD-style" -> url("http://www.opensource.org/licenses/bsd-licen
 
 homepage := Some(url("https://github.com/djspiewak/gll-combinators"))
 
-scalaVersion := "2.11.0-RC4"
+scalaVersion := "2.11.0"
 
 crossScalaVersions := Seq("2.10.4", scalaVersion.value)
 
@@ -16,7 +16,7 @@ parallelExecution in Test := false
 
 libraryDependencies ++= Seq(
   "org.scalacheck" %% "scalacheck" % "1.11.3" % "test",
-      "org.specs2" %% "specs2"     % "2.3.10" % "test"
+      "org.specs2" %% "specs2"     % "2.3.11" % "test"
 )
 
 logBuffered := false       // gives us incremental output from Specs2
