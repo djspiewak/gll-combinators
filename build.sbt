@@ -8,7 +8,7 @@ licenses := Seq("BSD-style" -> url("http://www.opensource.org/licenses/bsd-licen
 
 homepage := Some(url("https://github.com/djspiewak/gll-combinators"))
 
-scalaVersion := "2.11.0"
+scalaVersion := "2.11.2"
 
 crossScalaVersions := Seq("2.10.4", scalaVersion.value)
 
