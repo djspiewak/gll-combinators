@@ -33,7 +33,7 @@ object ConfigParser extends common.Example[Map[String, String]] with RegexParser
       
       back
     } else {
-      val sorted = results.toList sort { _.tail.length < _.tail.length }
+      val sorted = results.toList sortWith { _.tail.length < _.tail.length }
       val length = sorted.head.tail.length
       
       throw new ConfigException(sorted takeWhile { _.tail.length == length } flatMap {

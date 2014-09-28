@@ -40,8 +40,9 @@ object LambdaCalcParser extends common.Example[(List[Alias], Expr)] with RegexPa
         
     val status = for ((tree, expr) <- forest) yield {
       try {
-        val env = tree.foldLeft(Map():Env) { (env, alias) =>
+        val env = tree.foldLeft(scala.collection.mutable.Map():Env) { (env, alias) =>
           env(alias.id) = alias.expr.eval(env)
+          env
         }
         
         Some(expr.eval(env))
@@ -62,11 +63,11 @@ object LambdaCalcParser extends common.Example[(List[Alias], Expr)] with RegexPa
     
     if (results.length == 0) {
       for (msg <- errors) {
-        System.err.println("  runtime error: " + msg)
+        println("  runtime error: " + msg)
       }
     } else if (results.length == 1)
       println("  " + results.head)
     else
-      System.err.printf("  parse error: Ambiguous parse: %s valid trees%n", results.length.toString)
+      printf("  parse error: Ambiguous parse: %s valid trees%n", results.length.toString)
   }
 }

@@ -15,7 +15,7 @@ trait Example[A] extends Parsers {
       if (results exists { _.isInstanceOf[Success[A]] }) {
         handleSuccesses(for (Success(tree, _) <- results) yield tree)
       } else {
-        val sorted = results.toList sort { _.tail.length < _.tail.length }
+        val sorted = results.toList sortWith { _.tail.length < _.tail.length }
         val length = sorted.head.tail.length
         
         for (Failure(msg, tail) <- sorted takeWhile { _.tail.length == length }) {
@@ -28,6 +28,21 @@ trait Example[A] extends Parsers {
     }
   }
   
+  def test(file: String): Boolean = {
+    val src = Source.fromInputStream(getClass().getResourceAsStream(file))
+    val results: Stream[Result[A]] = parser(LineStream(src))
+    if (results exists { _.isInstanceOf[Success[A]] }) {
+      // suppress stdout:
+      val stream = new java.io.ByteArrayOutputStream()
+      Console.withOut(stream) {
+        handleSuccesses(for (Success(tree, _) <- results) yield tree)
+      }
+      return true
+    } else {
+      return false
+    }
+  }
+
   def parser: Parser[A]
   
   def handleSuccesses(forest: Stream[A])

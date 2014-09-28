@@ -1,7 +1,7 @@
 package lambdacalc
 
 object AST {
-  type Env = Map[Symbol, Lambda]
+  type Env = scala.collection.mutable.Map[Symbol, Lambda]
   
   case class Alias(id: Symbol, expr: Expr)
   

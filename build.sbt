@@ -21,6 +21,10 @@ libraryDependencies ++= Seq(
 
 logBuffered := false       // gives us incremental output from Specs2
 
+unmanagedSourceDirectories in Test += baseDirectory.value / "examples" / "src"
+
+unmanagedResourceDirectories in Test += baseDirectory.value / "examples" / "input"
+
 publishArtifact in (Compile, packageDoc) := false
 
 publishTo <<= version { v: String =>
