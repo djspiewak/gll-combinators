@@ -8,7 +8,7 @@ licenses := Seq("BSD-style" -> url("http://www.opensource.org/licenses/bsd-licen
 
 homepage := Some(url("https://github.com/djspiewak/gll-combinators"))
 
-scalaVersion := "2.11.2"
+scalaVersion := "2.11.4"
 
 crossScalaVersions := Seq("2.10.4", scalaVersion.value)
 
@@ -25,7 +25,7 @@ unmanagedSourceDirectories in Test += baseDirectory.value / "examples" / "src"
 
 unmanagedResourceDirectories in Test += baseDirectory.value / "examples" / "input"
 
-publishArtifact in (Compile, packageDoc) := false
+publishArtifact in (Compile, packageDoc) := true
 
 publishTo <<= version { v: String =>
   val nexus = "https://oss.sonatype.org/"
@@ -53,3 +53,7 @@ pomExtra := (
       <url>http://www.codecommit.com/blog</url>
     </developer>
   </developers>)
+
+autoAPIMappings := true
+
+scalacOptions in (Compile, doc) ++= Seq("-groups", "-implicits")
