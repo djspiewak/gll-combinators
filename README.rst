@@ -9,7 +9,7 @@ then evaluated using the GLL algorithm.  The framework provides a syntax for thi
 task which is almost identical to that of the parser combinator framework built
 into Scala.  For example, we can render the classic "parentheses grammar" using
 GLL combinators::
-    
+
     lazy val expr: Parser[Any] = (
         "(" ~ expr ~ ")"
       | ""
@@ -19,9 +19,9 @@ As the type annotation implies, ``expr`` will reference an instance of type
 ``Parser[Any]``.  That is, an atomic parser which consumes some input and returns
 a value of type ``Any``.  We can invoke this parser against a ``String`` input
 in the following way::
-    
+
     expr("((()))")
-    
+
 This will return a value of type ``Stream[Result[Any]]``.  The ``Result[A]`` ADT is
 defined as one of the following (for some type ``A``):
 
@@ -53,14 +53,15 @@ in traditional parser combinators or any other form of recursive-descent.
 Getting Started
 ===============
 
-Simply install the GLL Combinators framework into your local
-repository (by default, ``~/.ivy2/cache/``). This is easily
-accomplished by using the following command::
+Compiled artifacts are pushed to Maven Central with the groupId of ``com.codecommit`` and
+the artifactId of ``gll-combinators``.  The most recent stable version is ``2.2``, and the
+most recent snapshot version is ``2.3-SNAPSHOT``.  The artifacts are cross-published for
+Scala 2.10.4 and 2.11.4.  If you're using SBT, you can simply copy/paste the following
+artifact descriptor into your build.sbt::
 
-    sbt publish-local
+    libraryDependencies += "com.codecommit" %% "gll-combinators" % "2.2"
 
-Once the JAR is on your CLASSPATH, you should have the following packages available
-for use:
+You should have the following packages available for use:
 
 * ``com.codecommit.gll`` -- The complete public interface for the framework.
 * ``com.codecommit.util`` -- A number of useful utility classes used internally.  Should
@@ -80,17 +81,17 @@ Examples
 
 Advantages
 ==========
-    
+
 Despite superficial syntactic similarities, the GLL combinators framework
 does improve somewhat upon the syntax provided by the default Scala framework.
 For example, we can modify the above grammar with semantic actions using the
 ``^^`` combinator::
-    
+
     lazy val expr: Parser[Any] = (
         "(" ~ expr ~ ")" ^^ { _ + _ + _ }
       | ""
     )
-    
+
 The key difference here is that GLL combinators does not require semantic actions
 to be defined as functions of arity-1 (although this is supported).  Instead, the
 semantic action is expected (and type-checked) to be of the same arity as the
@@ -103,7 +104,7 @@ GLL combinators are also capable of parsing grammars with certain useful propert
 such as left-recursion and even ambiguity.  In fact, the GLL algorithm is capable
 of parsing *any* context-free grammar, no matter how arcane.  As an example,
 consider this very natural grammar for arithmetic expressions::
-    
+
     lazy val expr: Parser[Int] = (
         expr ~ "*" ~ expr     ^^ { (e1, _, e2) => e1 * e2 }
       | expr ~ "/" ~ expr     ^^ { (e1, _, e2) => e1 / e2 }
@@ -113,11 +114,11 @@ consider this very natural grammar for arithmetic expressions::
       | "-" ~> expr           ^^ { -_ }
       | """\d+""".r           ^^ { _.toInt }
     )
-    
+
 Unfortunately, while this grammar may be very natural, it is also well beyond
 the capabilities of a traditional parser combinator framework.  Specifically,
 this grammar exhibits *both* left-recursion and a rather pesky form of ambiguity.
-For the uninitiated, left-recursion is when a non-terminal -- in this case, 
+For the uninitiated, left-recursion is when a non-terminal -- in this case,
 ``expr`` -- refers to itself as the first token in any one of its productions
 -- in this case, the productions for multiplication, division, addition and
 subtraction.  Ambiguity is when it is possible for a parser to produce two
@@ -132,29 +133,29 @@ the left-recursion aspect of this grammar (through the use of a modified form of
 the Packrat algorithm), but not the ambiguity.  This is where the GLL algorithm
 really begins to shine.  Let's imagine that we ran our parser in the following
 way::
-    
+
     val results = expr("-1 + 2 * 3")
-    
+
 The ``results`` value will contain the following ``Stream`` [#]_::
-    
+
     Stream(Success(-7,), Success(5,), Success(-9,), Success(3,))
-    
+
 These results represent all of the different values which can be produced by
 following the grammar while parsing the input string "``1 + 2 * -3 + 4``".  The
 different interpretations are as follows:
 
  ========== ================
-  Value      Interpretation 
+  Value      Interpretation
  ========== ================
- **5**      (-1) + (2 * 3)  
+ **5**      (-1) + (2 * 3)
  ---------- ----------------
- **-9**     -(1 + 2) * 3    
+ **-9**     -(1 + 2) * 3
  ---------- ----------------
- **3**      ((-1) + 2) * 3  
+ **3**      ((-1) + 2) * 3
  ---------- ----------------
- **-9**     -((1 + 2) * 3)  
+ **-9**     -((1 + 2) * 3)
  ---------- ----------------
- **-7**     -(1 + (2 * 3))  
+ **-7**     -(1 + (2 * 3))
  ========== ================
 
 If we were to feed this grammar into the 2.7.4 (or earlier) version of the Scala
@@ -175,9 +176,9 @@ extremely useful in other, less escoteric applications.  While it is always poss
 to create an unambiguous grammar for a language which does not have any inherant
 ambiguity, it is often *easier* to simply allow for local ambiguity which is
 resolved later on in the parse.
-    
+
     **TODO:** I suppose I should come up with an example here.  Maybe Haskell?
-    
+
 Critically, GLL does not impose a significant cost when dealing with ambiguous
 grammars.  One would expect that following all possible parse trees in a highly-ambiguous
 grammar would lead to exponentially long runtimes.  However, GLL is able to
@@ -188,7 +189,7 @@ would refer you to `this paper by Masaru Tomita`_, original creator of GLR and
 inventor of the graph-structured stack.  Suffice it to say that the GSS makes it
 possible for the GLL combinators framework to parse *any* grammar in *O(n^3)*
 time.  This is even better than GLR, which is *O(n^4)* in the worst case.
-    
+
 Note that ``Stream`` is used as a result type (rather than ``List``) to allow
 users to retrieve only the results which they actually need.  Technically, generalized
 *parsing* has an exponential lower-bound due to the fact that a parser may need
@@ -239,13 +240,13 @@ parser combinators or even mainstream bottom-up parsers such as Bison.
 A good example of poor performance is the **MiniML** example in the ``examples/``
 directory.  Another, somewhat pathological example is the following highly-ambiguous
 grammar::
-    
+
     lazy val s: Parser[String] = (
         "b"
       | s ~ s       ^^ { _ + _ }
       | s ~ s ~ s   ^^ { _ + _ + _ }
     )
-    
+
 It takes roughly 18 seconds to run this grammar against an input consisting of
 the letter ``b`` repeated 100 times.  If we increase that number to 300, the
 parser will actually exhaust the available heap space in the default JVM
@@ -263,9 +264,9 @@ With all this said, there are very few grammar/input combinations which push the
 framework to its limit.  In fact, for grammars which are LL(1)_, the GLL Combinators
 framework should actually be *faster* than traditional parser combinators.  For
 example::
-    
+
     val num = ("0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9") ^^ { _.toInt }
-    
+
 In order to parse this grammar, traditional parser combinators would require time
 proportional to the number of alternates (in this case, 10).  GLL Combinators are
 capable of parsing this grammar in linear time (*O(n)*), which is equivalent to
@@ -311,7 +312,7 @@ process hits another ambiguity, at which point the possible alternates are added
 to the trampoline and control flow is returned to the main loop.  This process
 continues until no further alternates are available.
 
-The entire proceding is saved from exponentially-long runtimes by the 
+The entire proceding is saved from exponentially-long runtimes by the
 graph-structured stack (GSS), a well-known device used in many generalized parsing
 algorithms.  GLL expands slightly upon the original concept of the GSS by allowing
 for full-blown cycles in the graph structure, symbolizing direct or indirect
