@@ -1,0 +1,14 @@
+cache:
+  directories:
+    - $HOME/.sbt
+    - $HOME/.ivy2
+
+language: scala
+
+scala:
+  - 2.11.4
+  - 2.10.4
+
+jdk:
+  - oraclejdk8
+  - oraclejdk7
