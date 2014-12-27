@@ -2,7 +2,7 @@ name := "gll-combinators"
 
 organization := "com.codecommit"
 
-version := "2.2"
+version := "2.3-SNAPSHOT"
 
 licenses := Seq("BSD-style" -> url("http://www.opensource.org/licenses/bsd-license.php"))
 
