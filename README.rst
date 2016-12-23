@@ -2,6 +2,9 @@
 README
 ======
 
+.. image:: https://travis-ci.org/djspiewak/gll-combinators.svg?branch=master
+    :target: https://travis-ci.org/djspiewak/gll-combinators
+
 **GLL Combinators** is a framework designed to implement the `GLL parsing algorithm`_
 (Scott and Johnstone, LDTA 2009) in a functional manner.  More specifically, the
 framework makes use of atomic parser combinators to compose grammars which are
