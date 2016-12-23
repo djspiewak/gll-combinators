@@ -7,7 +7,6 @@ import org.specs2.mutable._
 import org.scalacheck._
 
 object FilterSpecs extends Specification
-    with NoTildeSyntax
     with ScalaCheck
     with RegexParsers {
 
