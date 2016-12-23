@@ -55,6 +55,8 @@ pomExtra := (
     </developer>
   </developers>)
 
+sonatypeProfileName := "com.codecommit"
+
 autoAPIMappings := true
 
 scalacOptions in (Compile, doc) ++= Seq("-groups", "-implicits")
