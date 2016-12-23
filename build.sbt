@@ -8,16 +8,17 @@ licenses := Seq("BSD-style" -> url("http://www.opensource.org/licenses/bsd-licen
 
 homepage := Some(url("https://github.com/djspiewak/gll-combinators"))
 
-scalaVersion := "2.11.4"
-
-crossScalaVersions := Seq("2.10.4", scalaVersion.value)
-
 parallelExecution in Test := false
 
 libraryDependencies ++= Seq(
-  "org.scalacheck" %% "scalacheck" % "1.11.3" % "test",
-      "org.specs2" %% "specs2"     % "2.3.11" % "test"
-)
+  "org.scalacheck" %% "scalacheck"        % "1.13.4" % "test",
+
+  "org.specs2"     %% "specs2-core"       % "3.8.6"  % "test",
+  "org.specs2"     %% "specs2-scalacheck" % "3.8.6"  % "test")
+
+scalacOptions += "-language:_"
+
+scalacOptions in Test ++= Seq("-Yrangepos")
 
 logBuffered := false       // gives us incremental output from Specs2
 
@@ -27,9 +28,9 @@ unmanagedResourceDirectories in Test += baseDirectory.value / "examples" / "inpu
 
 publishArtifact in (Compile, packageDoc) := true
 
-publishTo <<= version { v: String =>
+publishTo := {
   val nexus = "https://oss.sonatype.org/"
-  if (v.trim.endsWith("SNAPSHOT"))
+  if (version.value.trim.endsWith("SNAPSHOT"))
     Some("snapshots" at nexus + "content/repositories/snapshots")
   else
     Some("releases" at nexus + "service/local/staging/deploy/maven2")

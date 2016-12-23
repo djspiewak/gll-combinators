@@ -3,10 +3,11 @@ import com.codecommit.util._
 
 import org.specs2.ScalaCheck
 import org.specs2.mutable._
+import org.specs2.specification.SpecificationFeatures
 import org.scalacheck._
 
-object CompoundSpecs extends Specification
-    with NoTildeSyntax
+object CompoundSpecs extends Spec
+    with SpecificationFeatures
     with Parsers
     with ScalaCheck {
 

@@ -2,10 +2,11 @@ import com.codecommit.gll._
 
 import org.specs2.ScalaCheck
 import org.specs2.mutable._
+import org.specs2.specification.SpecificationFeatures
 import org.scalacheck._
 
-object TerminalSpecs extends Specification
-    with NoTildeSyntax
+object TerminalSpecs extends Spec
+    with SpecificationFeatures
     with ScalaCheck
     with Parsers {
 
@@ -82,7 +83,7 @@ object TerminalSpecs extends Specification
     "compute FIRST set" in {
       import com.codecommit.util.UniversalCharSet
 
-      check1 { s: String =>
+      forAll { s: String =>
         if (s.length == 0)
           literal(s).first eq UniversalCharSet
         else
@@ -178,7 +179,7 @@ object TerminalSpecs extends Specification
       }
     }
 
-    "compute FIRST set" in check { strs: List[String] =>
+    "compute FIRST set" in forAll { strs: List[String] =>
       import com.codecommit.util.UniversalCharSet
 
       (strs.length > 0 && (strs exists { _.length > 0 })) ==> {

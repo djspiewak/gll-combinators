@@ -4,10 +4,11 @@ import util._
 
 import org.specs2.ScalaCheck
 import org.specs2.mutable._
+import org.specs2.specification.SpecificationFeatures
 import org.scalacheck._
 
-object RegexSpecs extends Specification
-    with NoTildeSyntax
+object RegexSpecs extends Spec
+    with SpecificationFeatures
     with ScalaCheck
     with RegexParsers {
 

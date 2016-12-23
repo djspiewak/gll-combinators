@@ -12,19 +12,19 @@ object LineStreamSpecs extends Specification with ScalaCheck {
   import Prop._
 
   "LineStream" should {
-    "have length for String construction" in check { str: String =>
+    "have length for String construction" in forAll { str: String =>
       LineStream(str).length mustEqual str.length
     }
 
-    "have length for Source construction" in check { str: String =>
+    "have length for Source construction" in forAll { str: String =>
       LineStream(Source.fromString(str)).length mustEqual str.length
     }
 
-    "have length for Char* construction" in check { str: String =>
+    "have length for Char* construction" in forAll { str: String =>
       LineStream(str: _*).length mustEqual str.length
     }
 
-    "correctly define apply()" in check { (i: Int, str: String) =>
+    "correctly define apply()" in forAll { (i: Int, str: String) =>
       (str.length > 0) ==> {
         val idx = abs(i % str.length)
         val stream = LineStream(str)
@@ -55,7 +55,7 @@ object LineStreamSpecs extends Specification with ScalaCheck {
           (ls.lineNum, ls.colNum) #:: allNums(ls.tail)
       }
 
-      check { str: String =>
+      forAll { str: String =>
         val ls = LineStream(str)
         Set(allNums(ls): _*) must haveSize(str.length)
       }

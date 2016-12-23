@@ -1,14 +1,23 @@
+before_cache:
+  - find $HOME/.ivy2/cache -name "ivydata-*.properties" -print -delete
+  - find $HOME/.sbt        -name "*.lock"               -print -delete
+
 cache:
   directories:
     - $HOME/.sbt
-    - $HOME/.ivy2
+    - $HOME/.coursier
+    - $HOME/.ivy2/cache
 
 language: scala
 
 scala:
-  - 2.11.4
-  - 2.10.4
+  - 2.10.6
+  - 2.11.8
+  - 2.12.1
 
 jdk:
   - oraclejdk8
-  - oraclejdk7
+
+env:
+  global:
+    - COURSIER_PROGRESS=0

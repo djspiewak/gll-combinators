@@ -2,10 +2,11 @@ import com.codecommit.gll._
 
 import org.specs2.ScalaCheck
 import org.specs2.mutable._
+import org.specs2.specification.SpecificationFeatures
 import org.scalacheck._
 
-object DisjunctionSpecs extends Specification
-    with NoTildeSyntax
+object DisjunctionSpecs extends Spec
+    with SpecificationFeatures
     with Parsers
     with ScalaCheck {
 
@@ -55,12 +56,12 @@ object DisjunctionSpecs extends Specification
       }
     }
 
-    "gather binary alternatives" in check { (left: String, right: String) =>
+    "gather binary alternatives" in forAll { (left: String, right: String) =>
       val p = (left | right).asInstanceOf[DisjunctiveParser[String]]
       p.gather mustEqual List(literal(left), literal(right))
     }
 
-    "compute FIRST for binary alternatives" in check { (left: String, right: String) =>
+    "compute FIRST for binary alternatives" in forAll { (left: String, right: String) =>
       import com.codecommit.util._
 
       val leftFirst = if (left.length == 0) Set[Char]() else Set(left charAt 0)
@@ -260,7 +261,7 @@ object DisjunctionSpecs extends Specification
       }
     }
 
-    "map results" in check { (left: String, right: String, f: String => Int) =>
+    "map results" in forAll { (left: String, right: String, f: String => Int) =>
       left != right ==> {
         val p = (
             left
@@ -358,7 +359,7 @@ object DisjunctionSpecs extends Specification
       in2.toString mustEqual "bin"
     }
 
-    "handle binary shift/reduce ambiguity" in check { (head: String, suffix: String) =>
+    "handle binary shift/reduce ambiguity" in forAll { (head: String, suffix: String) =>
       // %%
 
       val p1 = (
