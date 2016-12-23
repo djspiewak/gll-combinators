@@ -56,7 +56,7 @@ Getting Started
 Compiled artifacts are pushed to Maven Central with the groupId of ``com.codecommit`` and
 the artifactId of ``gll-combinators``.  The most recent stable version is ``2.2``, and the
 most recent snapshot version is ``2.3-SNAPSHOT``.  The artifacts are cross-published for
-Scala 2.10.4 and 2.11.4.  If you're using SBT, you can simply copy/paste the following
+Scala 2.10, 2.11 and 2.12.  If you're using SBT, you can simply copy/paste the following
 artifact descriptor into your build.sbt::
 
     libraryDependencies += "com.codecommit" %% "gll-combinators" % "2.2"
