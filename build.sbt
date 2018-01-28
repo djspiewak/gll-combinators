@@ -13,8 +13,8 @@ parallelExecution in Test := false
 libraryDependencies ++= Seq(
   "org.scalacheck" %% "scalacheck"        % "1.13.4" % "test",
 
-  "org.specs2"     %% "specs2-core"       % "3.8.6"  % "test",
-  "org.specs2"     %% "specs2-scalacheck" % "3.8.6"  % "test")
+  "org.specs2"     %% "specs2-core"       % "4.0.2"  % "test",
+  "org.specs2"     %% "specs2-scalacheck" % "4.0.2"  % "test")
 
 scalacOptions += "-language:_"
 
