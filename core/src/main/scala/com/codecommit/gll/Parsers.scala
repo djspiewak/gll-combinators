@@ -617,12 +617,9 @@ trait Parsers {
     override def toString = "(%s ~ %s)".format(left, right)
   }
 
-  class DisjunctiveParser[A](l: =>Parser[A], r: =>Parser[A]) extends NonTerminalParser[A] with Thunkable {
+  class DisjunctiveParser[A](l: =>Parser[A], r: =>Parser[A]) extends NonTerminalParser[A] {
     private lazy val left = l
     private lazy val right = r
-
-    private lazy val leftClass = thunk[Parser[A]]('l).getClass
-    private lazy val rightClass = thunk[Parser[A]]('r).getClass
 
     lazy val gather: List[Parser[A]] = gatherImpl(Set()).toList
 

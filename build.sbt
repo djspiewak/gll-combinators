@@ -1,62 +1,78 @@
-name := "gll-combinators"
+lazy val root = project.in(file("."))
+  .aggregate(coreJVM, coreJS)
+  .settings(
+    skip in publish := true,
+    publish := (()),
+    publishLocal := (()),
+    publishArtifact := false,
+    publishTo := None)
 
-organization := "com.codecommit"
+lazy val core = crossProject
+  .crossType(CrossType.Pure)
+  .in(file("core"))
+  .settings(
+    name := "gll-combinators",
 
-version := "2.4-SNAPSHOT"
+    organization := "com.codecommit",
 
-licenses := Seq("BSD-style" -> url("http://www.opensource.org/licenses/bsd-license.php"))
+    version := "2.4-SNAPSHOT",
 
-homepage := Some(url("https://github.com/djspiewak/gll-combinators"))
+    licenses := Seq("BSD-style" -> url("http://www.opensource.org/licenses/bsd-license.php")),
 
-parallelExecution in Test := false
+    homepage := Some(url("https://github.com/djspiewak/gll-combinators")),
 
-libraryDependencies ++= Seq(
-  "org.scalacheck" %% "scalacheck"        % "1.13.4" % "test",
+    parallelExecution in Test := false,
 
-  "org.specs2"     %% "specs2-core"       % "4.0.2"  % "test",
-  "org.specs2"     %% "specs2-scalacheck" % "4.0.2"  % "test")
+    libraryDependencies ++= Seq(
+      "org.scalacheck" %%% "scalacheck"        % "1.13.4" % "test",
 
-scalacOptions += "-language:_"
+      "org.specs2"     %%% "specs2-core"       % "4.0.2"  % "test",
+      "org.specs2"     %%% "specs2-scalacheck" % "4.0.2"  % "test"),
 
-scalacOptions in Test ++= Seq("-Yrangepos")
+    scalacOptions += "-language:_",
 
-logBuffered := false       // gives us incremental output from Specs2
+    scalacOptions in Test ++= Seq("-Yrangepos"),
 
-unmanagedSourceDirectories in Test += baseDirectory.value / "examples" / "src"
+    logBuffered := false,       // gives us incremental output from Specs2
 
-unmanagedResourceDirectories in Test += baseDirectory.value / "examples" / "input"
+    unmanagedSourceDirectories in Test += baseDirectory.value / "examples" / "src",
 
-publishArtifact in (Compile, packageDoc) := true
+    unmanagedResourceDirectories in Test += baseDirectory.value / "examples" / "input",
 
-publishTo := {
-  val nexus = "https://oss.sonatype.org/"
-  if (version.value.trim.endsWith("SNAPSHOT"))
-    Some("snapshots" at nexus + "content/repositories/snapshots")
-  else
-    Some("releases" at nexus + "service/local/staging/deploy/maven2")
-}
+    publishArtifact in (Compile, packageDoc) := true,
 
-publishMavenStyle := true
+    publishTo := {
+      val nexus = "https://oss.sonatype.org/"
+      if (version.value.trim.endsWith("SNAPSHOT"))
+        Some("snapshots" at nexus + "content/repositories/snapshots")
+      else
+        Some("releases" at nexus + "service/local/staging/deploy/maven2")
+    },
 
-publishArtifact in Test := false
+    publishMavenStyle := true,
 
-pomIncludeRepository := { _ => false }
+    publishArtifact in Test := false,
 
-pomExtra := (
-  <scm>
-    <url>git://github.com/djspiewak/gll-combinators.git</url>
-    <connection>scm:git:git://github.com/djspiewak/gll-combinators.git</connection>
-  </scm>
-  <developers>
-    <developer>
-      <id>djspiewak</id>
-      <name>Daniel Spiewak</name>
-      <url>http://www.codecommit.com/blog</url>
-    </developer>
-  </developers>)
+    pomIncludeRepository := { _ => false },
 
-sonatypeProfileName := "com.codecommit"
+    pomExtra := (
+      <scm>
+        <url>git://github.com/djspiewak/gll-combinators.git</url>
+        <connection>scm:git:git://github.com/djspiewak/gll-combinators.git</connection>
+      </scm>
+      <developers>
+        <developer>
+          <id>djspiewak</id>
+          <name>Daniel Spiewak</name>
+          <url>http://www.codecommit.com/blog</url>
+        </developer>
+      </developers>),
 
-autoAPIMappings := true
+    sonatypeProfileName := "com.codecommit",
 
-scalacOptions in (Compile, doc) ++= Seq("-groups", "-implicits")
+    autoAPIMappings := true,
+
+    scalacOptions in (Compile, doc) ++= Seq("-groups", "-implicits"))
+
+lazy val coreJVM = core.jvm
+lazy val coreJS = core.js
