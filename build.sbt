@@ -26,8 +26,8 @@ lazy val core = crossProject
     libraryDependencies ++= Seq(
       "org.scalacheck" %%% "scalacheck"        % "1.13.4" % "test",
 
-      "org.specs2"     %%% "specs2-core"       % "4.0.2"  % "test",
-      "org.specs2"     %%% "specs2-scalacheck" % "4.0.2"  % "test"),
+      "org.specs2"     %%% "specs2-core"       % "4.0.3"  % "test",
+      "org.specs2"     %%% "specs2-scalacheck" % "4.0.3"  % "test"),
 
     scalacOptions += "-language:_",
 
