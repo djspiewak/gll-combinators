@@ -800,7 +800,7 @@ trait Parsers {
     private type FSet[A] = mutable.Set[Result[A] => Unit]
 
     // R
-    private val queue = new mutable.Stack[(Parser[Any], LineStream)]
+    private var queue: List[(Parser[Any], LineStream)] = Nil
 
     // U_j
     private val done = mutable.Map[LineStream, mutable.Set[Parser[Any]]]()
@@ -899,7 +899,7 @@ trait Parsers {
           }
 
           def addTuple(parsers: mutable.Set[Parser[Any]]) {
-            queue.push(tuple)
+            queue ::= tuple
             parsers += p
 
             trace("Added: " + tuple)
@@ -908,7 +908,9 @@ trait Parsers {
     }
 
     private def remove() = {
-      val tuple = queue.pop()
+      val tuple = queue.head
+      queue = queue.tail
+
       trace("Removed: " + tuple)
 
       tuple
