@@ -16,11 +16,13 @@ scmInfo := Some(ScmInfo(url("https://github.com/djspiewak/gll-combinators"),
 
 Test / parallelExecution := false
 
-libraryDependencies ++= Seq(
-  "org.scalacheck" %% "scalacheck"        % "1.13.4" % "test",
+val Specs2Version = "4.3.4"
 
-  "org.specs2"     %% "specs2-core"       % "3.8.6"  % "test",
-  "org.specs2"     %% "specs2-scalacheck" % "3.8.6"  % "test")
+libraryDependencies ++= Seq(
+  "org.scalacheck" %% "scalacheck"        % "1.14.0" % "test",
+
+  "org.specs2"     %% "specs2-core"       % Specs2Version  % "test",
+  "org.specs2"     %% "specs2-scalacheck" % Specs2Version  % "test")
 
 unmanagedSourceDirectories in Test += baseDirectory.value / "examples" / "src"
 unmanagedResourceDirectories in Test += baseDirectory.value / "examples" / "input"
