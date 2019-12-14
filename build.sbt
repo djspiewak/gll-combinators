@@ -19,7 +19,7 @@ Test / parallelExecution := false
 val Specs2Version = "4.3.4"
 
 libraryDependencies ++= Seq(
-  "org.scalacheck" %% "scalacheck"        % "1.14.0" % "test",
+  "org.scalacheck" %% "scalacheck"        % "1.14.3" % "test",
 
   "org.specs2"     %% "specs2-core"       % Specs2Version  % "test",
   "org.specs2"     %% "specs2-scalacheck" % Specs2Version  % "test")
