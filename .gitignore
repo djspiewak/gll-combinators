@@ -6,3 +6,4 @@ reports/
 .manager/
 .ensime
 .ensime_lucene/
+/.bsp/
