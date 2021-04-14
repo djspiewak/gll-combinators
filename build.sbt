@@ -7,6 +7,9 @@ strictSemVer := false
 ThisBuild / publishFullName := "Daniel Spiewak"
 ThisBuild / publishGithubUser := "djspiewak"
 
+ThisBuild / crossScalaVersions := Seq("2.13.5", "2.12.13")
+ThisBuild / scalaVersion := "2.13.5"
+
 licenses := Seq("BSD-3-Clause" -> url("http://www.opensource.org/licenses/bsd-license.php"))
 
 homepage := Some(url("https://github.com/djspiewak/gll-combinators"))
@@ -16,13 +19,14 @@ scmInfo := Some(ScmInfo(url("https://github.com/djspiewak/gll-combinators"),
 
 Test / parallelExecution := false
 
-val Specs2Version = "4.3.4"
+val Specs2Version = "4.10.6"
 
 libraryDependencies ++= Seq(
-  "org.scalacheck" %% "scalacheck"        % "1.14.0" % "test",
+  "org.scala-lang.modules" %% "scala-collection-compat" % "2.4.3",
+  "org.scalacheck"         %% "scalacheck"              % "1.15.3" % "test",
 
-  "org.specs2"     %% "specs2-core"       % Specs2Version  % "test",
-  "org.specs2"     %% "specs2-scalacheck" % Specs2Version  % "test")
+  "org.specs2"             %% "specs2-core"             % Specs2Version  % "test",
+  "org.specs2"             %% "specs2-scalacheck"       % Specs2Version  % "test")
 
 unmanagedSourceDirectories in Test += baseDirectory.value / "examples" / "src"
 unmanagedResourceDirectories in Test += baseDirectory.value / "examples" / "input"

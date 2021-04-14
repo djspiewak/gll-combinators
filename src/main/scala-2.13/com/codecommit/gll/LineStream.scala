@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Daniel Spiewak
+ * Copyright (c) 2021, Daniel Spiewak
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -41,7 +41,7 @@ import scala.collection.LinearSeq
  */
 sealed abstract class LineStream(val line: String, val lineNum: Int, val colNum: Int) extends LinearSeq[Char] with CharSequence { outer =>
 
-  final lazy val length = _length(0)
+  override final lazy val length = _length(0)
 
   @tailrec
   private def _length(acc: Int): Int = this match {
@@ -91,7 +91,7 @@ sealed abstract class LineStream(val line: String, val lineNum: Int, val colNum:
       Stream.cons((this.head, that.head), tail zip that)
   }
 
-  def zipWithIndex = {
+  override def zipWithIndex = {
     def gen(tail: LineStream, i: Int): Stream[(Char, Int)] = {
       if (tail.isEmpty)
         Stream.empty
@@ -215,7 +215,7 @@ object LineStream {
     gen(1)
   }
 
-  def unapplySeq(str: LineStream): Option[Seq[Char]] = Some(str)
+  def unapplySeq(str: LineStream): Option[Seq[Char]] = Some(str.toSeq)
 }
 
 class LazyLineCons(override val head: Char, _tail: =>LineStream, line: String, lineNum: Int, colNum: Int) extends LineStream(line, lineNum, colNum) {
@@ -223,19 +223,19 @@ class LazyLineCons(override val head: Char, _tail: =>LineStream, line: String, l
 
   override val isEmpty = false
 
-  def apply(i: Int) = if (i == 0) head else tail(i - 1)
+  override def apply(i: Int) = if (i == 0) head else tail(i - 1)
 }
 
 class StrictLineCons(override val head: Char, override val tail: LineStream, line: String, lineNum: Int, colNum: Int) extends LineStream(line, lineNum, colNum) {
   override val isEmpty = false
 
-  def apply(i: Int) = if (i == 0) head else tail(i - 1)
+  override def apply(i: Int) = if (i == 0) head else tail(i - 1)
 }
 
 object LineNil extends LineStream("", 1, 1) {
   override val isEmpty = true
 
-  def apply(i: Int) = throw new StringIndexOutOfBoundsException("Cannot index into an empty LineStream")
+  override def apply(i: Int) = throw new StringIndexOutOfBoundsException("Cannot index into an empty LineStream")
 
   override def head = throw new RuntimeException("Cannot get the head of an empty LineStream")
 

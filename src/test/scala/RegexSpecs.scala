@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Daniel Spiewak
+ * Copyright (c) 2021, Daniel Spiewak
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -32,16 +32,16 @@ import com.codecommit._
 import gll._
 import util._
 
+import scala.collection.compat.immutable.LazyList
+import scala.collection.compat.immutable.LazyList._
 import org.specs2.ScalaCheck
 import org.specs2.mutable._
 import org.specs2.specification.SpecificationFeatures
 
-object RegexSpecs extends Spec
+class RegexSpecs extends Spec
     with SpecificationFeatures
     with ScalaCheck
     with RegexParsers {
-
-  import StreamUtils._
 
   "regex parsers" should {
     "match, consume and return from a regex match" in {
@@ -49,7 +49,7 @@ object RegexSpecs extends Spec
         val p: Parser[String] = """(\d{1,3}\.){3}\d{1,3}"""r
 
         p("192.168.101.2") must beLike {
-          case Success("192.168.101.2", LineStream()) #:: SNil => ok
+          case Success("192.168.101.2", LineStream()) #:: LazyList() => ok
         }
       }
 
@@ -57,7 +57,7 @@ object RegexSpecs extends Spec
         val p: Parser[String] = """\d+"""r
 
         p("1234daniel") must beLike {
-          case Failure(UnexpectedTrailingChars("daniel"), LineStream('d', 'a', 'n', 'i', 'e', 'l')) #:: SNil => ok
+          case Failure(UnexpectedTrailingChars("daniel"), LineStream('d', 'a', 'n', 'i', 'e', 'l')) #:: LazyList() => ok
         }
       }
     }
@@ -66,11 +66,11 @@ object RegexSpecs extends Spec
       val p: Parser[String] = "(" | ")"
 
       p("(") must beLike {
-        case Success("(", LineStream()) #:: SNil => ok
+        case Success("(", LineStream()) #:: LazyList() => ok
       }
 
       p(")") must beLike {
-        case Success(")", LineStream()) #:: SNil => ok
+        case Success(")", LineStream()) #:: LazyList() => ok
       }
     }
 
@@ -78,11 +78,11 @@ object RegexSpecs extends Spec
       val p = "a" ~ "where\\b".r ~ "b"
 
       p("a where b") must beLike {
-        case Success(_, LineStream()) #:: SNil => ok
+        case Success(_, LineStream()) #:: LazyList() => ok
       }
 
       p("a whereb") must beLike {
-        case Failure(_, _) #:: SNil => ok
+        case Failure(_, _) #:: LazyList() => ok
       }
     }
 
@@ -98,7 +98,7 @@ object RegexSpecs extends Spec
         val data = LineStream("123.457.321")
 
         p(data) must beLike {
-          case Failure(ExpectedRegex(`rex`), `data`) #:: SNil => ok
+          case Failure(ExpectedRegex(`rex`), `data`) #:: LazyList() => ok
         }
       }
 
@@ -106,13 +106,13 @@ object RegexSpecs extends Spec
         val data = LineStream("123.457.321.sdf")
 
         p(data) must beLike {
-          case Failure(ExpectedRegex(`rex`), `data`) #:: SNil => ok
+          case Failure(ExpectedRegex(`rex`), `data`) #:: LazyList() => ok
         }
       }
 
       {
         p(LineStream()) must beLike {
-          case Failure(ExpectedRegex(`rex`), LineStream()) #:: SNil => ok
+          case Failure(ExpectedRegex(`rex`), LineStream()) #:: LazyList() => ok
         }
       }
     }
@@ -123,7 +123,7 @@ object RegexSpecs extends Spec
       val p = literal("daniel") ^# { (loc, x) => A(loc, x) }
 
       p("    daniel") must beLike {
-        case Success(A(l, "daniel"), LineStream()) #:: SNil =>
+        case Success(A(l, "daniel"), LineStream()) #:: LazyList() =>
           l.colNum mustEqual 5
           l.toString mustEqual "daniel"
       }
@@ -140,7 +140,7 @@ object RegexSpecs extends Spec
       )
 
       p("\n\n\n\n daniel := daniel daniel") must beLike {
-        case Success(B(l, "daniel", "daniel", C(l2, "daniel")), LineStream()) #:: SNil =>
+        case Success(B(l, "daniel", "daniel", C(_, "daniel")), LineStream()) #:: LazyList() =>
           l.lineNum mustEqual 5
           l.colNum mustEqual 2
       }
@@ -150,20 +150,20 @@ object RegexSpecs extends Spec
       val p = literal("daniel")
 
       p("daniel") must beLike {
-        case Success("daniel", LineStream()) #:: SNil => ok
+        case Success("daniel", LineStream()) #:: LazyList() => ok
       }
 
       p("  daniel") must beLike {
-        case Success("daniel", LineStream()) #:: SNil => ok
+        case Success("daniel", LineStream()) #:: LazyList() => ok
       }
 
       p("\tdaniel") must beLike {
-        case Success("daniel", LineStream()) #:: SNil => ok
+        case Success("daniel", LineStream()) #:: LazyList() => ok
       }
 
       p("""
       daniel""") must beLike {
-        case Success("daniel", LineStream()) #:: SNil => ok
+        case Success("daniel", LineStream()) #:: LazyList() => ok
       }
     }
 
@@ -171,15 +171,15 @@ object RegexSpecs extends Spec
       val p = literal("daniel")
 
       p("daniel    ") must beLike {
-        case Success("daniel", LineStream()) #:: SNil => ok
+        case Success("daniel", LineStream()) #:: LazyList() => ok
       }
 
       p("daniel\t") must beLike {
-        case Success("daniel", LineStream()) #:: SNil => ok
+        case Success("daniel", LineStream()) #:: LazyList() => ok
       }
 
       p("daniel\n") must beLike {
-        case Success("daniel", LineStream()) #:: SNil => ok
+        case Success("daniel", LineStream()) #:: LazyList() => ok
       }
     }
 
@@ -188,19 +188,19 @@ object RegexSpecs extends Spec
       val p = num ~ "+" ~ num
 
       p("1 + 2") must beLike {
-        case Success(_, LineStream()) #:: SNil => ok
+        case Success(_, LineStream()) #:: LazyList() => ok
       }
 
       p("1 +2") must beLike {
-        case Success(_, LineStream()) #:: SNil => ok
+        case Success(_, LineStream()) #:: LazyList() => ok
       }
 
       p("1+ 2") must beLike {
-        case Success(_, LineStream()) #:: SNil => ok
+        case Success(_, LineStream()) #:: LazyList() => ok
       }
 
       p("  1   +  2") must beLike {
-        case Success(_, LineStream()) #:: SNil => ok
+        case Success(_, LineStream()) #:: LazyList() => ok
       }
     }
 
@@ -209,19 +209,19 @@ object RegexSpecs extends Spec
       val p = num ~ "+" ~ num
 
       p("1 + 2") must beLike {
-        case Success(_, LineStream()) #:: SNil => ok
+        case Success(_, LineStream()) #:: LazyList() => ok
       }
 
       p("1 +2") must beLike {
-        case Success(_, LineStream()) #:: SNil => ok
+        case Success(_, LineStream()) #:: LazyList() => ok
       }
 
       p("1+ 2") must beLike {
-        case Success(_, LineStream()) #:: SNil => ok
+        case Success(_, LineStream()) #:: LazyList() => ok
       }
 
       p("  1   +  2") must beLike {
-        case Success(_, LineStream()) #:: SNil => ok
+        case Success(_, LineStream()) #:: LazyList() => ok
       }
     }
 
@@ -254,23 +254,23 @@ object RegexSpecs extends Spec
       val p1 = "test" \ ("test" | "ing")
 
       p1("test") must beLike {
-        case Failure(SyntaxError, LineStream(tail @ _*)) #:: SNil =>
+        case Failure(SyntaxError, LineStream(tail @ _*)) #:: LazyList() =>
           tail.mkString mustEqual "test"
       }
 
       val p2 = "test" \ ("blah" | "ing ")
 
       p2("test") must beLike {
-        case Success("test", LineStream()) #:: SNil => ok
+        case Success("test", LineStream()) #:: LazyList() => ok
       }
 
       p2("ing ") must beLike {
-        case Failure(ExpectedLiteral("test", "ing "), LineStream(tail @ _*)) #:: SNil =>
+        case Failure(ExpectedLiteral("test", "ing "), LineStream(tail @ _*)) #:: LazyList() =>
           tail.mkString mustEqual "ing "
       }
 
       p2("blah") must beLike {
-        case Failure(ExpectedLiteral("test", "blah"), LineStream(tail @ _*)) #:: SNil =>
+        case Failure(ExpectedLiteral("test", "blah"), LineStream(tail @ _*)) #:: LazyList() =>
           tail.mkString mustEqual "blah"
       }
     }
@@ -286,7 +286,7 @@ object RegexSpecs extends Spec
       lazy val num = """\d+""".r
 
       expr("a := 1 c := 2 3") must beLike {
-        case Success(_, LineStream()) #:: SNil => ok
+        case Success(_, LineStream()) #:: LazyList() => ok
       }
     }
 
@@ -294,7 +294,7 @@ object RegexSpecs extends Spec
       val pat = "_" | """[a-z]+""".r
 
       pat("long") must beLike {
-        case Success(_, LineStream()) #:: SNil => ok
+        case Success(_, LineStream()) #:: LazyList() => ok
       }
     }
   }

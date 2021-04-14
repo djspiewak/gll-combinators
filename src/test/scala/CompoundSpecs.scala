@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Daniel Spiewak
+ * Copyright (c) 2021, Daniel Spiewak
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -30,16 +30,16 @@
 
 import com.codecommit.gll._
 
+import scala.collection.compat.immutable.LazyList
+import scala.collection.compat.immutable.LazyList._
 import org.specs2.ScalaCheck
 import org.specs2.mutable._
 import org.specs2.specification.SpecificationFeatures
 
-object CompoundSpecs extends Spec
+class CompoundSpecs extends Spec
     with SpecificationFeatures
     with Parsers
     with ScalaCheck {
-
-  import StreamUtils._
 
   "compound non-terminal parsers" should {
     "parse an unambiguous right-recursive grammar" in {
@@ -49,7 +49,7 @@ object CompoundSpecs extends Spec
       )
 
       // assumes data =~ /a+/
-      def check(data: String) = p(data) must beLike { case Success(`data`, LineStream()) #:: SNil => ok }
+      def check(data: String) = p(data) must beLike { case Success(`data`, LineStream()) #:: LazyList() => ok }
 
       p must not(throwA[Throwable])
 
@@ -66,7 +66,7 @@ object CompoundSpecs extends Spec
       )
 
       // assumes data =~ /a+/
-      def check(data: String) = p(data) must beLike { case Success(`data`, LineStream()) #:: SNil => ok }
+      def check(data: String) = p(data) must beLike { case Success(`data`, LineStream()) #:: LazyList() => ok }
 
       p must not(throwA[Throwable])
 
@@ -83,7 +83,7 @@ object CompoundSpecs extends Spec
       )
 
       // assumes data =~ /a+/
-      def check(data: String) = p(data) must beLike { case Success(`data`, LineStream()) #:: SNil => ok }
+      def check(data: String) = p(data) must beLike { case Success(`data`, LineStream()) #:: LazyList() => ok }
 
       p must not(throwA[Throwable])
 
@@ -100,7 +100,7 @@ object CompoundSpecs extends Spec
       )
 
       // assumes data =~ /a+/
-      def check(data: String) = p(data) must beLike { case Success(`data`, LineStream()) #:: SNil => ok }
+      def check(data: String) = p(data) must beLike { case Success(`data`, LineStream()) #:: LazyList() => ok }
 
       p must not(throwA[Throwable])
 
@@ -207,7 +207,7 @@ object CompoundSpecs extends Spec
                      (1 + 2)"""
 
       MathParser.expr(input) must beLike {
-        case Success(8, LineStream()) #:: SNil => ok
+        case Success(8, LineStream()) #:: LazyList() => ok
       }
     }
 
@@ -253,7 +253,7 @@ object CompoundSpecs extends Spec
 """
 
       ConfigParser.parser(input) must beLike {
-        case Success(map1, _) #:: Success(map2, _) #:: SNil => {
+        case Success(map1, _) #:: Success(map2, _) #:: LazyList() => {
           if (map1 contains "core.remote.url") {
             map1 must haveKey("core.filemode")
             map1 must haveKey("core.remote.fetch")
@@ -338,7 +338,7 @@ object CompoundSpecs extends Spec
       import ComplexParser._
 
       exp("(0,0) 2") must beLike {
-        case Success(_, LineStream()) #:: SNil => ok
+        case Success(_, LineStream()) #:: LazyList() => ok
       }
     }
 
@@ -346,14 +346,14 @@ object CompoundSpecs extends Spec
       val p1 = "test" \ "test"
 
       p1("test") must beLike {
-        case Failure(SyntaxError, LineStream(tail @ _*)) #:: SNil =>
+        case Failure(SyntaxError, LineStream(tail @ _*)) #:: LazyList() =>
           tail.mkString mustEqual "test"
       }
 
       val p2 = "test" \ "ing"
 
       p2("test") must beLike {
-        case Success("test", LineStream()) #:: SNil => ok
+        case Success("test", LineStream()) #:: LazyList() => ok
       }
     }
 
@@ -393,7 +393,7 @@ object CompoundSpecs extends Spec
       val p = RegexParsers.funSyntax2(("a|b".r \ "a") ~ "c") ^^ (_ + _)
 
       p("bc") must beLike {
-        case Success("bc", LineStream()) #:: SNil => ok
+        case Success("bc", LineStream()) #:: LazyList() => ok
       }
 
       p("ac") must beLike {
@@ -411,7 +411,7 @@ object CompoundSpecs extends Spec
       lazy val num = "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "0"
 
       expr("a:=1c:=23") must beLike {
-        case Success(_, LineStream()) #:: SNil => ok
+        case Success(_, LineStream()) #:: LazyList() => ok
       }
     }
 
@@ -436,30 +436,30 @@ object CompoundSpecs extends Spec
       val p = literal("123")*
 
       p("123") must beLike {
-        case Success(List("123"), LineStream()) #:: SNil => ok
+        case Success(List("123"), LineStream()) #:: LazyList() => ok
       }
 
       p("123123123123123123123123123123123") must beLike {
-        case Success(List("123", "123", "123", "123", "123", "123", "123", "123", "123", "123", "123"), LineStream()) #:: SNil => ok
+        case Success(List("123", "123", "123", "123", "123", "123", "123", "123", "123", "123", "123"), LineStream()) #:: LazyList() => ok
       }
 
       p(LineStream()) must beLike {
-        case Success(Nil, LineStream()) #:: SNil => ok
+        case Success(Nil, LineStream()) #:: LazyList() => ok
       }
     }
     "repeat 0..n times with separator" in {
       val p = literal("123") * ","
 
       p("123") must beLike {
-        case Success(List("123"), LineStream()) #:: SNil => ok
+        case Success(List("123"), LineStream()) #:: LazyList() => ok
       }
 
       p("123,123,123,123,123,123,123,123,123,123,123") must beLike {
-        case Success(List("123", "123", "123", "123", "123", "123", "123", "123", "123", "123", "123"), LineStream()) #:: SNil => ok
+        case Success(List("123", "123", "123", "123", "123", "123", "123", "123", "123", "123", "123"), LineStream()) #:: LazyList() => ok
       }
 
       p(LineStream()) must beLike {
-        case Success(Nil, LineStream()) #:: SNil => ok
+        case Success(Nil, LineStream()) #:: LazyList() => ok
       }
     }
 
@@ -467,11 +467,11 @@ object CompoundSpecs extends Spec
       val p = literal("123")+
 
       p("123") must beLike {
-        case Success(List("123"), LineStream()) #:: SNil => ok
+        case Success(List("123"), LineStream()) #:: LazyList() => ok
       }
 
       p("123123123123123123123123123123123") must beLike {
-        case Success(List("123", "123", "123", "123", "123", "123", "123", "123", "123", "123", "123"), LineStream()) #:: SNil => ok
+        case Success(List("123", "123", "123", "123", "123", "123", "123", "123", "123", "123", "123"), LineStream()) #:: LazyList() => ok
       }
     }
 
@@ -479,11 +479,11 @@ object CompoundSpecs extends Spec
       val p = literal("123") + ","
 
       p("123") must beLike {
-        case Success(List("123"), LineStream()) #:: SNil => ok
+        case Success(List("123"), LineStream()) #:: LazyList() => ok
       }
 
       p("123,123,123,123,123,123,123,123,123,123,123") must beLike {
-        case Success(List("123", "123", "123", "123", "123", "123", "123", "123", "123", "123", "123"), LineStream()) #:: SNil => ok
+        case Success(List("123", "123", "123", "123", "123", "123", "123", "123", "123", "123", "123"), LineStream()) #:: LazyList() => ok
       }
     }
 
@@ -491,11 +491,11 @@ object CompoundSpecs extends Spec
       val p = literal("123")?
 
       p("123") must beLike {
-        case Success(Some("123"), LineStream()) #:: SNil => ok
+        case Success(Some("123"), LineStream()) #:: LazyList() => ok
       }
 
       p(LineStream()) must beLike {
-        case Success(None, LineStream()) #:: SNil => ok
+        case Success(None, LineStream()) #:: LazyList() => ok
       }
     }
 
@@ -503,19 +503,19 @@ object CompoundSpecs extends Spec
       val p = ("-".? ~> "1")+
 
       p("11") must beLike {
-        case Success(List("1", "1"), LineStream()) #:: SNil => ok
+        case Success(List("1", "1"), LineStream()) #:: LazyList() => ok
       }
       p("-11") must beLike {
-        case Success(List("1", "1"), LineStream()) #:: SNil => ok
+        case Success(List("1", "1"), LineStream()) #:: LazyList() => ok
       }
       p("1-1") must beLike {
-        case Success(List("1", "1"), LineStream()) #:: SNil => ok
+        case Success(List("1", "1"), LineStream()) #:: LazyList() => ok
       }
       p("-1-1") must beLike {
-        case Success(List("1", "1"), LineStream()) #:: SNil => ok
+        case Success(List("1", "1"), LineStream()) #:: LazyList() => ok
       }
       p("1-1-1") must beLike {
-        case Success(List("1", "1", "1"), LineStream()) #:: SNil => ok
+        case Success(List("1", "1", "1"), LineStream()) #:: LazyList() => ok
       }
     }
   }
@@ -525,11 +525,11 @@ object CompoundSpecs extends Spec
       val p = literal("a") flatMap { _ => literal("b") }
 
       p(LineStream('a', 'b')) must beLike {
-        case Success("b", LineStream()) #:: SNil => ok
+        case Success("b", LineStream()) #:: LazyList() => ok
       }
 
       p(LineStream('a', 'c')) must beLike {
-        case Failure(ExpectedLiteral("b", "c"), LineStream('c')) #:: SNil => ok
+        case Failure(ExpectedLiteral("b", "c"), LineStream('c')) #:: LazyList() => ok
       }
 
       p.first mustEqual Set('a')
@@ -539,11 +539,11 @@ object CompoundSpecs extends Spec
       val p = literal("1") map { _.toInt }
 
       p(LineStream('1')) must beLike {
-        case Success(1, LineStream()) #:: SNil => ok
+        case Success(1, LineStream()) #:: LazyList() => ok
       }
 
       p(LineStream('2')) must beLike {
-        case Failure(ExpectedLiteral("1", "2"), LineStream('2')) #:: SNil => ok
+        case Failure(ExpectedLiteral("1", "2"), LineStream('2')) #:: LazyList() => ok
       }
 
       p.first mustEqual Set('1')
@@ -553,15 +553,15 @@ object CompoundSpecs extends Spec
       val p = literal("a") orElse literal("b")
 
       p(LineStream('a')) must beLike {
-        case Success("a", LineStream()) #:: SNil => ok
+        case Success("a", LineStream()) #:: LazyList() => ok
       }
 
       p(LineStream('b')) must beLike {
-        case Success("b", LineStream()) #:: SNil => ok
+        case Success("b", LineStream()) #:: LazyList() => ok
       }
 
       p(LineStream('c')) must beLike {
-        case Failure(UnexpectedChars("c"), LineStream('c')) #:: SNil => ok
+        case Failure(UnexpectedChars("c"), LineStream('c')) #:: LazyList() => ok
       }
 
       p.first mustEqual Set('a', 'b')
@@ -571,15 +571,15 @@ object CompoundSpecs extends Spec
       val p = ("a" | "b") filter { _ == "a" }
 
       p(LineStream('a')) must beLike {
-        case Success("a", LineStream()) #:: SNil => ok
+        case Success("a", LineStream()) #:: LazyList() => ok
       }
 
       p(LineStream('b')) must beLike {
-        case Failure(SyntaxError, LineStream('b')) #:: SNil => ok
+        case Failure(SyntaxError, LineStream('b')) #:: LazyList() => ok
       }
 
       p(LineStream('c')) must beLike {
-        case Failure(UnexpectedChars("c"), LineStream('c')) #:: SNil => ok
+        case Failure(UnexpectedChars("c"), LineStream('c')) #:: LazyList() => ok
       }
 
       p.first mustEqual Set('a', 'b')

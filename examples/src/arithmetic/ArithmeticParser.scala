@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Daniel Spiewak
+ * Copyright (c) 2021, Daniel Spiewak
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -33,6 +33,8 @@ package arithmetic
 import com.codecommit.gll._
 import AST._
 
+import scala.collection.compat.immutable.LazyList
+
 object ArithmeticParser extends common.Example[Expr] with RegexParsers {
   
   // %%
@@ -59,7 +61,7 @@ object ArithmeticParser extends common.Example[Expr] with RegexParsers {
   
   def parser = expr
   
-  def handleSuccesses(forest: Stream[Expr]) {
+  def handleSuccesses(forest: LazyList[Expr]): Unit = {
     forest foreach println
   }
 }

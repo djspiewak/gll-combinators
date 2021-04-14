@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Daniel Spiewak
+ * Copyright (c) 2021, Daniel Spiewak
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -30,6 +30,7 @@
 
 package config
 
+import scala.collection.compat.immutable.LazyList
 import scala.io.Source
 import com.codecommit.gll._
 
@@ -58,7 +59,7 @@ object ConfigParser extends common.Example[Map[String, String]] with RegexParser
     if (successful) {
       val back = results.foldLeft(Map[String, String]()) {
         case (map1, Success(map2, _)) => map1 ++ map2
-        case (map1, Failure(_, _)) => throw new AssertionError
+        case (_, Failure(_, _)) => throw new AssertionError
       }
       
       back
@@ -67,13 +68,13 @@ object ConfigParser extends common.Example[Map[String, String]] with RegexParser
       val length = sorted.head.tail.length
       
       throw new ConfigException(sorted takeWhile { _.tail.length == length } flatMap {
-        case s: Success[_] => None
+        case _: Success[_] => None
         case f: Failure => Some(f)
       })
     }
   }
   
-  def handleSuccesses(forest: Stream[Map[String, String]]) {
+  def handleSuccesses(forest: LazyList[Map[String, String]]): Unit = {
     for ((key, value) <- forest.foldLeft(Map[String, String]()) { _ ++ _ }) {
       println("  " + key + " -> " + value)
     }

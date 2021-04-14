@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Daniel Spiewak
+ * Copyright (c) 2021, Daniel Spiewak
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -32,7 +32,7 @@ package com.codecommit.gll
 
 import scala.util.matching.Regex
 
-sealed trait Result[+R] {
+sealed trait Result[+R] extends Product with Serializable {
   val tail: LineStream
 }
 

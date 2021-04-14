@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Daniel Spiewak
+ * Copyright (c) 2021, Daniel Spiewak
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -61,7 +61,7 @@ trait Filters {
       val peers = matched get manifest getOrElse Set()
 
       (form.head, form drop 1 take (form.length - 2), form.last) match {
-        case (HolePart(left), middle, HolePart(right)) => {
+        case (HolePart(left), _, HolePart(right)) => {
           val leftManifest = Manifest.classType(left.getClass)
           val rightManifest = Manifest.classType(right.getClass)
 
@@ -119,19 +119,19 @@ trait Filters {
   case class PrecLevel(specs: Set[ManWrap])
 
   case object PrecLevel extends (Set[ManWrap] => PrecLevel) {
-    implicit def coerce1[A <% ManWrap](a: A): PrecLevel =
+    implicit def coerce1[A](a: A)(implicit ev: A => ManWrap): PrecLevel =
       PrecLevel(Set[ManWrap](a))
 
-    implicit def coerce2[A <% ManWrap, B <% ManWrap](pair: (A, B)): PrecLevel =
+    implicit def coerce2[A, B](pair: (A, B))(implicit evA: A => ManWrap, evB: B => ManWrap): PrecLevel =
       PrecLevel(Set[ManWrap](pair._1, pair._2))
 
-    implicit def coerce3[A <% ManWrap, B <% ManWrap, C <% ManWrap](pair: (A, B, C)): PrecLevel =
+    implicit def coerce3[A, B, C](pair: (A, B, C))(implicit evA: A => ManWrap, evB: B => ManWrap, evC: C => ManWrap): PrecLevel =
       PrecLevel(Set[ManWrap](pair._1, pair._2, pair._3))
 
-    implicit def coerce4[A <% ManWrap, B <% ManWrap, C <% ManWrap, D <% ManWrap](pair: (A, B, C, D)): PrecLevel =
+    implicit def coerce4[A, B, C, D](pair: (A, B, C, D))(implicit evA: A => ManWrap, evB: B => ManWrap, evC: C => ManWrap, evD: D => ManWrap): PrecLevel =
       PrecLevel(Set[ManWrap](pair._1, pair._2, pair._3, pair._4))
 
-    implicit def coerce5[A <% ManWrap, B <% ManWrap, C <% ManWrap, D <% ManWrap, E <% ManWrap](pair: (A, B, C, D, E)): PrecLevel =
+    implicit def coerce5[A, B, C, D, E](pair: (A, B, C, D, E))(implicit evA: A => ManWrap, evB: B => ManWrap, evC: C => ManWrap, evD: D => ManWrap, evE: E => ManWrap): PrecLevel =
       PrecLevel(Set[ManWrap](pair._1, pair._2, pair._3, pair._4, pair._5))
   }
 

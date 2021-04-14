@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Daniel Spiewak
+ * Copyright (c) 2021, Daniel Spiewak
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -31,13 +31,14 @@
 import com.codecommit.gll.LazyLineCons
 import com.codecommit.gll.LineStream
 
+import scala.collection.compat.immutable.LazyList
 import scala.io.Source
 
 import org.specs2.ScalaCheck
 import org.specs2.mutable._
 import org.scalacheck._
 
-object LineStreamSpecs extends Specification with ScalaCheck {
+class LineStreamSpecs extends Specification with ScalaCheck {
   import Function._
   import Prop._
 
@@ -78,9 +79,9 @@ object LineStreamSpecs extends Specification with ScalaCheck {
     }
 
     "define a different lineNum/colNum pair for each index" in {
-      def allNums(ls: LineStream): Stream[(Int, Int)] = {
+      def allNums(ls: LineStream): LazyList[(Int, Int)] = {
         if (ls.isEmpty)
-          Stream.empty
+          LazyList.empty
         else
           (ls.lineNum, ls.colNum) #:: allNums(ls.tail)
       }

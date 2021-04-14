@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Daniel Spiewak
+ * Copyright (c) 2021, Daniel Spiewak
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -30,11 +30,9 @@
 
 package com.codecommit.util
 
-import collection.{SetLike, GenTraversableOnce}
-import collection.generic.CanBuildFrom
-import scala.collection.GenSet
+import scala.collection.immutable.SetOps
 
-class ComplementarySet[A](private val without: Set[A]) extends Set[A] with SetLike[A, ComplementarySet[A]] {
+class ComplementarySet[A](private val without: Set[A]) extends Set[A] with SetOps[A, Set, Set[A]] {
   override val size = Int.MaxValue     // should be infinite
 
   def this() = this(Set())
@@ -51,45 +49,38 @@ class ComplementarySet[A](private val without: Set[A]) extends Set[A] with SetLi
 
   def &(that: Set[A]): ComplementarySet[A] = new ComplementarySet(that -- without)
 
-  @deprecated("use `&` instead", "2.10")
-  def **(that: Set[A]): ComplementarySet[A] = this & that
-
-  def +(e: A) = {
+  def incl(e: A) = {
     if (without contains e)
       new ComplementarySet(without - e)
     else
       this
   }
 
-  def -(e: A) = new ComplementarySet(without + e)
+  def excl(e: A) = new ComplementarySet(without + e)
 
-  override def intersect(that: GenSet[A]) = that match {
+  override def intersect(that: scala.collection.Set[A]) = that match {
     case s: ComplementarySet[A] => new ComplementarySet(without ++ s.without)
     case s: Set[A] => new ComplementarySet(new ComplementarySet(without -- s))
     case _ => new ComplementarySet(new ComplementarySet(Set(that.toList: _*)))
   }
 
-  override def union(that: GenSet[A]) = this ++ that
-
-  override def ++(other: GenTraversableOnce[A]) = other match {
+  override def concat(other: scala.collection.IterableOnce[A]) = other match {
     case that: ComplementarySet[A] => new ComplementarySet(this.without & that.without)
-
     case _ => new ComplementarySet(without -- other)
   }
 
-  override def --(other: GenTraversableOnce[A]) = other match {
+  override def removedAll(other: scala.collection.IterableOnce[A]) = other match {
     case that: ComplementarySet[A] => new ComplementarySet(this.without ++ that.without)
-
     case _ => new ComplementarySet(without ++ other)
   }
 
-  override def map[B, That](f: A => B)(implicit bf: CanBuildFrom[ComplementarySet[A], B, That]): That =
-    new ComplementarySet(without map f).asInstanceOf[That]
+  override def map[B](f: A => B) =
+    new ComplementarySet(without map f)
 
-  override def flatMap[B, That](f: A => GenTraversableOnce[B])(implicit cbf: CanBuildFrom[ComplementarySet[A], B, That]): That =
-    new ComplementarySet(without flatMap f).asInstanceOf[That]
+  override def flatMap[B](f: A => scala.collection.IterableOnce[B]) =
+    new ComplementarySet(without flatMap f)
 
-  def subsetOf(other: Set[A]) = other match {
+  override def subsetOf(other: scala.collection.Set[A]) = other match {
     case that: ComplementarySet[A] => that.without subsetOf this.without
     case _ => false
   }

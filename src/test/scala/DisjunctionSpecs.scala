@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Daniel Spiewak
+ * Copyright (c) 2021, Daniel Spiewak
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -30,18 +30,19 @@
 
 import com.codecommit.gll._
 
+import scala.collection.compat.immutable.LazyList
+import scala.collection.compat.immutable.LazyList._
 import org.specs2.ScalaCheck
 import org.specs2.mutable._
 import org.specs2.specification.SpecificationFeatures
 import org.scalacheck._
 
-object DisjunctionSpecs extends Spec
+class DisjunctionSpecs extends Spec
     with SpecificationFeatures
     with Parsers
     with ScalaCheck {
 
   import Prop._
-  import StreamUtils._
 
   "disjunctive parser" should {
     "detect LL(1) grammar" in {
@@ -107,11 +108,11 @@ object DisjunctionSpecs extends Spec
         val p = "daniel" | "chris"
 
         p("daniel") must beLike {
-          case Success("daniel", LineStream()) #:: SNil => ok
+          case Success("daniel", LineStream()) #:: LazyList() => ok
         }
 
         p("chris") must beLike {
-          case Success("chris", LineStream()) #:: SNil => ok
+          case Success("chris", LineStream()) #:: LazyList() => ok
         }
       }
 
@@ -119,7 +120,7 @@ object DisjunctionSpecs extends Spec
         val p = "" | ""
 
         p("") must beLike {
-          case Success("", LineStream()) #:: SNil => ok
+          case Success("", LineStream()) #:: LazyList() => ok
         }
       }
     }
@@ -128,11 +129,11 @@ object DisjunctionSpecs extends Spec
       val p = "daniel" | "chris"
 
       p(LineStream('j')) must beLike {
-        case Failure(UnexpectedChars("j"), LineStream('j')) #:: SNil => ok
+        case Failure(UnexpectedChars("j"), LineStream('j')) #:: LazyList() => ok
       }
 
       p(LineStream()) must beLike {
-        case Failure(UnexpectedEndOfStream(None), LineStream()) #:: SNil => ok
+        case Failure(UnexpectedEndOfStream(None), LineStream()) #:: LazyList() => ok
       }
     }
 
@@ -140,11 +141,11 @@ object DisjunctionSpecs extends Spec
       val p = "daniel" | "danielle"
 
       p(LineStream('j')) must beLike {
-        case Failure(UnexpectedChars("j"), LineStream('j')) #:: SNil => ok
+        case Failure(UnexpectedChars("j"), LineStream('j')) #:: LazyList() => ok
       }
 
       p(LineStream()) must beLike {
-        case Failure(UnexpectedEndOfStream(None), LineStream()) #:: SNil => ok
+        case Failure(UnexpectedEndOfStream(None), LineStream()) #:: LazyList() => ok
       }
     }
 
@@ -152,11 +153,11 @@ object DisjunctionSpecs extends Spec
       val p = "daniel" | "chris"
 
       p("dan") must beLike {
-        case Failure(UnexpectedEndOfStream(Some("daniel")), LineStream('d', 'a', 'n')) #:: SNil => ok
+        case Failure(UnexpectedEndOfStream(Some("daniel")), LineStream('d', 'a', 'n')) #:: LazyList() => ok
       }
 
       p("dancin") must beLike {
-        case Failure(ExpectedLiteral("daniel", "dancin"), LineStream('d', 'a', 'n', 'c', 'i', 'n')) #:: SNil => ok
+        case Failure(ExpectedLiteral("daniel", "dancin"), LineStream('d', 'a', 'n', 'c', 'i', 'n')) #:: LazyList() => ok
       }
     }
 
@@ -164,7 +165,7 @@ object DisjunctionSpecs extends Spec
       val p = literal("") | literal("")
 
       p("\n") must beLike {
-        case Failure(UnexpectedTrailingChars("\\n"), LineStream('\n')) #:: SNil => ok
+        case Failure(UnexpectedTrailingChars("\\n"), LineStream('\n')) #:: LazyList() => ok
       }
     }
 
@@ -220,7 +221,7 @@ object DisjunctionSpecs extends Spec
     "parse nary alternatives" in {
       // assumes unambiguous data
       def check(p: Parser[Any], data: String*) =
-        data forall (str => p(str) must beLike { case Success(`str`, LineStream()) #:: SNil => ok })
+        data forall (str => p(str) must beLike { case Success(`str`, LineStream()) #:: LazyList() => ok })
 
       {
         val p = "daniel" | "chris" | "joseph" | "renee" | "bethany" | "grace"
@@ -299,11 +300,11 @@ object DisjunctionSpecs extends Spec
         ) ^^ f
 
         p(left) must beLike {
-          case Success(v, LineStream()) #:: SNil => v mustEqual f(left)
+          case Success(v, LineStream()) #:: LazyList() => v mustEqual f(left)
         }
 
         p(right) must beLike {
-          case Success(v, LineStream()) #:: SNil => v mustEqual f(right)
+          case Success(v, LineStream()) #:: LazyList() => v mustEqual f(right)
         }
       }
     }
@@ -324,7 +325,7 @@ object DisjunctionSpecs extends Spec
       val p = p1 ~ "\n" ~> p2
 
       p("foo\nbaz") must beLike {
-        case Success("baz", LineStream()) #:: SNil => ok
+        case Success("baz", LineStream()) #:: LazyList() => ok
       }
 
       in1 must not(beNull)
@@ -341,7 +342,7 @@ object DisjunctionSpecs extends Spec
 
 
       p("foo\nbin") must beLike {
-        case Success("bin", LineStream()) #:: SNil => ok
+        case Success("bin", LineStream()) #:: LazyList() => ok
       }
 
       in1 must not(beNull)
@@ -357,7 +358,7 @@ object DisjunctionSpecs extends Spec
       in2.toString mustEqual "bin"
 
       p("bar\nbaz") must beLike {
-        case Success("baz", LineStream()) #:: SNil => ok
+        case Success("baz", LineStream()) #:: LazyList() => ok
       }
 
       in1 must not(beNull)
@@ -373,7 +374,7 @@ object DisjunctionSpecs extends Spec
       in2.toString mustEqual "baz"
 
       p("bar\nbin") must beLike {
-        case Success("bin", LineStream()) #:: SNil => ok
+        case Success("bin", LineStream()) #:: LazyList() => ok
       }
 
       in1 must not(beNull)
@@ -424,7 +425,7 @@ object DisjunctionSpecs extends Spec
       )
 
       p("ab") must beLike {
-        case Stream(Success(3, LineStream())) => ok
+        case LazyList(Success(3, LineStream())) => ok
       }
     }
   }

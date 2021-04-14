@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Daniel Spiewak
+ * Copyright (c) 2021, Daniel Spiewak
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -74,7 +74,7 @@ trait BinaryNode extends Node {
 }
 
 trait LeafNode extends Node {
-  def form = 'leaf
+  def form = Symbol("leaf")
   def children = Nil
 }
 

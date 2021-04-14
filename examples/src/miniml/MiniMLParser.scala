@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Daniel Spiewak
+ * Copyright (c) 2021, Daniel Spiewak
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -30,6 +30,7 @@
 
 package miniml
 
+import scala.collection.compat.immutable.LazyList
 import com.codecommit.gll._
 
 object MiniMLParser extends common.Example[Any] with RegexParsers {
@@ -107,7 +108,7 @@ object MiniMLParser extends common.Example[Any] with RegexParsers {
   
   def parser = decs
   
-  def handleSuccesses(v: Stream[Any]) {
+  def handleSuccesses(v: LazyList[Any]): Unit = {
     if (!v.isEmpty)
       println("  Successfully recognized!")
   }

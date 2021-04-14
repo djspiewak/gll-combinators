@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Daniel Spiewak
+ * Copyright (c) 2021, Daniel Spiewak
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -31,7 +31,7 @@
 import org.specs2.ScalaCheck
 import org.specs2.mutable._
 
-object ExamplesSpecs extends Specification with ScalaCheck {
+class ExamplesSpecs extends Specification with ScalaCheck {
 
   "Examples" should {
     "pass arithmetic test" in {

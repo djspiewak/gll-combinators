@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Daniel Spiewak
+ * Copyright (c) 2021, Daniel Spiewak
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -30,12 +30,13 @@
 
 package common
 
+import scala.collection.compat.immutable.LazyList
 import scala.io.Source
 import com.codecommit.gll._
 
 trait Example[A] extends Parsers {
   
-  def main(args: Array[String]) {
+  def main(args: Array[String]): Unit = {
     for (file <- args) {
       println(file)
       println("=============================")
@@ -60,7 +61,7 @@ trait Example[A] extends Parsers {
   
   def test(file: String): Boolean = {
     val src = Source.fromInputStream(getClass().getResourceAsStream(file))
-    val results: Stream[Result[A]] = parser(LineStream(src))
+    val results: LazyList[Result[A]] = parser(LineStream(src))
     if (results exists { _.isInstanceOf[Success[A]] }) {
       // suppress stdout:
       val stream = new java.io.ByteArrayOutputStream()
@@ -75,5 +76,5 @@ trait Example[A] extends Parsers {
 
   def parser: Parser[A]
   
-  def handleSuccesses(forest: Stream[A])
+  def handleSuccesses(forest: LazyList[A]): Unit
 }

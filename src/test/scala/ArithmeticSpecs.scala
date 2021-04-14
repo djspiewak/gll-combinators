@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Daniel Spiewak
+ * Copyright (c) 2021, Daniel Spiewak
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -30,13 +30,14 @@
 
 import com.codecommit.gll._
 
+import scala.collection.compat.immutable.LazyList
+import scala.collection.compat.immutable.LazyList._
 import org.specs2.ScalaCheck
 import org.specs2.mutable._
 import org.scalacheck._
 
-object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
+class ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
   import Prop._
-  import StreamUtils._
 
   "arithmetic grammar" should {
     "compute FIRST set" in {
@@ -53,34 +54,34 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
     "parse numbers" in forAll { x: Int =>
       (abs(x.toLong) < Int.MaxValue) ==> {
         expr(x.toString) must beLike {
-          case Success(e, LineStream()) #:: SNil => e.solve mustEqual x
+          case Success(e, LineStream()) #:: LazyList() => e.solve mustEqual x
         }
       }
     }
 
     "parse simple addition" in forAll { (x: Int, y: Int) =>
       (abs(x.toLong) < Int.MaxValue && abs(y.toLong) < Int.MaxValue) ==> {
-        val res = expr((x + "+" + y))
+        val res = expr((s"$x+$y"))
 
         if (x < 0) {
           res must haveSize(2)
 
           atLeastOnce(res) { r =>
             r must beLike {
-              case Success(e @ Add(Neg(e1), e2), LineStream()) =>
+              case Success(e @ Add(Neg(_), _), LineStream()) =>
                 e.solve mustEqual x + y
             }
           }
 
           atLeastOnce(res) { r =>
             r must beLike {
-              case Success(e @ Neg(Add(e1, e2)), LineStream()) =>
+              case Success(e @ Neg(Add(_, _)), LineStream()) =>
                 e.solve mustEqual -(-x + y)
             }
           }
         } else {
           res must beLike {
-            case Success(e, LineStream()) #:: SNil =>
+            case Success(e, LineStream()) #:: LazyList() =>
               e.solve mustEqual x + y
           }
         }
@@ -89,27 +90,27 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
 
     "parse simple subtraction" in forAll { (x: Int, y: Int) =>
       (abs(x.toLong) < Int.MaxValue && abs(y.toLong) < Int.MaxValue) ==> {
-        val res = expr((x + "-" + y))
+        val res = expr((s"$x-$y"))
 
         if (x < 0) {
           res.length mustEqual 2
 
           atLeastOnce(res) { r =>
             r must beLike {
-              case Success(e @ Sub(Neg(e1), e2), LineStream()) =>
+              case Success(e @ Sub(Neg(_), _), LineStream()) =>
                 e.solve mustEqual x - y
             }
           }
 
           atLeastOnce(res) { r =>
             r must beLike {
-              case Success(e @ Neg(Sub(e1, e2)), LineStream()) =>
+              case Success(e @ Neg(Sub(_, _)), LineStream()) =>
                 e.solve mustEqual -(-x - y)
             }
           }
         } else {
           res must beLike {
-            case Success(e, LineStream()) #:: SNil =>
+            case Success(e, LineStream()) #:: LazyList() =>
               e.solve mustEqual x - y
           }
         }
@@ -118,27 +119,27 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
 
     "parse simple multiplication" in forAll { (x: Int, y: Int) =>
       (abs(x.toLong) < Int.MaxValue && abs(y.toLong) < Int.MaxValue) ==> {
-        val res = expr((x + "*" + y))
+        val res = expr((s"$x*$y"))
 
         if (x < 0) {
           res.length mustEqual 2
 
           atLeastOnce(res) { r =>
             r must beLike {
-              case Success(e @ Mul(Neg(e1), e2), LineStream()) =>
+              case Success(e @ Mul(Neg(_), _), LineStream()) =>
                 e.solve mustEqual x * y
             }
           }
 
           atLeastOnce(res) { r =>
             r must beLike {
-              case Success(e @ Neg(Mul(e1, e2)), LineStream()) =>
+              case Success(e @ Neg(Mul(_, _)), LineStream()) =>
                 e.solve mustEqual -(-x * y)
             }
           }
         } else {
           res must beLike {
-            case Success(e, LineStream()) #:: SNil =>
+            case Success(e, LineStream()) #:: LazyList() =>
               e.solve mustEqual x * y
           }
         }
@@ -147,27 +148,27 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
 
     "parse simple division" in forAll { (x: Int, y: Int) =>
       (abs(x.toLong) < Int.MaxValue && abs(y.toLong) < Int.MaxValue && y != 0) ==> {
-        val res = expr((x + "/" + y))
+        val res = expr((s"$x/$y"))
 
         if (x < 0) {
           res.length mustEqual 2
 
           atLeastOnce(res) { r =>
             r must beLike {
-              case Success(e @ Div(Neg(e1), e2), LineStream()) =>
+              case Success(e @ Div(Neg(_), _), LineStream()) =>
                 e.solve mustEqual x / y
             }
           }
 
           atLeastOnce(res) { r =>
             r must beLike {
-              case Success(e @ Neg(Div(e1, e2)), LineStream()) =>
+              case Success(e @ Neg(Div(_, _)), LineStream()) =>
                 e.solve mustEqual -(-x / y)
             }
           }
         } else {
           res must beLike {
-            case Success(e, LineStream()) #:: SNil =>
+            case Success(e, LineStream()) #:: LazyList() =>
               e.solve mustEqual x / y
           }
         }
@@ -180,7 +181,7 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
 
         forall(back) { r =>
           r must beLike {
-            case Success(e, LineStream()) => ok
+            case Success(_, LineStream()) => ok
           }
         }
 
@@ -201,7 +202,7 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
 
         forall(back) { r =>
           r must beLike {
-            case Success(e, LineStream()) => ok
+            case Success(_, LineStream()) => ok
           }
         }
 
@@ -222,7 +223,7 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
 
         forall(back) { r =>
           r must beLike {
-            case Success(e, LineStream()) => ok
+            case Success(_, LineStream()) => ok
           }
         }
 
@@ -231,7 +232,7 @@ object ArithmeticSpecs extends Specification with ScalaCheck with RegexParsers {
         }
       }
 
-      (res sort { _ < _ } toList) mustEqual List(-55, -29)
+      (res sortWith { _ < _ } toList) mustEqual List(-55, -29)
     }
   }
 

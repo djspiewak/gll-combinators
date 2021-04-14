@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Daniel Spiewak
+ * Copyright (c) 2021, Daniel Spiewak
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -30,6 +30,7 @@
 
 package lambdacalc
 
+import scala.collection.compat.immutable.LazyList
 import scala.collection.mutable
 
 import com.codecommit.gll._
@@ -64,7 +65,7 @@ object LambdaCalcParser extends common.Example[(List[Alias], Expr)] with RegexPa
 
   def parser = aliases
 
-  def handleSuccesses(forest: Stream[(List[Alias], Expr)]) {
+  def handleSuccesses(forest: LazyList[(List[Alias], Expr)]): Unit = {
     val errors = mutable.Set[String]()
 
     val status = for ((tree, expr) <- forest) yield {
@@ -81,7 +82,7 @@ object LambdaCalcParser extends common.Example[(List[Alias], Expr)] with RegexPa
           None
         }
 
-        case e: StackOverflowError => {
+        case _: StackOverflowError => {
           errors += "stack overflow"
           None
         }

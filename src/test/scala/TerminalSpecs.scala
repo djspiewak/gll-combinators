@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Daniel Spiewak
+ * Copyright (c) 2021, Daniel Spiewak
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -30,25 +30,26 @@
 
 import com.codecommit.gll._
 
+import scala.collection.compat.immutable.LazyList
+import scala.collection.compat.immutable.LazyList._
 import org.specs2.ScalaCheck
 import org.specs2.mutable._
 import org.specs2.specification.SpecificationFeatures
 import org.scalacheck._
 
-object TerminalSpecs extends Spec
+class TerminalSpecs extends Spec
     with SpecificationFeatures
     with ScalaCheck
     with Parsers {
 
   import Prop._
-  import StreamUtils._
 
   "terminal parser" should {
     "parse single tokens" in {
       val p = literal("test")
 
       p("test") must beLike {
-        case Success("test", LineStream()) #:: SNil => ok
+        case Success("test", LineStream()) #:: LazyList() => ok
       }
     }
 
@@ -56,11 +57,11 @@ object TerminalSpecs extends Spec
       val p = literal("foo")
 
       p("bar") must beLike {
-        case Failure(ExpectedLiteral("foo", "bar"), LineStream('b', 'a', 'r')) #:: SNil => ok
+        case Failure(ExpectedLiteral("foo", "bar"), LineStream('b', 'a', 'r')) #:: LazyList() => ok
       }
 
       p("test") must beLike {
-        case Failure(ExpectedLiteral("foo", "tes"), LineStream('t', 'e', 's', 't')) #:: SNil => ok
+        case Failure(ExpectedLiteral("foo", "tes"), LineStream('t', 'e', 's', 't')) #:: LazyList() => ok
       }
     }
 
@@ -68,25 +69,25 @@ object TerminalSpecs extends Spec
       val p = literal("")
 
       p("\n") must beLike {
-        case Failure(UnexpectedTrailingChars("\\n"), LineStream('\n')) #:: SNil => ok
+        case Failure(UnexpectedTrailingChars("\\n"), LineStream('\n')) #:: LazyList() => ok
       }
 
       val p2 = literal("a")
 
       p2("\n") must beLike {
-        case Failure(ExpectedLiteral("a", "\\n"), LineStream('\n')) #:: SNil => ok
+        case Failure(ExpectedLiteral("a", "\\n"), LineStream('\n')) #:: LazyList() => ok
       }
 
       p2("\r") must beLike {
-        case Failure(ExpectedLiteral("a", "\\r"), LineStream('\r')) #:: SNil => ok
+        case Failure(ExpectedLiteral("a", "\\r"), LineStream('\r')) #:: LazyList() => ok
       }
 
       p2("\t") must beLike {
-        case Failure(ExpectedLiteral("a", "\\t"), LineStream('\t')) #:: SNil => ok
+        case Failure(ExpectedLiteral("a", "\\t"), LineStream('\t')) #:: LazyList() => ok
       }
 
       p2("\f") must beLike {
-        case Failure(ExpectedLiteral("a", "\\f"), LineStream('\f')) #:: SNil => ok
+        case Failure(ExpectedLiteral("a", "\\f"), LineStream('\f')) #:: LazyList() => ok
       }
     }
 
@@ -94,11 +95,11 @@ object TerminalSpecs extends Spec
       val p = literal("foo")
 
       p(LineStream('f')) must beLike {
-        case Failure(UnexpectedEndOfStream(Some("foo")), LineStream('f')) #:: SNil => ok
+        case Failure(UnexpectedEndOfStream(Some("foo")), LineStream('f')) #:: LazyList() => ok
       }
 
       p(LineStream()) must beLike {
-        case Failure(UnexpectedEndOfStream(Some("foo")), LineStream()) #:: SNil => ok
+        case Failure(UnexpectedEndOfStream(Some("foo")), LineStream()) #:: LazyList() => ok
       }
     }
 
@@ -106,7 +107,7 @@ object TerminalSpecs extends Spec
       val p = literal("")
 
       p(LineStream()) must beLike {
-        case Success("", LineStream()) #:: SNil => ok
+        case Success("", LineStream()) #:: LazyList() => ok
       }
     }
 
@@ -125,7 +126,7 @@ object TerminalSpecs extends Spec
       val p = "test" ^^ { _.length }
 
       p("test") must beLike {
-        case Success(4, LineStream()) #:: SNil => ok
+        case Success(4, LineStream()) #:: LazyList() => ok
       }
     }
 
@@ -133,7 +134,7 @@ object TerminalSpecs extends Spec
       val p = "test" ^^^ 42
 
       p("test") must beLike {
-        case Success(42, LineStream()) #:: SNil => ok
+        case Success(42, LineStream()) #:: LazyList() => ok
       }
     }
 
@@ -153,7 +154,7 @@ object TerminalSpecs extends Spec
       val p = p1 ~ "\n" ~> p2
 
       p("foo\nbar") must beLike {
-        case Success("bar", LineStream()) #:: SNil => ok
+        case Success("bar", LineStream()) #:: LazyList() => ok
       }
 
       in1.line mustEqual "foo"
@@ -173,7 +174,7 @@ object TerminalSpecs extends Spec
       val p = "te" ~ "st"
 
       p("test") must beLike {
-        case Success("te" ~ "st", LineStream()) #:: SNil => ok
+        case Success("te" ~ "st", LineStream()) #:: LazyList() => ok
       }
     }
 
@@ -181,11 +182,11 @@ object TerminalSpecs extends Spec
       val p = "te" ~ "st"
 
       p("foo") must beLike {
-        case Failure(ExpectedLiteral("te", "fo"), LineStream('f', 'o', 'o')) #:: SNil => ok
+        case Failure(ExpectedLiteral("te", "fo"), LineStream('f', 'o', 'o')) #:: LazyList() => ok
       }
 
       p("tefoo") must beLike {
-        case Failure(ExpectedLiteral("st", "fo"), LineStream('f', 'o', 'o')) #:: SNil => ok
+        case Failure(ExpectedLiteral("st", "fo"), LineStream('f', 'o', 'o')) #:: LazyList() => ok
       }
     }
 
@@ -193,19 +194,19 @@ object TerminalSpecs extends Spec
       val p = "te" ~ "st"
 
       p(LineStream('t')) must beLike {
-        case Failure(UnexpectedEndOfStream(Some("te")), LineStream('t')) #:: SNil => ok
+        case Failure(UnexpectedEndOfStream(Some("te")), LineStream('t')) #:: LazyList() => ok
       }
 
       p(LineStream()) must beLike {
-        case Failure(UnexpectedEndOfStream(Some("te")), LineStream()) #:: SNil => ok
+        case Failure(UnexpectedEndOfStream(Some("te")), LineStream()) #:: LazyList() => ok
       }
 
       p("tes") must beLike {
-        case Failure(UnexpectedEndOfStream(Some("st")), LineStream('s')) #:: SNil => ok
+        case Failure(UnexpectedEndOfStream(Some("st")), LineStream('s')) #:: LazyList() => ok
       }
 
       p("te") must beLike {
-        case Failure(UnexpectedEndOfStream(Some("st")), LineStream()) #:: SNil => ok
+        case Failure(UnexpectedEndOfStream(Some("st")), LineStream()) #:: LazyList() => ok
       }
     }
 

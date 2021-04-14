@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Daniel Spiewak
+ * Copyright (c) 2021, Daniel Spiewak
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -32,11 +32,12 @@ import com.codecommit.gll
 import gll._
 import gll.ast._
 
+import scala.collection.compat.immutable.LazyList
 import org.specs2.ScalaCheck
 import org.specs2.mutable._
 import org.scalacheck._
 
-object FilterSpecs extends Specification
+class FilterSpecs extends Specification
     with ScalaCheck
     with RegexParsers {
 
@@ -51,15 +52,15 @@ object FilterSpecs extends Specification
       ) filter prec(Add)
 
       expr("1") must beLike {
-        case Stream(Success(IntLit(1), LineStream())) => ok
+        case LazyList(Success(IntLit(1), LineStream())) => ok
       }
 
       expr("1 + 2") must beLike {
-        case Stream(Success(Add(IntLit(1), IntLit(2)), LineStream())) => ok
+        case LazyList(Success(Add(IntLit(1), IntLit(2)), LineStream())) => ok
       }
 
       expr("1 + 2 + 3") must beLike {
-        case Stream(Success(Add(Add(IntLit(1), IntLit(2)), IntLit(3)), LineStream())) => ok
+        case LazyList(Success(Add(Add(IntLit(1), IntLit(2)), IntLit(3)), LineStream())) => ok
       }
 
       forAll { num: Int =>
@@ -74,15 +75,15 @@ object FilterSpecs extends Specification
       ) filter prec(AddRight)
 
       expr("1") must beLike {
-        case Stream(Success(IntLit(1), LineStream())) => ok
+        case LazyList(Success(IntLit(1), LineStream())) => ok
       }
 
       expr("1 + 2") must beLike {
-        case Stream(Success(AddRight(IntLit(1), IntLit(2)), LineStream())) => ok
+        case LazyList(Success(AddRight(IntLit(1), IntLit(2)), LineStream())) => ok
       }
 
       expr("1 + 2 + 3") must beLike {
-        case Stream(Success(AddRight(IntLit(1), AddRight(IntLit(2), IntLit(3))), LineStream())) => ok
+        case LazyList(Success(AddRight(IntLit(1), AddRight(IntLit(2), IntLit(3))), LineStream())) => ok
       }
 
       forAll { num: Int =>
@@ -98,23 +99,23 @@ object FilterSpecs extends Specification
       ) filter prec(Add, Sub)
 
       expr("1") must beLike {
-        case Stream(Success(IntLit(1), LineStream())) => ok
+        case LazyList(Success(IntLit(1), LineStream())) => ok
       }
 
       expr("1 + 2") must beLike {
-        case Stream(Success(Add(IntLit(1), IntLit(2)), LineStream())) => ok
+        case LazyList(Success(Add(IntLit(1), IntLit(2)), LineStream())) => ok
       }
 
       expr("1 - 2") must beLike {
-        case Stream(Success(Sub(IntLit(1), IntLit(2)), LineStream())) => ok
+        case LazyList(Success(Sub(IntLit(1), IntLit(2)), LineStream())) => ok
       }
 
       expr("1 + 2 - 3") must beLike {
-        case Stream(Success(Sub(Add(IntLit(1), IntLit(2)), IntLit(3)), LineStream())) => ok
+        case LazyList(Success(Sub(Add(IntLit(1), IntLit(2)), IntLit(3)), LineStream())) => ok
       }
 
       expr("1 - 2 + 3") must beLike {
-        case Stream(Success(Sub(IntLit(1), Add(IntLit(2), IntLit(3))), LineStream())) => ok
+        case LazyList(Success(Sub(IntLit(1), Add(IntLit(2), IntLit(3))), LineStream())) => ok
       }
     }
 
@@ -126,23 +127,23 @@ object FilterSpecs extends Specification
       ) filter prec(Neg, Add)
 
       expr("1") must beLike {
-        case Stream(Success(IntLit(1), LineStream())) => ok
+        case LazyList(Success(IntLit(1), LineStream())) => ok
       }
 
       expr("-1") must beLike {
-        case Stream(Success(Neg(IntLit(1)), LineStream())) => ok
+        case LazyList(Success(Neg(IntLit(1)), LineStream())) => ok
       }
 
       expr("1 + 2") must beLike {
-        case Stream(Success(Add(IntLit(1), IntLit(2)), LineStream())) => ok
+        case LazyList(Success(Add(IntLit(1), IntLit(2)), LineStream())) => ok
       }
 
       expr("-1 + 2") must beLike {
-        case Stream(Success(Add(Neg(IntLit(1)), IntLit(2)), LineStream())) => ok
+        case LazyList(Success(Add(Neg(IntLit(1)), IntLit(2)), LineStream())) => ok
       }
 
       expr("1 + -2") must beLike {
-        case Stream(Success(Add(IntLit(1), Neg(IntLit(2))), LineStream())) => ok
+        case LazyList(Success(Add(IntLit(1), Neg(IntLit(2))), LineStream())) => ok
       }
     }
 
@@ -154,23 +155,23 @@ object FilterSpecs extends Specification
       ) filter prec(Add, Neg)
 
       expr("1") must beLike {
-        case Stream(Success(IntLit(1), LineStream())) => ok
+        case LazyList(Success(IntLit(1), LineStream())) => ok
       }
 
       expr("-1") must beLike {
-        case Stream(Success(Neg(IntLit(1)), LineStream())) => ok
+        case LazyList(Success(Neg(IntLit(1)), LineStream())) => ok
       }
 
       expr("1 + 2") must beLike {
-        case Stream(Success(Add(IntLit(1), IntLit(2)), LineStream())) => ok
+        case LazyList(Success(Add(IntLit(1), IntLit(2)), LineStream())) => ok
       }
 
       expr("-1 + 2") must beLike {
-        case Stream(Success(Neg(Add(IntLit(1), IntLit(2))), LineStream())) => ok
+        case LazyList(Success(Neg(Add(IntLit(1), IntLit(2))), LineStream())) => ok
       }
 
       expr("1 + -2") must beLike {
-        case Stream(Success(Add(IntLit(1), Neg(IntLit(2))), LineStream())) => ok
+        case LazyList(Success(Add(IntLit(1), Neg(IntLit(2))), LineStream())) => ok
       }
     }
 
@@ -182,23 +183,23 @@ object FilterSpecs extends Specification
       ) filter prec(Add, Comp)
 
       expr("1") must beLike {
-        case Stream(Success(IntLit(1), LineStream())) => ok
+        case LazyList(Success(IntLit(1), LineStream())) => ok
       }
 
       expr("1~") must beLike {
-        case Stream(Success(Comp(IntLit(1)), LineStream())) => ok
+        case LazyList(Success(Comp(IntLit(1)), LineStream())) => ok
       }
 
       expr("1 + 2") must beLike {
-        case Stream(Success(Add(IntLit(1), IntLit(2)), LineStream())) => ok
+        case LazyList(Success(Add(IntLit(1), IntLit(2)), LineStream())) => ok
       }
 
       expr("1 + 2~") must beLike {
-        case Stream(Success(Comp(Add(IntLit(1), IntLit(2))), LineStream())) => ok
+        case LazyList(Success(Comp(Add(IntLit(1), IntLit(2))), LineStream())) => ok
       }
 
       expr("1~ + 2") must beLike {
-        case Stream(Success(Add(Comp(IntLit(1)), IntLit(2)), LineStream())) => ok
+        case LazyList(Success(Add(Comp(IntLit(1)), IntLit(2)), LineStream())) => ok
       }
     }
 
@@ -211,11 +212,11 @@ object FilterSpecs extends Specification
       ) filter prec(Add, Neg, Comp2)
 
       expr("-~1") must beLike {
-        case Stream(Success(Neg(Comp2(IntLit(1))), LineStream())) => ok
+        case LazyList(Success(Neg(Comp2(IntLit(1))), LineStream())) => ok
       }
 
       expr("~-1") must beLike {
-        case Stream(Success(Comp2(Neg(IntLit(1))), LineStream())) => ok
+        case LazyList(Success(Comp2(Neg(IntLit(1))), LineStream())) => ok
       }
     }
 
@@ -227,19 +228,19 @@ object FilterSpecs extends Specification
       ) filter prec(Comp, Neg)
 
       expr("1") must beLike {
-        case Stream(Success(IntLit(1), LineStream())) => ok
+        case LazyList(Success(IntLit(1), LineStream())) => ok
       }
 
       expr("-1") must beLike {
-        case Stream(Success(Neg(IntLit(1)), LineStream())) => ok
+        case LazyList(Success(Neg(IntLit(1)), LineStream())) => ok
       }
 
       expr("1~") must beLike {
-        case Stream(Success(Comp(IntLit(1)), LineStream())) => ok
+        case LazyList(Success(Comp(IntLit(1)), LineStream())) => ok
       }
 
       expr("-1~") must beLike {
-        case Stream(Success(Neg(Comp(IntLit(1))), LineStream())) => ok
+        case LazyList(Success(Neg(Comp(IntLit(1))), LineStream())) => ok
       }
     }
 
@@ -252,23 +253,23 @@ object FilterSpecs extends Specification
       ) filter prec(Mul, (Add, Sub))
 
       expr("1 + 2") must beLike {
-        case Stream(Success(Add(IntLit(1), IntLit(2)), LineStream())) => ok
+        case LazyList(Success(Add(IntLit(1), IntLit(2)), LineStream())) => ok
       }
 
       expr("1 - 2") must beLike {
-        case Stream(Success(Sub(IntLit(1), IntLit(2)), LineStream())) => ok
+        case LazyList(Success(Sub(IntLit(1), IntLit(2)), LineStream())) => ok
       }
 
       expr("1 + 2 - 3") must beLike {
-        case Stream(Success(Sub(Add(IntLit(1), IntLit(2)), IntLit(3)), LineStream())) => ok
+        case LazyList(Success(Sub(Add(IntLit(1), IntLit(2)), IntLit(3)), LineStream())) => ok
       }
 
       expr("1 - 2 + 3") must beLike {
-        case Stream(Success(Add(Sub(IntLit(1), IntLit(2)), IntLit(3)), LineStream())) => ok
+        case LazyList(Success(Add(Sub(IntLit(1), IntLit(2)), IntLit(3)), LineStream())) => ok
       }
 
       expr("1 + 2 * 3") must beLike {
-        case Stream(Success(Add(IntLit(1), Mul(IntLit(2), IntLit(3))), LineStream())) => ok
+        case LazyList(Success(Add(IntLit(1), Mul(IntLit(2), IntLit(3))), LineStream())) => ok
       }
     }
   }
@@ -285,7 +286,7 @@ object FilterSpecs extends Specification
 
   case class Add(left: Expr, right: Expr) extends Expr with BinaryNode {
     val assocLeft = true
-    val sym = 'add
+    val sym = Symbol("add")
 
     val solve = left.solve + right.solve
   }
@@ -294,34 +295,34 @@ object FilterSpecs extends Specification
     val assocLeft = false
     override val assocRight = true
 
-    val sym = 'add
+    val sym = Symbol("add")
 
     val solve = left.solve + right.solve
   }
 
   case class Sub(left: Expr, right: Expr) extends Expr with BinaryNode {
     val assocLeft = true
-    val sym = 'sub
+    val sym = Symbol("sub")
 
     val solve = left.solve - right.solve
   }
 
   case class Mul(left: Expr, right: Expr) extends Expr with BinaryNode {
     val assocLeft = true
-    val sym = 'mul
+    val sym = Symbol("mul")
 
     val solve = left.solve * right.solve
   }
 
   case class Div(left: Expr, right: Expr) extends Expr with BinaryNode {
     val assocLeft = true
-    val sym = 'div
+    val sym = Symbol("div")
 
     val solve = left.solve / right.solve
   }
 
   case class Neg(child: Expr) extends Expr with UnaryNode {
-    val sym = 'neg
+    val sym = Symbol("neg")
 
     val isPrefix = true
 
@@ -329,7 +330,7 @@ object FilterSpecs extends Specification
   }
 
   case class Comp2(child: Expr) extends Expr with UnaryNode {
-    val sym = 'comp2
+    val sym = Symbol("comp2")
 
     val isPrefix = true
 
@@ -337,7 +338,7 @@ object FilterSpecs extends Specification
   }
 
   case class Comp(child: Expr) extends Expr with UnaryNode {
-    val sym = 'comp
+    val sym = Symbol("comp")
 
     val isPrefix = false
 

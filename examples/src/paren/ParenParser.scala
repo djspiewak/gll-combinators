@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Daniel Spiewak
+ * Copyright (c) 2021, Daniel Spiewak
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -30,6 +30,8 @@
 
 package paren
 
+import scala.collection.compat.immutable.LazyList
+
 object ParenParser extends common.Example[Int] {
   
   // %%
@@ -43,7 +45,7 @@ object ParenParser extends common.Example[Int] {
   
   def parser = expr
   
-  def handleSuccesses(forest: Stream[Int]) {
+  def handleSuccesses(forest: LazyList[Int]): Unit = {
     for (depth <- forest) {
       println("  " + depth)
     }

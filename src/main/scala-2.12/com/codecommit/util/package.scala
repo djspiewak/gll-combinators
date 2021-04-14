@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Daniel Spiewak
+ * Copyright (c) 2021, Daniel Spiewak
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -28,19 +28,16 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-object StreamUtils {
-  implicit def streamToRichStream[A](str: =>Stream[A]): RichStream[A] = new RichStream(str)
+package com.codecommit.util
 
-  class RichStream[A](str: =>Stream[A]) {
-    def #::[B >: A](hd: B): Stream[B] = Stream.cons(hd, str)
+import scala.collection.generic.CanBuildFrom
 
-    def sort(pred: (A, A) => Boolean): Stream[A] = (str.toList sortWith pred).toStream    // cheating!
-  }
-
-  val SNil = Stream.empty
-
-  object #:: {
-    def unapply[A](str: Stream[A]): Option[(A, Stream[A])] =
-      if (str.isEmpty) None else Some((str.head, str.tail))
+package object util {
+  import com.codecommit.util.ComplementarySet
+  
+  implicit def createComplementarySetCanBuildFrom[A, B]: CanBuildFrom[ComplementarySet[A], B, ComplementarySet[B]] = new CanBuildFrom[ComplementarySet[A], B, ComplementarySet[B]] {
+    def apply = null
+    
+    def apply(from: ComplementarySet[A]) = null
   }
 }

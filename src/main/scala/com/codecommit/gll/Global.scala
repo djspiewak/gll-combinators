@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Daniel Spiewak
+ * Copyright (c) 2021, Daniel Spiewak
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -33,11 +33,11 @@ package com.codecommit.gll
 private[gll] object Global {
   val debug = false
 
-  def trace(msg: =>String) {
+  def trace(msg: =>String): Unit = {
     if (debug) println(msg)
   }
 
-  def tracef(msg: =>String, args: Any*) {
+  def tracef(msg: =>String, args: Any*): Unit = {
     if (debug) printf(msg, args:_*)
   }
 }
