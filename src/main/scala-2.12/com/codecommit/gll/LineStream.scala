@@ -113,9 +113,8 @@ sealed abstract class LineStream(val line: String, val lineNum: Int, val colNum:
    *   <li><code>%s</code> &mdash; Indicator caret</li>
    * </ol>
    */
-  def printError(pattern: String)(ps: PrintStream) {
+  def printError(pattern: String)(ps: PrintStream): Unit =
     ps.print(formatError(pattern))
-  }
 
   /**
    * Expects a pattern with the following arguments:
@@ -148,7 +147,7 @@ object LineStream {
 
   def apply(itr: Iterator[Char]): LineStream = {
     apply(new Reader {
-      def close() {}
+      def close(): Unit = ()
 
       def read(cbuf: Array[Char], off: Int, len: Int) = {
         val emptyAtStart = itr.isEmpty

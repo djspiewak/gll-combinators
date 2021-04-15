@@ -448,7 +448,7 @@ class CompoundSpecs extends Spec
       }
     }
     "repeat 0..n times with separator" in {
-      val p = literal("123") * ","
+      val p = literal("123") ** ","
 
       p("123") must beLike {
         case Success(List("123"), LineStream()) #:: LazyList() => ok
@@ -476,7 +476,7 @@ class CompoundSpecs extends Spec
     }
 
     "repeat 1..n times with separator" in {
-      val p = literal("123") + ","
+      val p = literal("123") ++ ","
 
       p("123") must beLike {
         case Success(List("123"), LineStream()) #:: LazyList() => ok

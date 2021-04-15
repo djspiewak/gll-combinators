@@ -139,38 +139,60 @@ trait Filters {
   case class ManWrap(m: Manifest[_])
 
   case object ManWrap extends (Manifest[_] => ManWrap) {
-    implicit def coerceValue0[A <: Node](v: A)(implicit m: Manifest[A]): ManWrap =
+    implicit def coerceValue0[A <: Node](v: A)(implicit m: Manifest[A]): ManWrap = {
+      val _ = v
       ManWrap(m)
+    }
 
-    implicit def coerceCompanion1[A <: Node](c: _ => A)(implicit m: Manifest[A]): ManWrap =
+    implicit def coerceCompanion1[A <: Node](c: _ => A)(implicit m: Manifest[A]): ManWrap = {
+      val _ = c
       ManWrap(m)
+    }
 
-    implicit def coerceCompanion2[A <: Node](c: (_, _) => A)(implicit m: Manifest[A]): ManWrap =
+    implicit def coerceCompanion2[A <: Node](c: (_, _) => A)(implicit m: Manifest[A]): ManWrap = {
+      val _ = c
       ManWrap(m)
+    }
 
-    implicit def coerceCompanion3[A <: Node](c: (_, _, _) => A)(implicit m: Manifest[A]): ManWrap =
+    implicit def coerceCompanion3[A <: Node](c: (_, _, _) => A)(implicit m: Manifest[A]): ManWrap = {
+      val _ = c
       ManWrap(m)
+    }
 
-    implicit def coerceCompanion4[A <: Node](c: (_, _, _, _) => A)(implicit m: Manifest[A]): ManWrap =
+    implicit def coerceCompanion4[A <: Node](c: (_, _, _, _) => A)(implicit m: Manifest[A]): ManWrap = {
+      val _ = c
       ManWrap(m)
+    }
 
-    implicit def coerceCompanion5[A <: Node](c: (_, _, _, _, _) => A)(implicit m: Manifest[A]): ManWrap =
+    implicit def coerceCompanion5[A <: Node](c: (_, _, _, _, _) => A)(implicit m: Manifest[A]): ManWrap = {
+      val _ = c
       ManWrap(m)
+    }
 
-    implicit def coerceCompanion6[A <: Node](c: (_, _, _, _, _, _) => A)(implicit m: Manifest[A]): ManWrap =
+    implicit def coerceCompanion6[A <: Node](c: (_, _, _, _, _, _) => A)(implicit m: Manifest[A]): ManWrap = {
+      val _ = c
       ManWrap(m)
+    }
 
-    implicit def coerceCompanion7[A <: Node](c: (_, _, _, _, _, _, _) => A)(implicit m: Manifest[A]): ManWrap =
+    implicit def coerceCompanion7[A <: Node](c: (_, _, _, _, _, _, _) => A)(implicit m: Manifest[A]): ManWrap = {
+      val _ = c
       ManWrap(m)
+    }
 
-    implicit def coerceCompanion8[A <: Node](c: (_, _, _, _, _, _, _, _) => A)(implicit m: Manifest[A]): ManWrap =
+    implicit def coerceCompanion8[A <: Node](c: (_, _, _, _, _, _, _, _) => A)(implicit m: Manifest[A]): ManWrap = {
+      val _ = c
       ManWrap(m)
+    }
 
-    implicit def coerceCompanion9[A <: Node](c: (_, _, _, _, _, _, _, _, _) => A)(implicit m: Manifest[A]): ManWrap =
+    implicit def coerceCompanion9[A <: Node](c: (_, _, _, _, _, _, _, _, _) => A)(implicit m: Manifest[A]): ManWrap = {
+      val _ = c
       ManWrap(m)
+    }
 
-    implicit def coerceCompanion10[A <: Node](c: (_, _, _, _, _, _, _, _, _, _) => A)(implicit m: Manifest[A]): ManWrap =
+    implicit def coerceCompanion10[A <: Node](c: (_, _, _, _, _, _, _, _, _, _) => A)(implicit m: Manifest[A]): ManWrap = {
+      val _ = c
       ManWrap(m)
+    }
   }
 
   /* def prec(order: Symbol*): Filter[Node] = new PrecedenceFilter(order)

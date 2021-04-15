@@ -37,35 +37,30 @@ import collection.mutable
  */
 private[codecommit] class HOMap[K[_], V[_]] {
   private val underlying: mutable.Map[K[_], V[_]] = mutable.Map.empty
-  
-  def add[T](key: K[T], value: V[T]) {
+
+  def add[T](key: K[T], value: V[T]): Unit =
     underlying(key) = value
-  }
-  
-  def remove[T](key: K[T]) {
+
+  def remove[T](key: K[T]): Unit =
     underlying -= key
-  }
-  
+
   def get[T](key: K[T]): Option[V[T]] = underlying.get(key).asInstanceOf[Option[V[T]]]
-  
+
   def apply[T](key: K[T]) = get(key) getOrElse { throw new IllegalArgumentException("No value for specified key") }
-  
-  def update[T](key: K[T], value: V[T]) {
+
+  def update[T](key: K[T], value: V[T]): Unit =
     underlying(key) = value
-  }
-  
-  def +=[T](tuple: (K[T], V[T])) {
+
+  def +=[T](tuple: (K[T], V[T])): Unit =
     underlying += tuple
-  }
-  
-  
+
   def contains(key: K[_]) = underlying.contains(key)
 }
 
 private[codecommit] object HOMap {
   def apply[K[_], V[_]](tuples: (K[A], V[A]) forSome { type A } *) = {
     val back = new HOMap[K, V]
-    tuples foreach { case (k, v) => back.add(k, v) } 
+    tuples foreach { case (k, v) => back.add(k, v) }
     back
   }
 }

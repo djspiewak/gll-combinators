@@ -35,30 +35,31 @@ import scala.io.Source
 import com.codecommit.gll._
 
 trait Example[A] extends Parsers {
-  
+
   def main(args: Array[String]): Unit = {
     for (file <- args) {
       println(file)
       println("=============================")
-      
+
       val results = parser(LineStream(Source fromFile file))
-      
+
       if (results exists { _.isInstanceOf[Success[A]] }) {
-        handleSuccesses(for (Success(tree, _) <- results) yield tree)
+        handleSuccesses(results collect { case Success(tree, _) => tree })
       } else {
         val sorted = results.toList sortWith { _.tail.length < _.tail.length }
         val length = sorted.head.tail.length
-        
-        for (Failure(msg, tail) <- sorted takeWhile { _.tail.length == length }) {
-          val pattern = "  error:%%d: %s%n    %%s%n    %%s%n".format(msg)
-          tail.printError(pattern)(System.err)
+
+        sorted.takeWhile(_.tail.length == length) collect {
+          case Failure(msg, tail) =>
+            val pattern = "  error:%%d: %s%n    %%s%n    %%s%n".format(msg)
+            tail.printError(pattern)(System.err)
         }
       }
-      
+
       println()
     }
   }
-  
+
   def test(file: String): Boolean = {
     val src = Source.fromInputStream(getClass().getResourceAsStream(file))
     val results: LazyList[Result[A]] = parser(LineStream(src))
@@ -66,7 +67,7 @@ trait Example[A] extends Parsers {
       // suppress stdout:
       val stream = new java.io.ByteArrayOutputStream()
       Console.withOut(stream) {
-        handleSuccesses(for (Success(tree, _) <- results) yield tree)
+        handleSuccesses(results collect { case Success(tree, _) => tree })
       }
       return true
     } else {
@@ -75,6 +76,6 @@ trait Example[A] extends Parsers {
   }
 
   def parser: Parser[A]
-  
+
   def handleSuccesses(forest: LazyList[A]): Unit
 }

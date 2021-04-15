@@ -84,19 +84,19 @@ sealed abstract class LineStream(val line: String, val lineNum: Int, val colNum:
       tail lengthCompare i - 1
   }
 
-  def zip(that: LineStream): Stream[(Char, Char)] = {
+  def zip(that: LineStream): LazyList[(Char, Char)] = {
     if (this.isEmpty || that.isEmpty)
-      Stream.empty
+      LazyList()
     else
-      Stream.cons((this.head, that.head), tail zip that)
+      (this.head, that.head) #:: (tail zip that)
   }
 
   override def zipWithIndex = {
-    def gen(tail: LineStream, i: Int): Stream[(Char, Int)] = {
+    def gen(tail: LineStream, i: Int): LazyList[(Char, Int)] = {
       if (tail.isEmpty)
-        Stream.empty
+        LazyList()
       else
-        Stream.cons((tail.head, i), gen(tail.tail, i + 1))
+        (tail.head, i) #:: gen(tail.tail, i + 1)
     }
 
     gen(this, 0)
@@ -113,9 +113,8 @@ sealed abstract class LineStream(val line: String, val lineNum: Int, val colNum:
    *   <li><code>%s</code> &mdash; Indicator caret</li>
    * </ol>
    */
-  def printError(pattern: String)(ps: PrintStream) {
+  def printError(pattern: String)(ps: PrintStream): Unit =
     ps.print(formatError(pattern))
-  }
 
   /**
    * Expects a pattern with the following arguments:
@@ -148,7 +147,7 @@ object LineStream {
 
   def apply(itr: Iterator[Char]): LineStream = {
     apply(new Reader {
-      def close() {}
+      def close() = ()
 
       def read(cbuf: Array[Char], off: Int, len: Int) = {
         val emptyAtStart = itr.isEmpty

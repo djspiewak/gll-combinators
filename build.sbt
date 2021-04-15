@@ -1,7 +1,7 @@
 name := "gll-combinators"
 organization := "com.codecommit"
 
-baseVersion := "2.4"
+baseVersion := "2.5"
 strictSemVer := false
 
 ThisBuild / publishFullName := "Daniel Spiewak"
