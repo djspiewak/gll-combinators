@@ -19,7 +19,7 @@ scmInfo := Some(ScmInfo(url("https://github.com/djspiewak/gll-combinators"),
 
 Test / parallelExecution := false
 
-val Specs2Version = "4.10.6"
+val Specs2Version = "4.11.0"
 
 libraryDependencies ++= Seq(
   "org.scala-lang.modules" %% "scala-collection-compat" % "2.4.3",
