@@ -23,7 +23,7 @@ val Specs2Version = "4.12.12"
 
 libraryDependencies ++= Seq(
   "org.scala-lang.modules" %% "scala-collection-compat" % "2.5.0",
-  "org.scalacheck"         %% "scalacheck"              % "1.16.0" % "test",
+  "org.scalacheck"         %% "scalacheck"              % "1.15.4" % "test",
 
   "org.specs2"             %% "specs2-core"             % Specs2Version  % "test",
   "org.specs2"             %% "specs2-scalacheck"       % Specs2Version  % "test")
