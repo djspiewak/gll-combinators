@@ -7,8 +7,8 @@ strictSemVer := false
 ThisBuild / publishFullName := "Daniel Spiewak"
 ThisBuild / publishGithubUser := "djspiewak"
 
-ThisBuild / crossScalaVersions := Seq("2.13.5", "2.12.13")
-ThisBuild / scalaVersion := "2.13.5"
+ThisBuild / crossScalaVersions := Seq("2.13.10", "2.12.13")
+ThisBuild / scalaVersion := "2.13.10"
 
 licenses := Seq("BSD-3-Clause" -> url("http://www.opensource.org/licenses/bsd-license.php"))
 
